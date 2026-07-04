@@ -195,14 +195,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
       });
 
-      // Deduct credits based on output word count
-      if (userId) {
-        const { calculateCreditsForWords } = await import("./services/stripe");
-        const wordCount = fullContent.split(/\s+/).length;
-        const creditsUsed = calculateCreditsForWords(provider, wordCount);
-        await storage.deductCredits(userId, creditsUsed);
-      }
-
       // Save to history if user is logged in
       if (username && typeof username === "string" && username.trim().length >= 2) {
         try {

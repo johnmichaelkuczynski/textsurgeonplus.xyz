@@ -1,1 +1,1 @@
-- [Auth removed](auth-setup-quirks.md) — owner ordered ALL login ripped out (Google OAuth included); app is fully open/anonymous. Never re-add auth without explicit instruction.
+- [Auth policy](auth-setup-quirks.md) — Google login reinstated but OPTIONAL; app fully open anonymously, callback `/auth/google/callback` (no /api), stale vault secrets can shadow new keys.
