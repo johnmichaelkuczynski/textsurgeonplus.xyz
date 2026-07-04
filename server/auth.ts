@@ -25,18 +25,24 @@ export function setupAuth(app: Express) {
     (v || "").replace(/[\u00A0\u200B\u200C\u200D\uFEFF]/g, "").trim();
 
   // Google OAuth client credentials (owner-provided).
+  // TEXTSURGEON_* names take priority — they are fresh app-level secrets that
+  // avoid collisions with stale account-vault entries under the GOOGLE_* names.
   const clientID = sanitizeSecret(
-    process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID
+    process.env.TEXTSURGEON_GOOGLE_CLIENT_ID ||
+      process.env.GOOGLE_OAUTH_CLIENT_ID ||
+      process.env.GOOGLE_CLIENT_ID
   );
   const clientSecret = sanitizeSecret(
-    process.env.GOOGLE_OAUTH_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET
+    process.env.TEXTSURGEON_GOOGLE_CLIENT_SECRET ||
+      process.env.GOOGLE_OAUTH_CLIENT_SECRET ||
+      process.env.GOOGLE_CLIENT_SECRET
   );
 
   const googleEnabled = !!(clientID && clientSecret);
 
   if (!googleEnabled) {
     console.warn(
-      "Google OAuth credentials not found (GOOGLE_OAUTH_CLIENT_ID / GOOGLE_OAUTH_CLIENT_SECRET). Google login disabled."
+      "Google OAuth credentials not found (TEXTSURGEON_GOOGLE_CLIENT_ID / TEXTSURGEON_GOOGLE_CLIENT_SECRET). Google login disabled."
     );
   }
 
