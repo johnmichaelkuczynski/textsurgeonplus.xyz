@@ -130,6 +130,34 @@ export function setupAuth(app: Express) {
       return `http://localhost:5000${CALLBACK_PATH}`;
     };
 
+    // Build the callback URL from the domain the visitor is actually on, so
+    // login works from every domain (custom domain, .replit.app, dev preview)
+    // as long as that domain's callback URI is registered in Google Cloud.
+    // Only known app domains are trusted; anything else falls back to the
+    // static default (prevents host-header tampering).
+    const trustedHosts = new Set<string>(
+      [
+        ...(process.env.REPLIT_DOMAINS || "").split(",").map((d) => d.trim()),
+        process.env.REPLIT_DEV_DOMAIN || "",
+        "textsurgeonplus.xyz",
+        "www.textsurgeonplus.xyz",
+        "localhost:5000",
+      ].filter(Boolean)
+    );
+
+    const getRequestCallbackURL = (req: any) => {
+      const host = (req.headers["x-forwarded-host"] || req.headers.host || "")
+        .toString()
+        .split(",")[0]
+        .trim()
+        .toLowerCase();
+      if (host && trustedHosts.has(host)) {
+        const proto = host.startsWith("localhost") ? "http" : "https";
+        return `${proto}://${host}${CALLBACK_PATH}`;
+      }
+      return getCallbackURL();
+    };
+
     passport.use(
       new GoogleStrategy(
         {
@@ -183,18 +211,23 @@ export function setupAuth(app: Express) {
       )
     );
 
-    // Click 1: button links here -> 302 straight to Google's account chooser
-    app.get(
-      "/api/auth/google",
+    // Click 1: button links here -> 302 straight to Google's account chooser.
+    // callbackURL is computed per request so login works from every domain.
+    app.get("/api/auth/google", (req, res, next) =>
       passport.authenticate("google", {
         scope: ["openid", "email", "profile"],
         prompt: "select_account",
-      })
+        callbackURL: getRequestCallbackURL(req),
+      } as any)(req, res, next)
     );
 
     // Click 2 happens on Google; the callback lands the user inside the app
     const callbackHandler = [
-      passport.authenticate("google", { failureRedirect: "/?error=auth_failed" }),
+      (req: any, res: any, next: any) =>
+        passport.authenticate("google", {
+          failureRedirect: "/?error=auth_failed",
+          callbackURL: getRequestCallbackURL(req),
+        } as any)(req, res, next),
       (req: any, res: any) => {
         // Record a login event on every successful sign-in
         (async () => {
