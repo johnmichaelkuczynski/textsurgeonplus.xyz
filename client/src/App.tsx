@@ -27,6 +27,9 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/sso-callback" component={SsoCallback} />
+      <Route path="/sign-in/sso-callback" component={SsoCallback} />
+      <Route path="/sign-in" component={Home} />
+      <Route path="/sign-up" component={Home} />
       <Route path="/administrative" component={Administrative} />
       <Route path="/positions" component={PositionsManager} />
       <Route path="/payment/success" component={PaymentSuccess} />
