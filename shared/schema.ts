@@ -214,3 +214,21 @@ export const insertPhilosophicalPositionSchema = createInsertSchema(philosophica
 
 export type InsertPhilosophicalPosition = z.infer<typeof insertPhilosophicalPositionSchema>;
 export type PhilosophicalPosition = typeof philosophicalPositions.$inferSelect;
+
+// ============ VISIT TRACKING ============
+// Records each Google (Clerk) sign-in visit for the admin dashboard
+
+export const visits = pgTable("visits", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  email: text("email"),
+  visitedAt: timestamp("visited_at").defaultNow().notNull(),
+});
+
+export const insertVisitSchema = createInsertSchema(visits).omit({
+  id: true,
+  visitedAt: true,
+});
+
+export type InsertVisit = z.infer<typeof insertVisitSchema>;
+export type Visit = typeof visits.$inferSelect;

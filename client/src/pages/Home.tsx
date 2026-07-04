@@ -88,7 +88,7 @@ import { useClerk, useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
 
 const CLERK_ENABLED = ((import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string) || "").startsWith("pk_");
 
-function ClerkAuthBridge({ onSynced }: { onSynced: (user: { username: string; displayName?: string | null }) => void }) {
+function ClerkAuthBridge({ onSynced }: { onSynced: (user: { username: string; displayName?: string | null; email?: string | null }) => void }) {
   const { isSignedIn } = useUser();
   const { getToken } = useClerkAuth();
   const syncedRef = useRef(false);
@@ -335,6 +335,7 @@ export default function Home() {
   const [processedChunkIds, setProcessedChunkIds] = useState<Set<number>>(new Set());
   
   const [username, setUsername] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loginInput, setLoginInput] = useState("");
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
@@ -551,6 +552,7 @@ export default function Home() {
       .then(data => {
         if (data.authenticated && data.user) {
           setUsername(data.user.displayName || data.user.username);
+          setUserEmail(data.user.email || null);
           localStorage.setItem('tis_username', data.user.displayName || data.user.username);
           loadSavedAuthors(data.user.displayName || data.user.username);
           // Fetch credits for authenticated users
@@ -740,6 +742,7 @@ export default function Home() {
       // Ignore errors
     }
     setUsername(null);
+    setUserEmail(null);
     setUserCredits(0);
     localStorage.removeItem('tis_username');
     setSavedAuthors([]);
@@ -4069,6 +4072,7 @@ ${parsed.analyzer}`);
           onSynced={(user) => {
             const name = user.displayName || user.username;
             setUsername(name);
+            setUserEmail(user.email || null);
             localStorage.setItem('tis_username', name);
             setShowLoginDialog(false);
             loadSavedAuthors(name);
@@ -4126,6 +4130,15 @@ ${parsed.analyzer}`);
             
             {username ? (
               <div className="flex items-center gap-2">
+                {userEmail?.toLowerCase() === 'johnmichaelkuczynski@gmail.com' && (
+                  <a
+                    href="/administrative"
+                    className="text-sm text-indigo-700 hover:text-indigo-900 hover:underline flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-200 font-semibold"
+                    data-testid="link-administrative"
+                  >
+                    Administrative
+                  </a>
+                )}
                 <Badge variant="secondary" className="text-sm px-3 py-1.5 bg-green-100 text-green-800 border border-green-300">
                   <User className="w-4 h-4 mr-1" />
                   {username}

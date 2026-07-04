@@ -7,11 +7,13 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PositionsManager from "@/pages/PositionsManager";
+import Administrative from "@/pages/Administrative";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/administrative" component={Administrative} />
       <Route path="/positions" component={PositionsManager} />
       <Route path="/payment/success" component={PaymentSuccess} />
       <Route path="/payment/cancel" component={Home} />

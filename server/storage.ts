@@ -13,16 +13,18 @@ import {
   type InsertWorkSection,
   type PhilosophicalPosition,
   type InsertPhilosophicalPosition,
+  type Visit,
   users, 
   stylometricAuthors,
   analysisHistory,
   corpusAuthors,
   corpusWorks,
   workSections,
-  philosophicalPositions
+  philosophicalPositions,
+  visits
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, ilike, or, sql } from "drizzle-orm";
+import { eq, and, desc, ilike, or, sql, gte } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -74,6 +76,12 @@ export interface IStorage {
   createPhilosophicalPosition(position: InsertPhilosophicalPosition): Promise<PhilosophicalPosition>;
   batchCreatePhilosophicalPositions(positions: InsertPhilosophicalPosition[]): Promise<PhilosophicalPosition[]>;
   deletePhilosophicalPosition(id: number): Promise<boolean>;
+
+  // Visit tracking
+  recordVisit(userId: number, email: string | null): Promise<void>;
+  getLastVisit(userId: number): Promise<Visit | undefined>;
+  getVisits(limit: number): Promise<Visit[]>;
+  getVisitTimestampsSince(since: Date | null): Promise<Date[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -364,6 +372,32 @@ export class DatabaseStorage implements IStorage {
   async deletePhilosophicalPosition(id: number): Promise<boolean> {
     const result = await db.delete(philosophicalPositions).where(eq(philosophicalPositions.id, id)).returning();
     return result.length > 0;
+  }
+
+  // Visit tracking
+  async recordVisit(userId: number, email: string | null): Promise<void> {
+    await db.insert(visits).values({ userId, email });
+  }
+
+  async getLastVisit(userId: number): Promise<Visit | undefined> {
+    const [visit] = await db.select().from(visits)
+      .where(eq(visits.userId, userId))
+      .orderBy(desc(visits.visitedAt))
+      .limit(1);
+    return visit;
+  }
+
+  async getVisits(limit: number): Promise<Visit[]> {
+    return await db.select().from(visits)
+      .orderBy(desc(visits.visitedAt))
+      .limit(limit);
+  }
+
+  async getVisitTimestampsSince(since: Date | null): Promise<Date[]> {
+    const rows = since
+      ? await db.select({ visitedAt: visits.visitedAt }).from(visits).where(gte(visits.visitedAt, since))
+      : await db.select({ visitedAt: visits.visitedAt }).from(visits);
+    return rows.map((r) => r.visitedAt);
   }
 }
 
