@@ -1,4 +1,5 @@
 import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
 import type { Express, RequestHandler } from "express";
@@ -18,6 +19,27 @@ declare global {
 }
 
 export function setupAuth(app: Express) {
+  // Strip invisible characters (non-breaking spaces, zero-width chars, BOM) and
+  // surrounding whitespace that often sneak in when secrets are copy-pasted.
+  const sanitizeSecret = (v?: string) =>
+    (v || "").replace(/[\u00A0\u200B\u200C\u200D\uFEFF]/g, "").trim();
+
+  // Google OAuth client credentials (owner-provided).
+  const clientID = sanitizeSecret(
+    process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID
+  );
+  const clientSecret = sanitizeSecret(
+    process.env.GOOGLE_OAUTH_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET
+  );
+
+  const googleEnabled = !!(clientID && clientSecret);
+
+  if (!googleEnabled) {
+    console.warn(
+      "Google OAuth credentials not found (GOOGLE_OAUTH_CLIENT_ID / GOOGLE_OAUTH_CLIENT_SECRET). Google login disabled."
+    );
+  }
+
   // Trust proxy for production (behind Replit's proxy)
   app.set('trust proxy', 1);
 
@@ -83,7 +105,112 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // No login system: Google OAuth removed at the owner's request.
+  // --- Google OAuth 2.0 (optional login: the app itself is fully open) ---
+  if (googleEnabled) {
+    // Callback path is /auth/google/callback to match the redirect URIs
+    // registered in the owner's Google Cloud Console OAuth client.
+    const CALLBACK_PATH = "/auth/google/callback";
+
+    const getCallbackURL = () => {
+      if (process.env.NODE_ENV === "production") {
+        const prodDomain = (process.env.REPLIT_DOMAINS || "")
+          .split(",")[0]
+          ?.trim();
+        return `https://${prodDomain || "textsurgeonplus.xyz"}${CALLBACK_PATH}`;
+      }
+      if (process.env.REPLIT_DEV_DOMAIN) {
+        return `https://${process.env.REPLIT_DEV_DOMAIN}${CALLBACK_PATH}`;
+      }
+      return `http://localhost:5000${CALLBACK_PATH}`;
+    };
+
+    passport.use(
+      new GoogleStrategy(
+        {
+          clientID,
+          clientSecret,
+          callbackURL: getCallbackURL(),
+          state: true, // CSRF protection via session-stored state parameter
+          passReqToCallback: false,
+        } as any,
+        async (accessToken, refreshToken, profile, done) => {
+          try {
+            const email = profile.emails?.[0]?.value || null;
+            const displayName = profile.displayName || null;
+            const googleId = profile.id;
+
+            let user = await storage.getUserByGoogleId(googleId);
+
+            if (!user) {
+              if (email) {
+                user = await storage.getUserByEmail(email);
+              }
+
+              if (!user) {
+                const username = email?.split("@")[0] || `user_${googleId.substring(0, 8)}`;
+                user = await storage.createUserWithGoogle({
+                  username,
+                  googleId,
+                  email,
+                  displayName,
+                });
+                console.log(`Google OAuth: Created new user ${user.id} (${user.username})`);
+              } else {
+                user = await storage.updateUserGoogle(user.id, {
+                  googleId,
+                  displayName,
+                });
+              }
+            } else {
+              user = await storage.updateUserGoogle(user.id, {
+                displayName,
+              });
+            }
+
+            console.log(`Google OAuth: Login successful for user ${user.id}`);
+            done(null, user);
+          } catch (error) {
+            console.error("Google auth error:", error);
+            done(error as Error);
+          }
+        }
+      )
+    );
+
+    // Click 1: button links here -> 302 straight to Google's account chooser
+    app.get(
+      "/api/auth/google",
+      passport.authenticate("google", {
+        scope: ["openid", "email", "profile"],
+        prompt: "select_account",
+      })
+    );
+
+    // Click 2 happens on Google; the callback lands the user inside the app
+    const callbackHandler = [
+      passport.authenticate("google", { failureRedirect: "/?error=auth_failed" }),
+      (req: any, res: any) => {
+        // Record a login event on every successful sign-in
+        (async () => {
+          try {
+            if (req.user) {
+              await storage.recordVisit(req.user.id, req.user.email ?? null);
+            }
+          } catch (visitErr) {
+            console.error("Failed to record login event:", visitErr);
+          }
+        })();
+        req.session.save(() => {
+          res.redirect("/");
+        });
+      },
+    ];
+    app.get(CALLBACK_PATH, ...callbackHandler);
+    // Legacy alias in case the /api-prefixed URI is registered instead
+    app.get("/api/auth/google/callback", ...callbackHandler);
+
+    console.log("Google OAuth configured. Callback URL:", getCallbackURL());
+  }
 
   app.get("/api/auth/user", (req, res) => {
     if (req.isAuthenticated() && req.user) {
