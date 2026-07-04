@@ -142,7 +142,9 @@ export function setupAuth(app: Express) {
         "textsurgeonplus.xyz",
         "www.textsurgeonplus.xyz",
         "localhost:5000",
-      ].filter(Boolean)
+      ]
+        .filter(Boolean)
+        .map((h) => h.toLowerCase())
     );
 
     const getRequestCallbackURL = (req: any) => {
@@ -213,13 +215,14 @@ export function setupAuth(app: Express) {
 
     // Click 1: button links here -> 302 straight to Google's account chooser.
     // callbackURL is computed per request so login works from every domain.
-    app.get("/api/auth/google", (req, res, next) =>
+    const loginHandler = (req: any, res: any, next: any) =>
       passport.authenticate("google", {
         scope: ["openid", "email", "profile"],
         prompt: "select_account",
         callbackURL: getRequestCallbackURL(req),
-      } as any)(req, res, next)
-    );
+      } as any)(req, res, next);
+    app.get("/api/auth/google", loginHandler);
+    app.get("/auth/google", loginHandler);
 
     // Click 2 happens on Google; the callback lands the user inside the app
     const callbackHandler = [
