@@ -1,12 +1,17 @@
 ---
-name: Auth setup quirks
-description: Lessons from this app's login history (Google OAuth direct; Clerk was removed July 2026)
+name: Auth history — login fully removed
+description: Owner's final decision on authentication for this app; read before touching anything auth-related.
 ---
 
-- **Rule:** Auth is direct Google OAuth ONLY (owner mandate, July 2026). Never reintroduce Clerk, Auth0, Firebase Auth, username login, or any auth middleman. Never tell the owner to create new OAuth credentials — his shared-vault Google creds are used.
-- **Why:** Owner explicitly ordered all middlemen ripped out after repeated Clerk breakage (stale dev-browser cookies, iframe popup failures, key mixups). Clerk packages/secrets were fully removed.
-- **How to apply:** Any auth change goes through `server/auth.ts` (passport-google-oauth20). Login UI must stay a plain `<a href="/api/auth/google" target="_top">` — `target="_top"` is required because the Replit preview is an iframe and Google 403-blocks framed sign-in pages.
-- **Rule:** Never trust client-supplied `username` for identity. An `/api` middleware in `server/routes.ts` overwrites body/query `username` from the session and strips it for anonymous requests. Any new route must rely on that (or `req.user`), never on request params.
-- **Why:** Legacy routes were keyed by a user-passed `username` string, letting anyone read/write another user's history by guessing their name — flagged as a blocking authz hole in review.
-- After changing OAuth callback hosts/domains, both redirect URIs (dev `*.riker.replit.dev` and prod textsurgeonplus.xyz) must exist in the owner's Google Cloud Console OAuth client — the only manual step; changes there take effect within minutes.
-- Verify a secret non-invasively before debugging deeper: status-code-only curl of `/api/auth/google` (302 to accounts.google.com proves creds load); never print key values.
+# Authentication: REMOVED entirely (July 2026)
+
+- **Rule:** This app has NO login system. Fully open, anonymous use of every feature. Do not resurrect any auth (Google, Clerk, username, or otherwise) without an explicit new instruction from the owner.
+- **Why:** The owner iterated Clerk → username login → direct Google OAuth (his explicit spec at the time), but Google's `redirect_uri_mismatch` requirement (registering callback URLs in Google Cloud Console per OAuth client) proved an unacceptable manual step. He then ordered: "GET RID OF GOOGLE LOGIN. DO NOT PATCH. DO NOT FIX." That is the final, standing decision.
+- **How to apply:**
+  - Session/passport plumbing is intentionally kept in `server/auth.ts` so `req.isAuthenticated()` (always false) doesn't crash routes; don't "clean up" the session middleware without checking route usage.
+  - The `/api` identity middleware stripping client-supplied `username` must stay — it prevented username spoofing (a blocking authz hole in review) and keeps per-user endpoints (history, stylometrics) inert rather than exploitable.
+  - Paywall/credits depend on identity; with no login they stay disabled (`hasCredits = true` client-side) unless rebuilt with an anonymous-compatible billing path.
+- **Other durable lessons:**
+  - Google OAuth on Replit always needs BOTH redirect URIs (dev `*.riker.replit.dev` + custom domain) registered on the specific OAuth client in use; switching client credentials resets that requirement — this manual step is what triggered the owner's final removal order.
+  - Google 403-blocks framed sign-in; in the Replit preview iframe a login link needs `target="_top"` or a new tab.
+  - Validate pasted secret prefixes (pk_/sk_) before trusting them; users have pasted wrong tokens. Verify OAuth creds non-invasively via status-code-only curl; never print key values.

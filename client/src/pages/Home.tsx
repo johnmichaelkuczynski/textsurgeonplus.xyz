@@ -85,67 +85,6 @@ import {
   ResizableDialogDescription,
 } from "@/components/ui/resizable-dialog";
 import { analyzeText, analyzeTextStreaming, AnalysisResult, measureIntelligence, compareIntelligence, IntelligenceResult, IntelligenceCompareResult } from "@/lib/llm";
-function GoogleGIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24">
-      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-    </svg>
-  );
-}
-
-// Plain link to the server's OAuth route: one click -> 302 to Google.
-// Google blocks framed login, and the Replit preview iframe can also block
-// top-level navigation. If the app is embedded in ANY iframe, open the OAuth
-// flow in a new tab instead; a window-focus listener re-checks the session
-// when the user returns.
-function handleGoogleLoginClick(e: React.MouseEvent<HTMLAnchorElement>) {
-  try {
-    if (window.self !== window.top) {
-      e.preventDefault();
-      window.open("/api/auth/google", "_blank", "noopener");
-    }
-  } catch {
-    // Cross-origin access to window.top can throw: we ARE in an iframe.
-    e.preventDefault();
-    window.open("/api/auth/google", "_blank", "noopener");
-  }
-}
-
-function GoogleLoginButton() {
-  return (
-    <Button
-      asChild
-      className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm"
-      data-testid="button-google-login"
-    >
-      <a href="/api/auth/google" target="_top" onClick={handleGoogleLoginClick}>
-        <GoogleGIcon className="w-5 h-5 mr-2" />
-        Sign in with Google
-      </a>
-    </Button>
-  );
-}
-
-function GoogleHeaderLoginButton() {
-  return (
-    <Button
-      asChild
-      variant="outline"
-      size="sm"
-      className="h-10 text-sm gap-2 border-2 border-primary text-primary hover:bg-primary hover:text-white"
-      data-testid="button-login"
-    >
-      <a href="/api/auth/google" target="_top" onClick={handleGoogleLoginClick}>
-        <GoogleGIcon className="w-4 h-4" />
-        Sign in with Google
-      </a>
-    </Button>
-  );
-}
-
 type LLM = "grok" | "openai" | "anthropic" | "perplexity" | "deepseek";
 
 interface Chunk {
@@ -340,8 +279,6 @@ export default function Home() {
   
   const [username, setUsername] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [userCredits, setUserCredits] = useState<number>(0);
   const [isBuyingCredits, setIsBuyingCredits] = useState(false);
   
@@ -549,54 +486,6 @@ export default function Home() {
   const needsChunking = wordCount > CHUNK_SIZE;
   
   useEffect(() => {
-    // Check for Google auth first
-    fetch('/api/auth/user', { credentials: 'include' })
-      .then(res => res.json())
-      .then(data => {
-        if (data.authenticated && data.user) {
-          setUsername(data.user.displayName || data.user.username);
-          setUserEmail(data.user.email || null);
-          loadSavedAuthors(data.user.displayName || data.user.username);
-          // Fetch credits for authenticated users
-          fetch('/api/credits', { credentials: 'include' })
-            .then(res => res.json())
-            .then(creditsData => setUserCredits(creditsData.credits || 0))
-            .catch(() => {});
-        }
-        setAuthChecked(true);
-      })
-      .catch(() => setAuthChecked(true));
-  }, []);
-
-  // When login happens in a separate tab (preview iframe case), pick up the
-  // new session as soon as the user comes back to this tab.
-  useEffect(() => {
-    if (username) return;
-    const recheck = () => {
-      fetch('/api/auth/user', { credentials: 'include' })
-        .then(res => res.json())
-        .then(data => {
-          if (data.authenticated && data.user) {
-            setUsername(data.user.displayName || data.user.username);
-            setUserEmail(data.user.email || null);
-            loadSavedAuthors(data.user.displayName || data.user.username);
-            fetch('/api/credits', { credentials: 'include' })
-              .then(res => res.json())
-              .then(creditsData => setUserCredits(creditsData.credits || 0))
-              .catch(() => {});
-          }
-        })
-        .catch(() => {});
-    };
-    window.addEventListener('focus', recheck);
-    document.addEventListener('visibilitychange', recheck);
-    return () => {
-      window.removeEventListener('focus', recheck);
-      document.removeEventListener('visibilitychange', recheck);
-    };
-  }, [username]);
-  
-  useEffect(() => {
     if (username) {
       loadHistory(historyTypeFilter);
     }
@@ -731,14 +620,6 @@ export default function Home() {
   };
 
   const handleBuyCredits = async () => {
-    // If not logged in, redirect to Google login first with redirect to checkout
-    if (!username) {
-      // Store intent to buy credits, then prompt login
-      sessionStorage.setItem('postLoginAction', 'checkout');
-      setShowLoginDialog(true);
-      return;
-    }
-    
     setIsBuyingCredits(true);
     try {
       const response = await fetch('/api/checkout', { method: 'POST', credentials: 'include' });
@@ -765,15 +646,6 @@ export default function Home() {
       setIsBuyingCredits(false);
     }
   };
-
-  // Check for post-login action (e.g., checkout after login)
-  useEffect(() => {
-    const postLoginAction = sessionStorage.getItem('postLoginAction');
-    if (postLoginAction === 'checkout' && username) {
-      sessionStorage.removeItem('postLoginAction');
-      handleBuyCredits();
-    }
-  }, [username]);
 
   // Helper to truncate text at word boundary
   const truncateAtWordLimit = (text: string, wordLimit: number): { truncated: string, isTruncated: boolean, totalWords: number } => {
@@ -836,10 +708,8 @@ export default function Home() {
     );
   };
 
-  // Check if user has sufficient credits (for paid users, show full content)
-  // In development (Replit environment), bypass paywall
-  const isDevelopment = window.location.hostname.includes('replit') || window.location.hostname === 'localhost';
-  const hasCredits = isDevelopment || userCredits > 0;
+  // No login system: the app is fully open, no paywall gating
+  const hasCredits = true;
   
   const loadHistory = async (typeFilter?: string) => {
     if (!username) return;
@@ -4033,35 +3903,6 @@ ${parsed.analyzer}`);
     else setIsDraggingIntelB(false);
   };
 
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!username) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
-        <div className="flex flex-col items-center gap-6 max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary text-white rounded-2xl flex items-center justify-center shadow-lg">
-            <Stethoscope className="w-9 h-9" />
-          </div>
-          <div>
-            <h1 className="font-bold text-4xl tracking-tight text-foreground">TEXT SURGEON</h1>
-            <p className="mt-3 text-muted-foreground text-lg">
-              Advanced text analysis with no word limit. Sign in to get started.
-            </p>
-          </div>
-          <div className="w-full max-w-xs">
-            <GoogleLoginButton />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
       <header className="border-b-4 border-primary sticky top-0 z-50 bg-white shadow-lg">
@@ -4112,66 +3953,6 @@ ${parsed.analyzer}`);
               </Select>
             </div>
             
-            {username ? (
-              <div className="flex items-center gap-2">
-                {userEmail?.toLowerCase() === 'johnmichaelkuczynski@gmail.com' && (
-                  <a
-                    href="/administrative"
-                    className="text-sm text-indigo-700 hover:text-indigo-900 hover:underline flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-200 font-semibold"
-                    data-testid="link-administrative"
-                  >
-                    Administrative
-                  </a>
-                )}
-                <Badge variant="secondary" className="text-sm px-3 py-1.5 bg-green-100 text-green-800 border border-green-300">
-                  <User className="w-4 h-4 mr-1" />
-                  {username}
-                </Badge>
-                <Badge variant="outline" className="text-sm px-3 py-1.5 bg-amber-50 text-amber-800 border border-amber-300">
-                  {userCredits.toLocaleString()} credits
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleViewHistory}
-                  className="h-8 gap-1 text-primary border-primary hover:bg-primary hover:text-white"
-                  data-testid="button-history"
-                >
-                  <History className="w-4 h-4" />
-                  History
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="h-8 gap-1 border-2 border-red-400 text-red-600 hover:bg-red-600 hover:text-white font-semibold"
-                  data-testid="button-logout"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <GoogleHeaderLoginButton />
-                <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5 text-primary" />
-                      Login to No Word Limit
-                    </DialogTitle>
-                    <DialogDescription>
-                      Sign in with your Google account to save your profiles and analysis history.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <GoogleLoginButton />
-                  </div>
-                </DialogContent>
-              </Dialog>
-              </div>
-            )}
           </div>
         </div>
       </header>

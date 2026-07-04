@@ -22,13 +22,12 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup Google OAuth authentication
+  // Setup sessions (no login system; app is fully open)
   setupAuth(app);
 
-  // Google-only identity enforcement: the acting username is ALWAYS derived
-  // from the authenticated session, never trusted from the client. Signed-out
-  // requests carry no username, so per-user data (history, saved authors,
-  // stylometrics) is inaccessible without signing in with Google.
+  // Identity enforcement: the acting username is ALWAYS derived from the
+  // server session, never trusted from the client. With no login system,
+  // requests carry no username, so per-user data endpoints are inert.
   app.use("/api", (req, _res, next) => {
     const authed =
       typeof req.isAuthenticated === "function" && req.isAuthenticated() && !!req.user;
@@ -104,8 +103,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             needsCredits: true
           });
         }
-      } else if (!username) {
-        return res.status(401).json({ error: "Please log in to use analysis features" });
       }
 
       const result = await analyzeText(text, provider, functionType);
@@ -184,8 +181,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
             needsCredits: true
           });
         }
-      } else if (!username) {
-        return res.status(401).json({ error: "Please log in to use analysis features" });
       }
 
       res.writeHead(200, {
@@ -1371,9 +1366,6 @@ Output the refined document now:`;
         return res.status(400).json({ error: "Text is required" });
       }
 
-      // Same gating as analysis endpoints: credits for logged-in users, username otherwise.
-      // Bypassed in development (matches the app-wide dev paywall bypass).
-      const ttsIsDev = process.env.NODE_ENV !== "production";
       let ttsUserId: number | null = null;
       if (req.isAuthenticated && req.isAuthenticated() && req.user) {
         ttsUserId = req.user.id;
@@ -1384,8 +1376,6 @@ Output the refined document now:`;
             needsCredits: true,
           });
         }
-      } else if (!ttsIsDev && (!username || typeof username !== "string" || username.trim().length < 2)) {
-        return res.status(401).json({ error: "Please log in to use text-to-audio" });
       }
       if (text.length > 50000) {
         return res.status(400).json({ error: "Text is too long (max 50,000 characters). Split it into parts." });
