@@ -132,30 +132,39 @@ function useGoogleSignIn() {
       clerk.openSignIn();
       return;
     }
+    // The popup flow requires absolute URLs.
+    const origin = window.location.origin;
+    const redirectUrl = `${origin}/sso-callback`;
+    const redirectUrlComplete = `${origin}/`;
     if (typeof signIn.authenticateWithPopup === "function") {
       const popup = window.open("", "_blank", "width=600,height=720");
-      try {
-        await signIn.authenticateWithPopup({
-          strategy: "oauth_google",
-          redirectUrl: "/sso-callback",
-          redirectUrlComplete: "/",
-          popup,
-        });
+      if (popup) {
+        try {
+          await signIn.authenticateWithPopup({
+            strategy: "oauth_google",
+            redirectUrl,
+            redirectUrlComplete,
+            popup,
+          });
+        } catch (e) {
+          // Do NOT fall back to a redirect here: inside the embedded preview
+          // iframe a redirect hits Google's 403 frame-blocking. The user can
+          // simply click the button again (e.g. if they closed the popup).
+          console.error("Google popup sign-in failed", e);
+          try { popup.close(); } catch {}
+        }
         return;
-      } catch (e) {
-        console.error("Google popup sign-in failed, falling back to redirect", e);
-        try { popup?.close(); } catch {}
       }
     }
+    // Popup API unavailable or popup blocked: use a full-page redirect.
     try {
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrl,
+        redirectUrlComplete,
       });
     } catch (e) {
-      console.error("Google sign-in failed, falling back to Clerk modal", e);
-      clerk.openSignIn();
+      console.error("Google redirect sign-in failed", e);
     }
   };
   return signInWithGoogle;
