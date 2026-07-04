@@ -2,7 +2,6 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
-import { createClerkClient, verifyToken } from "@clerk/express";
 import type { Express, RequestHandler } from "express";
 import { storage } from "./storage";
 import pg from "pg";
@@ -25,18 +24,25 @@ export function setupAuth(app: Express) {
   const sanitizeSecret = (v?: string) =>
     (v || "").replace(/[\u00A0\u200B\u200C\u200D\uFEFF]/g, "").trim();
 
-  const clientID = sanitizeSecret(process.env.GOOGLE_CLIENT_ID);
-  const clientSecret = sanitizeSecret(process.env.GOOGLE_CLIENT_SECRET);
-  const clerkSecretKey = sanitizeSecret(process.env.CLERK_SECRET_KEY);
+  // Shared Google OAuth client credentials from the owner's Account Vault.
+  // GOOGLE_OAUTH_CLIENT_ID / GOOGLE_OAUTH_CLIENT_SECRET are the canonical names;
+  // fall back to GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET if present.
+  const clientID = sanitizeSecret(
+    process.env.GOOGLE_OAUTH_CLIENT_ID || process.env.GOOGLE_CLIENT_ID
+  );
+  const clientSecret = sanitizeSecret(
+    process.env.GOOGLE_OAUTH_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET
+  );
 
   const googleEnabled = !!(clientID && clientSecret);
-  const clerkEnabled = !!clerkSecretKey;
 
   if (!googleEnabled) {
-    console.warn("Google OAuth credentials not found. Google login disabled.");
+    console.warn(
+      "Google OAuth credentials not found (GOOGLE_OAUTH_CLIENT_ID / GOOGLE_OAUTH_CLIENT_SECRET). Google login disabled."
+    );
   }
 
-  // Trust proxy for production (behind Render/nginx)
+  // Trust proxy for production (behind Replit's proxy)
   app.set('trust proxy', 1);
 
   // Database-backed session store
@@ -101,19 +107,19 @@ export function setupAuth(app: Express) {
     }
   });
 
-  // --- Google OAuth (legacy, kept while credentials exist) ---
+  // --- Direct Google OAuth 2.0 (the ONLY login method) ---
   if (googleEnabled) {
     const getCallbackURL = () => {
       if (process.env.NODE_ENV === "production") {
-        return "https://textsurgeon.com/auth/google/callback";
+        const prodDomain = (process.env.REPLIT_DOMAINS || "")
+          .split(",")[0]
+          ?.trim();
+        return `https://${prodDomain || "textsurgeonplus.xyz"}/api/auth/google/callback`;
       }
       if (process.env.REPLIT_DEV_DOMAIN) {
-        return `https://${process.env.REPLIT_DEV_DOMAIN}/auth/google/callback`;
+        return `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/google/callback`;
       }
-      if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        return `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co/auth/google/callback`;
-      }
-      return "http://localhost:5000/auth/google/callback";
+      return "http://localhost:5000/api/auth/google/callback";
     };
 
     passport.use(
@@ -122,6 +128,7 @@ export function setupAuth(app: Express) {
           clientID,
           clientSecret,
           callbackURL: getCallbackURL(),
+          state: true, // CSRF protection via session-stored state parameter
           passReqToCallback: false,
         } as any,
         async (accessToken, refreshToken, profile, done) => {
@@ -172,12 +179,30 @@ export function setupAuth(app: Express) {
       )
     );
 
-    app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
-
+    // Click 1: button links here -> 302 straight to Google's account chooser
     app.get(
-      "/auth/google/callback",
+      "/api/auth/google",
+      passport.authenticate("google", {
+        scope: ["openid", "email", "profile"],
+        prompt: "select_account",
+      })
+    );
+
+    // Click 2 happens on Google; the callback lands the user inside the app
+    app.get(
+      "/api/auth/google/callback",
       passport.authenticate("google", { failureRedirect: "/?error=auth_failed" }),
       (req, res) => {
+        // Record a login event on every successful sign-in
+        (async () => {
+          try {
+            if (req.user) {
+              await storage.recordVisit(req.user.id, req.user.email ?? null);
+            }
+          } catch (visitErr) {
+            console.error("Failed to record login event:", visitErr);
+          }
+        })();
         req.session.save(() => {
           res.redirect("/");
         });
@@ -185,94 +210,6 @@ export function setupAuth(app: Express) {
     );
 
     console.log("Google OAuth configured. Callback URL:", getCallbackURL());
-  }
-
-  // --- Clerk authentication ---
-  if (clerkEnabled) {
-    const clerkClient = createClerkClient({ secretKey: clerkSecretKey });
-
-    app.post("/api/auth/clerk-sync", async (req, res) => {
-      try {
-        const authHeader = req.headers.authorization || "";
-        const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-        if (!token) {
-          return res.status(401).json({ error: "Missing Clerk session token" });
-        }
-
-        const payload = await verifyToken(token, { secretKey: clerkSecretKey });
-        if (!payload?.sub) {
-          return res.status(401).json({ error: "Invalid Clerk session token" });
-        }
-
-        const clerkUser = await clerkClient.users.getUser(payload.sub);
-        const email =
-          clerkUser.emailAddresses?.find((e) => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ||
-          clerkUser.emailAddresses?.[0]?.emailAddress ||
-          null;
-        const displayName =
-          [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") ||
-          clerkUser.username ||
-          email ||
-          null;
-        const clerkId = `clerk:${clerkUser.id}`;
-
-        // Find or create a local user (reuses the googleId column for the Clerk ID)
-        let user = await storage.getUserByGoogleId(clerkId);
-        if (!user && email) {
-          user = await storage.getUserByEmail(email);
-          if (user) {
-            user = await storage.updateUserGoogle(user.id, { googleId: clerkId, displayName });
-          }
-        }
-        if (!user) {
-          const username = email?.split("@")[0] || clerkUser.username || `user_${clerkUser.id.slice(-8)}`;
-          user = await storage.createUserWithGoogle({
-            username,
-            googleId: clerkId,
-            email,
-            displayName,
-          });
-          console.log(`Clerk: Created new user ${user.id} (${user.username})`);
-        }
-
-        req.login(user, (err) => {
-          if (err) {
-            console.error("Clerk session login error:", err);
-            return res.status(500).json({ error: "Failed to establish session" });
-          }
-          // Record a visit (throttled: at most one per 30 minutes per user)
-          (async () => {
-            try {
-              const last = await storage.getLastVisit(user!.id);
-              const THROTTLE_MS = 30 * 60 * 1000;
-              if (!last || Date.now() - new Date(last.visitedAt).getTime() > THROTTLE_MS) {
-                await storage.recordVisit(user!.id, user!.email);
-              }
-            } catch (visitErr) {
-              console.error("Failed to record visit:", visitErr);
-            }
-          })();
-          req.session.save(() => {
-            res.json({
-              authenticated: true,
-              user: {
-                id: user!.id,
-                username: user!.username,
-                email: user!.email,
-                displayName: user!.displayName,
-              },
-            });
-          });
-        });
-      } catch (error) {
-        console.error("Clerk sync error:", error);
-        res.status(401).json({ error: "Clerk authentication failed" });
-      }
-    });
-
-    console.log("Clerk authentication configured.");
-  } else {
-    console.warn("CLERK_SECRET_KEY not found. Clerk login disabled.");
   }
 
   app.get("/api/auth/user", (req, res) => {
@@ -291,12 +228,28 @@ export function setupAuth(app: Express) {
     }
   });
 
+  app.get("/api/auth/me", (req, res) => {
+    if (req.isAuthenticated() && req.user) {
+      res.json({
+        id: req.user.id,
+        username: req.user.username,
+        email: req.user.email,
+        displayName: req.user.displayName,
+      });
+    } else {
+      res.status(401).json({ error: "Not authenticated" });
+    }
+  });
+
   app.post("/api/auth/logout", (req, res) => {
     req.logout((err) => {
       if (err) {
         return res.status(500).json({ error: "Logout failed" });
       }
-      res.json({ success: true });
+      req.session.destroy(() => {
+        res.clearCookie("connect.sid");
+        res.json({ success: true });
+      });
     });
   });
 

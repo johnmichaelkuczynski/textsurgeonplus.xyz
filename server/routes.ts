@@ -24,6 +24,31 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup Google OAuth authentication
   setupAuth(app);
+
+  // Google-only identity enforcement: the acting username is ALWAYS derived
+  // from the authenticated session, never trusted from the client. Signed-out
+  // requests carry no username, so per-user data (history, saved authors,
+  // stylometrics) is inaccessible without signing in with Google.
+  app.use("/api", (req, _res, next) => {
+    const authed =
+      typeof req.isAuthenticated === "function" && req.isAuthenticated() && !!req.user;
+    if (authed) {
+      if (req.body && typeof req.body === "object" && !Array.isArray(req.body)) {
+        req.body.username = req.user!.username;
+      }
+      if (req.query && typeof req.query === "object" && "username" in req.query) {
+        (req.query as Record<string, unknown>).username = req.user!.username;
+      }
+    } else {
+      if (req.body && typeof req.body === "object" && !Array.isArray(req.body)) {
+        delete req.body.username;
+      }
+      if (req.query && typeof req.query === "object") {
+        delete (req.query as Record<string, unknown>).username;
+      }
+    }
+    next();
+  });
   
   const { analyzeText, analyzeTextStreaming, callLLM } = await import("./llm");
 
@@ -1409,36 +1434,6 @@ Output the refined document now:`;
     } catch (error) {
       console.error("TTS error:", error);
       res.status(500).json({ error: error instanceof Error ? error.message : "Audio generation failed" });
-    }
-  });
-
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const { username } = req.body;
-
-      if (!username || typeof username !== "string" || username.trim().length < 2) {
-        return res.status(400).json({ 
-          error: "Username must be at least 2 characters" 
-        });
-      }
-
-      const cleanUsername = username.trim().toLowerCase();
-      
-      let user = await storage.getUserByUsername(cleanUsername);
-      
-      if (!user) {
-        user = await storage.createUser({ username: cleanUsername });
-      }
-      
-      res.json({ 
-        success: true, 
-        user: { id: user.id, username: user.username } 
-      });
-    } catch (error: any) {
-      console.error("Login error:", error);
-      res.status(500).json({ 
-        error: error.message || "Login failed" 
-      });
     }
   });
 

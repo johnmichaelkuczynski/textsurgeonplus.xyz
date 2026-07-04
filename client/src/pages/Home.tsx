@@ -10,6 +10,7 @@ import {
   ChevronRight, 
   Sparkles,
   Stethoscope,
+  Loader2,
   Quote,
   AlignLeft,
   Database,
@@ -84,130 +85,63 @@ import {
   ResizableDialogDescription,
 } from "@/components/ui/resizable-dialog";
 import { analyzeText, analyzeTextStreaming, AnalysisResult, measureIntelligence, compareIntelligence, IntelligenceResult, IntelligenceCompareResult } from "@/lib/llm";
-import { useClerk, useUser, useAuth as useClerkAuth } from "@clerk/clerk-react";
-
-const CLERK_ENABLED = ((import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string) || "").startsWith("pk_");
-
-function ClerkAuthBridge({ onSynced }: { onSynced: (user: { username: string; displayName?: string | null; email?: string | null }) => void }) {
-  const { isSignedIn } = useUser();
-  const { getToken } = useClerkAuth();
-  const syncedRef = useRef(false);
-
-  useEffect(() => {
-    if (!isSignedIn) {
-      syncedRef.current = false;
-      return;
-    }
-    if (syncedRef.current) return;
-    syncedRef.current = true;
-    (async () => {
-      try {
-        const token = await getToken();
-        if (!token) return;
-        const res = await fetch("/api/auth/clerk-sync", {
-          method: "POST",
-          credentials: "include",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          if (data.user) onSynced(data.user);
-        }
-      } catch (e) {
-        console.error("Clerk sync failed:", e);
-      }
-    })();
-  }, [isSignedIn, getToken, onSynced]);
-
-  return null;
+function GoogleGIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+    </svg>
+  );
 }
 
-function useGoogleSignIn() {
-  const clerk = useClerk();
-  const signInWithGoogle = async () => {
-    // Google blocks its login page inside embedded frames, so open a popup
-    // window (top-level) for the OAuth flow whenever possible.
-    const signIn = clerk.client?.signIn as any;
-    if (!signIn) {
-      clerk.openSignIn();
-      return;
+// Plain link to the server's OAuth route: one click -> 302 to Google.
+// Google blocks framed login, and the Replit preview iframe can also block
+// top-level navigation. If the app is embedded in ANY iframe, open the OAuth
+// flow in a new tab instead; a window-focus listener re-checks the session
+// when the user returns.
+function handleGoogleLoginClick(e: React.MouseEvent<HTMLAnchorElement>) {
+  try {
+    if (window.self !== window.top) {
+      e.preventDefault();
+      window.open("/api/auth/google", "_blank", "noopener");
     }
-    // The popup flow requires absolute URLs.
-    const origin = window.location.origin;
-    const redirectUrl = `${origin}/sso-callback`;
-    const redirectUrlComplete = `${origin}/`;
-    if (typeof signIn.authenticateWithPopup === "function") {
-      const popup = window.open("", "_blank", "width=600,height=720");
-      if (popup) {
-        try {
-          await signIn.authenticateWithPopup({
-            strategy: "oauth_google",
-            redirectUrl,
-            redirectUrlComplete,
-            popup,
-          });
-        } catch (e) {
-          // Do NOT fall back to a redirect here: inside the embedded preview
-          // iframe a redirect hits Google's 403 frame-blocking. The user can
-          // simply click the button again (e.g. if they closed the popup).
-          console.error("Google popup sign-in failed", e);
-          try { popup.close(); } catch {}
-        }
-        return;
-      }
-    }
-    // Popup API unavailable or popup blocked: use a full-page redirect.
-    try {
-      await signIn.authenticateWithRedirect({
-        strategy: "oauth_google",
-        redirectUrl,
-        redirectUrlComplete,
-      });
-    } catch (e) {
-      console.error("Google redirect sign-in failed", e);
-    }
-  };
-  return signInWithGoogle;
+  } catch {
+    // Cross-origin access to window.top can throw: we ARE in an iframe.
+    e.preventDefault();
+    window.open("/api/auth/google", "_blank", "noopener");
+  }
 }
 
-function ClerkSignInButton() {
-  const signInWithGoogle = useGoogleSignIn();
+function GoogleLoginButton() {
   return (
     <Button
-      type="button"
-      onClick={signInWithGoogle}
+      asChild
       className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm"
-      data-testid="button-clerk-login"
+      data-testid="button-google-login"
     >
-      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Sign in with Google
+      <a href="/api/auth/google" target="_top" onClick={handleGoogleLoginClick}>
+        <GoogleGIcon className="w-5 h-5 mr-2" />
+        Sign in with Google
+      </a>
     </Button>
   );
 }
 
-function ClerkHeaderLoginButton() {
-  const signInWithGoogle = useGoogleSignIn();
+function GoogleHeaderLoginButton() {
   return (
     <Button
-      type="button"
+      asChild
       variant="outline"
       size="sm"
-      onClick={signInWithGoogle}
       className="h-10 text-sm gap-2 border-2 border-primary text-primary hover:bg-primary hover:text-white"
       data-testid="button-login"
     >
-      <svg className="w-4 h-4" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
-      Sign in with Google
+      <a href="/api/auth/google" target="_top" onClick={handleGoogleLoginClick}>
+        <GoogleGIcon className="w-4 h-4" />
+        Sign in with Google
+      </a>
     </Button>
   );
 }
@@ -406,9 +340,8 @@ export default function Home() {
   
   const [username, setUsername] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [loginInput, setLoginInput] = useState("");
+  const [authChecked, setAuthChecked] = useState(false);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [userCredits, setUserCredits] = useState<number>(0);
   const [isBuyingCredits, setIsBuyingCredits] = useState(false);
   
@@ -623,32 +556,45 @@ export default function Home() {
         if (data.authenticated && data.user) {
           setUsername(data.user.displayName || data.user.username);
           setUserEmail(data.user.email || null);
-          localStorage.setItem('tis_username', data.user.displayName || data.user.username);
           loadSavedAuthors(data.user.displayName || data.user.username);
           // Fetch credits for authenticated users
           fetch('/api/credits', { credentials: 'include' })
             .then(res => res.json())
             .then(creditsData => setUserCredits(creditsData.credits || 0))
             .catch(() => {});
-        } else if (!CLERK_ENABLED) {
-          // Fall back to localStorage username (only when Google login is unavailable)
-          const savedUsername = localStorage.getItem('tis_username');
-          if (savedUsername) {
-            setUsername(savedUsername);
-            loadSavedAuthors(savedUsername);
-          }
         }
+        setAuthChecked(true);
       })
-      .catch(() => {
-        if (!CLERK_ENABLED) {
-          const savedUsername = localStorage.getItem('tis_username');
-          if (savedUsername) {
-            setUsername(savedUsername);
-            loadSavedAuthors(savedUsername);
-          }
-        }
-      });
+      .catch(() => setAuthChecked(true));
   }, []);
+
+  // When login happens in a separate tab (preview iframe case), pick up the
+  // new session as soon as the user comes back to this tab.
+  useEffect(() => {
+    if (username) return;
+    const recheck = () => {
+      fetch('/api/auth/user', { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.authenticated && data.user) {
+            setUsername(data.user.displayName || data.user.username);
+            setUserEmail(data.user.email || null);
+            loadSavedAuthors(data.user.displayName || data.user.username);
+            fetch('/api/credits', { credentials: 'include' })
+              .then(res => res.json())
+              .then(creditsData => setUserCredits(creditsData.credits || 0))
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+    };
+    window.addEventListener('focus', recheck);
+    document.addEventListener('visibilitychange', recheck);
+    return () => {
+      window.removeEventListener('focus', recheck);
+      document.removeEventListener('visibilitychange', recheck);
+    };
+  }, [username]);
   
   useEffect(() => {
     if (username) {
@@ -756,70 +702,16 @@ export default function Home() {
     }
   };
 
-  const handleLogin = async () => {
-    if (!loginInput.trim() || loginInput.trim().length < 2) {
-      toast({
-        title: "Invalid username",
-        description: "Username must be at least 2 characters",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsLoggingIn(true);
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username: loginInput.trim() })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setUsername(data.user.username);
-        localStorage.setItem('tis_username', data.user.username);
-        setShowLoginDialog(false);
-        setLoginInput("");
-        loadSavedAuthors(data.user.username);
-        toast({
-          title: "Welcome!",
-          description: `Logged in as ${data.user.username}`,
-        });
-      } else {
-        throw new Error("Login failed");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Login failed",
-        description: error.message || "Please try again",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
   const handleLogout = async () => {
     // Clear local state immediately so the UI reflects logout right away
     setUsername(null);
     setUserEmail(null);
     setUserCredits(0);
-    localStorage.removeItem('tis_username');
     setSavedAuthors([]);
     setHistoryItems([]);
-    // Logout from server session
+    // Logout from server session, then hard-reload to guarantee a clean state
     try {
       await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch (e) {
-      // Ignore errors
-    }
-    // Logout from Clerk (Google), then hard-reload to guarantee a clean state
-    try {
-      const clerk = (window as any).Clerk;
-      if (clerk?.signOut) {
-        await clerk.signOut();
-      }
     } catch (e) {
       // Ignore errors
     }
@@ -4141,21 +4033,37 @@ ${parsed.analyzer}`);
     else setIsDraggingIntelB(false);
   };
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!username) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-4">
+        <div className="flex flex-col items-center gap-6 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-secondary text-white rounded-2xl flex items-center justify-center shadow-lg">
+            <Stethoscope className="w-9 h-9" />
+          </div>
+          <div>
+            <h1 className="font-bold text-4xl tracking-tight text-foreground">TEXT SURGEON</h1>
+            <p className="mt-3 text-muted-foreground text-lg">
+              Advanced text analysis with no word limit. Sign in to get started.
+            </p>
+          </div>
+          <div className="w-full max-w-xs">
+            <GoogleLoginButton />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
-      {CLERK_ENABLED && (
-        <ClerkAuthBridge
-          onSynced={(user) => {
-            const name = user.displayName || user.username;
-            setUsername(name);
-            setUserEmail(user.email || null);
-            localStorage.setItem('tis_username', name);
-            setShowLoginDialog(false);
-            loadSavedAuthors(name);
-            fetchCredits();
-          }}
-        />
-      )}
       <header className="border-b-4 border-primary sticky top-0 z-50 bg-white shadow-lg">
         <div className="w-full px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -4245,21 +4153,8 @@ ${parsed.analyzer}`);
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                {CLERK_ENABLED && <ClerkHeaderLoginButton />}
+                <GoogleHeaderLoginButton />
                 <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-                  {!CLERK_ENABLED && (
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-10 text-sm gap-2 border-2 border-primary text-primary hover:bg-primary hover:text-white"
-                        data-testid="button-login"
-                      >
-                        <LogIn className="w-4 h-4" />
-                        Login
-                      </Button>
-                    </DialogTrigger>
-                  )}
                 <DialogContent className="sm:max-w-md">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
@@ -4271,32 +4166,7 @@ ${parsed.analyzer}`);
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
-                    {CLERK_ENABLED ? (
-                      <ClerkSignInButton />
-                    ) : (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="username">Username (simple login)</Label>
-                          <Input
-                            id="username"
-                            placeholder="Enter your username"
-                            value={loginInput}
-                            onChange={(e) => setLoginInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                            data-testid="input-username"
-                          />
-                        </div>
-                        <Button
-                          onClick={handleLogin}
-                          disabled={isLoggingIn}
-                          className="w-full"
-                          variant="outline"
-                          data-testid="button-submit-login"
-                        >
-                          {isLoggingIn ? "Logging in..." : "Continue with Username"}
-                        </Button>
-                      </>
-                    )}
+                    <GoogleLoginButton />
                   </div>
                 </DialogContent>
               </Dialog>
