@@ -124,10 +124,26 @@ function ClerkAuthBridge({ onSynced }: { onSynced: (user: { username: string; di
 
 function ClerkSignInButton() {
   const clerk = useClerk();
+  const signInWithGoogle = async () => {
+    try {
+      if (!clerk.client?.signIn) {
+        clerk.openSignIn();
+        return;
+      }
+      await clerk.client.signIn.authenticateWithRedirect({
+        strategy: "oauth_google",
+        redirectUrl: "/sso-callback",
+        redirectUrlComplete: "/",
+      });
+    } catch (e) {
+      console.error("Google sign-in failed, falling back to Clerk modal", e);
+      clerk.openSignIn();
+    }
+  };
   return (
     <Button
       type="button"
-      onClick={() => clerk.openSignIn()}
+      onClick={signInWithGoogle}
       className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 shadow-sm"
       data-testid="button-clerk-login"
     >
@@ -137,7 +153,7 @@ function ClerkSignInButton() {
         <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
         <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
       </svg>
-      Sign in with Google / Email
+      Sign in with Google
     </Button>
   );
 }
@@ -560,8 +576,8 @@ export default function Home() {
             .then(res => res.json())
             .then(creditsData => setUserCredits(creditsData.credits || 0))
             .catch(() => {});
-        } else {
-          // Fall back to localStorage username
+        } else if (!CLERK_ENABLED) {
+          // Fall back to localStorage username (only when Google login is unavailable)
           const savedUsername = localStorage.getItem('tis_username');
           if (savedUsername) {
             setUsername(savedUsername);
@@ -570,11 +586,12 @@ export default function Home() {
         }
       })
       .catch(() => {
-        // Fall back to localStorage username
-        const savedUsername = localStorage.getItem('tis_username');
-        if (savedUsername) {
-          setUsername(savedUsername);
-          loadSavedAuthors(savedUsername);
+        if (!CLERK_ENABLED) {
+          const savedUsername = localStorage.getItem('tis_username');
+          if (savedUsername) {
+            setUsername(savedUsername);
+            loadSavedAuthors(savedUsername);
+          }
         }
       });
   }, []);
@@ -730,24 +747,29 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
-    // Also logout from server session and Clerk
-    try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-    } catch (e) {
-      // Ignore errors
-    }
-    try {
-      await (window as any).Clerk?.signOut();
-    } catch (e) {
-      // Ignore errors
-    }
+    // Clear local state immediately so the UI reflects logout right away
     setUsername(null);
     setUserEmail(null);
     setUserCredits(0);
     localStorage.removeItem('tis_username');
     setSavedAuthors([]);
     setHistoryItems([]);
-    toast({ description: "Logged out successfully" });
+    // Logout from server session
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } catch (e) {
+      // Ignore errors
+    }
+    // Logout from Clerk (Google), then hard-reload to guarantee a clean state
+    try {
+      const clerk = (window as any).Clerk;
+      if (clerk?.signOut) {
+        await clerk.signOut();
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+    window.location.href = '/';
   };
 
   const fetchCredits = async () => {
@@ -4157,13 +4179,14 @@ ${parsed.analyzer}`);
                   History
                 </Button>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={handleLogout}
-                  className="h-8 text-muted-foreground hover:text-destructive"
+                  className="h-8 gap-1 border-2 border-red-400 text-red-600 hover:bg-red-600 hover:text-white font-semibold"
                   data-testid="button-logout"
                 >
                   <LogOut className="w-4 h-4" />
+                  Logout
                 </Button>
               </div>
             ) : (
@@ -4187,41 +4210,36 @@ ${parsed.analyzer}`);
                       Login to No Word Limit
                     </DialogTitle>
                     <DialogDescription>
-                      Enter a username to save your stylometric profiles and analysis history.
+                      Sign in with your Google account to save your profiles and analysis history.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 pt-4">
-                    {CLERK_ENABLED && <ClerkSignInButton />}
-                    
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">Or</span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username (simple login)</Label>
-                      <Input
-                        id="username"
-                        placeholder="Enter your username"
-                        value={loginInput}
-                        onChange={(e) => setLoginInput(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                        data-testid="input-username"
-                      />
-                    </div>
-                    <Button
-                      onClick={handleLogin}
-                      disabled={isLoggingIn}
-                      className="w-full"
-                      variant="outline"
-                      data-testid="button-submit-login"
-                    >
-                      {isLoggingIn ? "Logging in..." : "Continue with Username"}
-                    </Button>
+                    {CLERK_ENABLED ? (
+                      <ClerkSignInButton />
+                    ) : (
+                      <>
+                        <div className="space-y-2">
+                          <Label htmlFor="username">Username (simple login)</Label>
+                          <Input
+                            id="username"
+                            placeholder="Enter your username"
+                            value={loginInput}
+                            onChange={(e) => setLoginInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                            data-testid="input-username"
+                          />
+                        </div>
+                        <Button
+                          onClick={handleLogin}
+                          disabled={isLoggingIn}
+                          className="w-full"
+                          variant="outline"
+                          data-testid="button-submit-login"
+                        >
+                          {isLoggingIn ? "Logging in..." : "Continue with Username"}
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </DialogContent>
               </Dialog>
