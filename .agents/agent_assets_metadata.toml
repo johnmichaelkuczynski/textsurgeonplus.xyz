@@ -1,0 +1,26 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "LpHERPpJU5NUt0xYLL8OE"
+uri = "file://promo/audio/vo.mp3"
+type = "audio"
+title = "textsurgeon promo vo2"
+
+[[outputs]]
+id = "J9eXt0LdWBOw3ni-Qbpsk"
+uri = "file://promo/audio/music.mp3"
+type = "audio"
+title = "textsurgeon promo bed"
+
+[[outputs]]
+id = "hYoWkliBld0krlJFJ9YYt"
+uri = "file://promo/out/TextSurgeon_promo.mp4"
+type = "video"
+title = "Text Surgeon — 47s Promo Video (1080p)"
+
+[[outputs]]
+id = "VQQKuaOP0TFlCzGBZOg5d"
+uri = "file://promo/out/youtube_description.txt"
+type = "text"
+title = "YouTube Description"

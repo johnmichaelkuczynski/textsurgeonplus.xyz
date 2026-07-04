@@ -1,0 +1,28 @@
+Text Surgeon — The AI Workbench for Serious Reading
+
+Stop skimming. Start dissecting. Text Surgeon turns walls of text into structure you can actually use. Paste any document, pick your AI model, and pull out exactly what matters — in seconds.
+
+▶ WHAT IT DOES
+• Quote Extraction — every key quote, pulled word-for-word and properly attributed to its author. No paraphrasing, no hallucinated sources.
+• Tractatus Tree — break a dense text into a clear, multi-level map of its ideas, exposing the hidden architecture of the argument.
+• Arguments Finder — surface formal premises, conclusions, and counterarguments.
+• Structured Summaries — adjustable resolution, from a two-paragraph overview to a section-by-section breakdown.
+• Full Document Rewrite & Long-Form Answers — generate massive, coherent output with no word limit.
+• Stylometrics, Intelligence Metering, Position Extraction, and more.
+
+▶ BUILT FOR
+Philosophy, law, research, journalism, and anyone who reads hard things closely.
+
+▶ WHY IT'S DIFFERENT
+Multiple LLM providers (OpenAI, Anthropic, Grok, Perplexity, DeepSeek), deterministic output, and verbatim quote extraction you can trust.
+
+⏱ CHAPTERS
+0:00 Meet Text Surgeon
+0:04 Paste any document, pick your model
+0:11 Extract every quote, fully attributed
+0:25 Map the architecture of any argument
+0:39 Analyze anything — no word limit
+
+Text Surgeon. Analyze anything.
+
+#AI #TextAnalysis #Productivity #Research #LLM #Writing #Philosophy #ProductivityTools

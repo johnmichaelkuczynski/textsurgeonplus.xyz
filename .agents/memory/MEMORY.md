@@ -1,0 +1,1 @@
+- [Auth setup quirks](auth-setup-quirks.md) — Clerk replaced broken Google OAuth; validate pasted secret prefixes (pk_/sk_) before trusting them, users have pasted wrong tokens.
