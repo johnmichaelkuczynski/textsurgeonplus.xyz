@@ -125,12 +125,30 @@ function ClerkAuthBridge({ onSynced }: { onSynced: (user: { username: string; di
 function ClerkSignInButton() {
   const clerk = useClerk();
   const signInWithGoogle = async () => {
-    try {
-      if (!clerk.client?.signIn) {
-        clerk.openSignIn();
+    // Google blocks its login page inside embedded frames, so open a popup
+    // window (top-level) for the OAuth flow whenever possible.
+    const signIn = clerk.client?.signIn as any;
+    if (!signIn) {
+      clerk.openSignIn();
+      return;
+    }
+    if (typeof signIn.authenticateWithPopup === "function") {
+      const popup = window.open("", "_blank", "width=600,height=720");
+      try {
+        await signIn.authenticateWithPopup({
+          strategy: "oauth_google",
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/",
+          popup,
+        });
         return;
+      } catch (e) {
+        console.error("Google popup sign-in failed, falling back to redirect", e);
+        try { popup?.close(); } catch {}
       }
-      await clerk.client.signIn.authenticateWithRedirect({
+    }
+    try {
+      await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
         redirectUrlComplete: "/",
