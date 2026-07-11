@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Users, Clock, CalendarDays, CalendarRange, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Users, Clock, CalendarDays, CalendarRange, ShieldAlert, CalendarCheck } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -20,11 +20,13 @@ type AdminVisitsResponse = {
   stats: {
     allTime: number;
     last24Hours: number;
+    lastWeek: number;
     lastMonth: number;
     lastYear: number;
   };
   series: {
     last24Hours: SeriesPoint[];
+    lastWeek: SeriesPoint[];
     lastMonth: SeriesPoint[];
     lastYear: SeriesPoint[];
     allTime: SeriesPoint[];
@@ -50,7 +52,7 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: n
         <div className="text-3xl font-bold" data-testid={`text-stat-${title.toLowerCase().replace(/\s+/g, "-")}`}>
           {value.toLocaleString()}
         </div>
-        <p className="text-xs text-muted-foreground mt-1">visits</p>
+        <p className="text-xs text-muted-foreground mt-1">Google logins</p>
       </CardContent>
     </Card>
   );
@@ -95,8 +97,8 @@ export default function Administrative() {
     return (
       <div className="min-h-screen bg-background p-10">
         <Skeleton className="h-10 w-64 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32" />)}
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-32" />)}
         </div>
       </div>
     );
@@ -137,20 +139,22 @@ export default function Administrative() {
 
       <main className="p-10 space-y-8 max-w-7xl mx-auto">
         {isLoading || !data ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32" />)}
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-32" />)}
           </div>
         ) : (
           <>
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               <StatCard title="All Time" value={data.stats.allTime} icon={Users} color="text-primary" />
               <StatCard title="Last 24 Hours" value={data.stats.last24Hours} icon={Clock} color="text-green-600" />
+              <StatCard title="Last Week" value={data.stats.lastWeek} icon={CalendarCheck} color="text-blue-600" />
               <StatCard title="Last Month" value={data.stats.lastMonth} icon={CalendarDays} color="text-amber-600" />
               <StatCard title="Last Year" value={data.stats.lastYear} icon={CalendarRange} color="text-rose-600" />
             </section>
 
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <VisitChart title="Last 24 Hours (by hour)" data={data.series.last24Hours} />
+              <VisitChart title="Last 7 Days (by day)" data={data.series.lastWeek} />
               <VisitChart title="Last Month (by day)" data={data.series.lastMonth} />
               <VisitChart title="Last Year (by month)" data={data.series.lastYear} />
               <VisitChart title="All Time" data={data.series.allTime} />
@@ -159,19 +163,19 @@ export default function Administrative() {
             <section>
               <Card className="shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold">Recent Visitors (by Gmail)</CardTitle>
+                  <CardTitle className="text-lg font-semibold">Login History (by Gmail)</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {data.visits.length === 0 ? (
-                    <p className="text-muted-foreground py-6 text-center">No visits recorded yet. Visits are logged each time someone signs in with Google.</p>
+                    <p className="text-muted-foreground py-6 text-center">No logins recorded yet. Each Google sign-in is logged here.</p>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b text-left text-muted-foreground">
                             <th className="py-2 pr-4 font-semibold">#</th>
-                            <th className="py-2 pr-4 font-semibold">Email</th>
-                            <th className="py-2 font-semibold">Visited At</th>
+                            <th className="py-2 pr-4 font-semibold">Gmail</th>
+                            <th className="py-2 font-semibold">When</th>
                           </tr>
                         </thead>
                         <tbody>

@@ -307,6 +307,7 @@ function buildAccumulatedDisplay(
 }
 
 export default function Home() {
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [text, setText] = useState("");
   const [selectedLLM, setSelectedLLM] = useState<LLM>("deepseek");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -533,7 +534,6 @@ export default function Home() {
   const needsChunking = wordCount > CHUNK_SIZE;
   
   useEffect(() => {
-    // Pick up an existing Google session (login is optional)
     fetch('/api/auth/user', { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
@@ -546,8 +546,9 @@ export default function Home() {
             .then(creditsData => setUserCredits(creditsData.credits || 0))
             .catch(() => {});
         }
+        setAuthLoaded(true);
       })
-      .catch(() => {});
+      .catch(() => { setAuthLoaded(true); });
   }, []);
 
   // When login happens in a separate tab (preview iframe case), pick up the
@@ -3995,6 +3996,44 @@ ${parsed.analyzer}`);
     if (target === 'A') setIsDraggingIntelA(false);
     else setIsDraggingIntelB(false);
   };
+
+  // Login wall — show spinner while checking, then login screen if not authed
+  if (!authLoaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!username) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full flex flex-col items-center gap-8 border border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary text-white rounded-xl flex items-center justify-center shadow-lg">
+              <Stethoscope className="w-7 h-7" />
+            </div>
+            <h1 className="font-bold text-3xl tracking-tight text-foreground">TEXT SURGEON</h1>
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-lg font-semibold text-foreground">Sign in to continue</p>
+            <p className="text-sm text-muted-foreground">Access is restricted to authorised users.</p>
+          </div>
+          <a
+            href="/api/auth/google"
+            target="_top"
+            onClick={handleGoogleLoginClick}
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:border-primary hover:shadow-md rounded-xl px-6 py-3.5 font-semibold text-foreground transition-all duration-150"
+            data-testid="button-login-wall"
+          >
+            <GoogleGIcon className="w-5 h-5" />
+            Sign in with Google
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
