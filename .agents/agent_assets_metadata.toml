@@ -24,3 +24,9 @@ id = "VQQKuaOP0TFlCzGBZOg5d"
 uri = "file://promo/out/youtube_description.txt"
 type = "text"
 title = "YouTube Description"
+
+[[outputs]]
+id = "yr_b3rd5NHLZpcqxZHVHj"
+uri = "file://README.md"
+type = "text"
+title = "Text Surgeon — Marketing README"
