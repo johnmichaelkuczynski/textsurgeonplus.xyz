@@ -2657,15 +2657,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
       return;
     }
 
-    if (!quoteExtractorAuthor.trim()) {
-      toast({
-        title: "Author required",
-        description: "Please enter the author's name.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsExtractingQuotes(true);
     setExtractedQuotes([]);
     setQuoteExtractionSummary("");
@@ -8035,16 +8026,16 @@ Freedom is the ratio essendi of the moral law."
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quote-author" className="text-sm font-medium text-blue-800">Author Name *</Label>
+              <Label htmlFor="quote-author" className="text-sm font-medium text-blue-800">Author Name <span className="font-normal text-muted-foreground">(optional)</span></Label>
               <Input
                 id="quote-author"
-                placeholder="Enter the author's name (e.g., Immanuel Kant)"
+                placeholder="e.g., Immanuel Kant — leave blank to extract without attribution"
                 value={quoteExtractorAuthor}
                 onChange={(e) => setQuoteExtractorAuthor(e.target.value)}
                 className="border-blue-200 focus:border-blue-400"
                 data-testid="input-quote-author"
               />
-              <p className="text-xs text-muted-foreground">Required: Identify who wrote this text so quotes are properly attributed.</p>
+              <p className="text-xs text-muted-foreground">If provided, quotes will be attributed to this author. Leave blank to extract quotes without any attribution.</p>
             </div>
 
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
@@ -8218,7 +8209,7 @@ Freedom is the ratio essendi of the moral law."
             </Button>
             <Button
               onClick={handleExtractQuotes}
-              disabled={isExtractingQuotes || !text.trim() || !quoteExtractorAuthor.trim()}
+              disabled={isExtractingQuotes || !text.trim()}
               className="bg-gradient-to-r from-primary to-secondary text-white"
               data-testid="button-extract-quotes"
             >

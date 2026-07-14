@@ -219,7 +219,7 @@ TARGET: Extract ${minQuotes}-${maxQuotes} quotes from this section.
 
 EXTRACTION RULES:
 1. Extract meaningful direct quotes - statements, claims, definitions, arguments
-2. Use "${author}" as the author for all quotes
+2. ${author ? `Use "${author}" as the author for all quotes` : 'Set "author" to an empty string for all quotes'}
 3. Use the section title "${section.title}" as the topic
 4. Copy the exact text word-for-word from the source
 5. Minimum 10 words per quote for meaningful content
@@ -228,7 +228,7 @@ OUTPUT FORMAT:
 {
   "quotes": [
     {
-      "author": "${author}",
+      "author": "${author || ''}",
       "quote": "exact verbatim text from source",
       "topic": "${section.title}"
     }
@@ -337,7 +337,7 @@ Extract ${minQuotes}-${maxQuotes} quotes. Output JSON:
 {
   "quotes": [
     {
-      "author": "${author}",
+      "author": "${author || ''}",
       "quote": "exact verbatim text from source",
       "topic": "Topic/Theme"
     }
