@@ -14,6 +14,8 @@ import {
   type PhilosophicalPosition,
   type InsertPhilosophicalPosition,
   type Visit,
+  type BookDatabaseRow,
+  type InsertBookDatabase,
   users, 
   stylometricAuthors,
   analysisHistory,
@@ -21,7 +23,8 @@ import {
   corpusWorks,
   workSections,
   philosophicalPositions,
-  visits
+  visits,
+  bookDatabases,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, ilike, or, sql, gte } from "drizzle-orm";
@@ -82,6 +85,12 @@ export interface IStorage {
   getLastVisit(userId: number): Promise<Visit | undefined>;
   getVisits(limit: number): Promise<Visit[]>;
   getVisitTimestampsSince(since: Date | null): Promise<Date[]>;
+
+  // Book Database 2.0
+  saveBookDatabase(entry: InsertBookDatabase): Promise<BookDatabaseRow>;
+  getBookDatabases(userId: number): Promise<BookDatabaseRow[]>;
+  getBookDatabase(id: number): Promise<BookDatabaseRow | undefined>;
+  deleteBookDatabase(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -398,6 +407,29 @@ export class DatabaseStorage implements IStorage {
       ? await db.select({ visitedAt: visits.visitedAt }).from(visits).where(gte(visits.visitedAt, since))
       : await db.select({ visitedAt: visits.visitedAt }).from(visits);
     return rows.map((r) => r.visitedAt);
+  }
+
+  // ── Book Database 2.0 ────────────────────────────────────────────────────
+
+  async saveBookDatabase(entry: InsertBookDatabase): Promise<BookDatabaseRow> {
+    const [row] = await db.insert(bookDatabases).values(entry).returning();
+    return row;
+  }
+
+  async getBookDatabases(userId: number): Promise<BookDatabaseRow[]> {
+    return db.select().from(bookDatabases)
+      .where(eq(bookDatabases.userId, userId))
+      .orderBy(desc(bookDatabases.createdAt));
+  }
+
+  async getBookDatabase(id: number): Promise<BookDatabaseRow | undefined> {
+    const [row] = await db.select().from(bookDatabases).where(eq(bookDatabases.id, id));
+    return row;
+  }
+
+  async deleteBookDatabase(id: number): Promise<boolean> {
+    const result = await db.delete(bookDatabases).where(eq(bookDatabases.id, id));
+    return true;
   }
 }
 

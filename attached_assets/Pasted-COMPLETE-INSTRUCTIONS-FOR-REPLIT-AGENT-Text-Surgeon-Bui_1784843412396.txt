@@ -1,0 +1,203 @@
+COMPLETE INSTRUCTIONS FOR REPLIT AGENT
+Text Surgeon – Build the 2.0 Function Suite (Book-to-Database Foundation)
+
+0. Non-Negotiable Architecture Principle
+All 2.0 analysis functions must be derived from a single, high-quality structured representation of the text.
+That representation is a cleaned Tractatus Tree → Book Database object.
+
+Do not let Positions 2.0, Arguments 2.0, Quotes 2.0, Intelligence 2.0, or Stylometrics 2.0 run independent, noisy extractors the way the 1.0 versions do.
+The old 1.0 buttons must remain completely untouched and functional as fallbacks.
+The new 2.0 buttons live in the “2.0 FUNCTIONS” section the user has already created.
+
+The pipeline is:
+
+Generate Tractatus Tree 2.0
+Clean / filter it aggressively
+Produce the Book Database object
+Derive every other 2.0 function from that object
+
+
+1. Create / Harden Tractatus Tree 2.0
+Improve the existing Tractatus / Tractatus Tree logic into a more reliable version called Tractatus Tree 2.0.
+Requirements:
+
+Produce a clean hierarchical numbered tree (Level 1 → Level 2 → Level 3 → Level 4…).
+Level 1 must contain the strongest, most central theses of the text.
+Deeper levels must expand with genuine conceptual content when the source text has it.
+Prefer declarative, self-contained statements.
+Avoid pure section titles and pure process language (“I will examine…”, “This section discusses…”) at Level 1 whenever possible.
+For long texts, use the existing outlineService / sectioned processing so the tree remains coherent across the whole document.
+
+Output format should remain compatible with the current Tractatus Tree display, but the quality of node selection must be higher.
+
+2. Build Book-to-Database 2.0 (the central new function)
+Create a new service and endpoint:
+server/services/bookToDatabase2.ts
+POST /api/book-to-database-2 (or /stream if streaming is preferred)
+Pipeline
+Step A – Generate raw Tractatus Tree 2.0
+Call the improved Tractatus Tree 2.0 on the full text (or sectioned text for long documents).
+Step B – Aggressive Cleaning Pass (most important step)
+Run a dedicated LLM cleaning pass whose only job is to turn the raw tree into a high-signal intellectual skeleton.
+Cleaning rules (enforce strictly):
+
+Delete pure structural / promissory / process nodes (“The dissertation is divided into five parts”, “I will critically examine…”, “This section offers a detailed description…”, etc.).
+Delete near-duplicates and pure restatements.
+Delete rhetorical questions and transitional sentences.
+Rewrite surviving nodes as clean, self-contained declarative claims.
+Classify remaining nodes:
+core = central doctrinal commitments
+supporting = direct support for a core claim
+doctrinal = explicit theoretical principles (use sparingly)
+
+Preserve hierarchy where it reflects real logical dependence.
+Prefer fewer, stronger nodes over many weak ones.
+
+Step C – Assemble the Book Database object
+Required schema:
+TypeScript{
+  meta: {
+    title?: string;
+    author?: string;
+    wordCount: number;
+    processedAt: string;
+    provider: string;
+  },
+  cleanedTree: any;               // the cleaned hierarchical tree
+  positions: Array<{
+    id: string;
+    claim: string;                // clean declarative sentence
+    type: "core" | "supporting" | "doctrinal";
+    level: number;
+    parentId?: string;
+    confidence: number;           // realistically calibrated 0-100
+  }>,
+  quotes: Array<{
+    id: string;
+    text: string;
+    signalStrength: number;       // 1-10
+    whyHighSignal: string;
+    relatedPositionIds: string[];
+  }>,
+  arguments: Array<{
+    id: string;
+    premises: string[];
+    conclusion: string;
+    relatedPositionIds: string[];
+  }>,
+  conceptClusters: Array<{
+    id: string;
+    label: string;
+    description: string;
+    relatedPositionIds: string[];
+    relatedQuoteIds: string[];
+  }>,
+  intelligence: {
+    overallScore: number;                 // 0-100
+    claimDensity: number;                 // real claims per 1000 words
+    conceptualCompression: number;        // 0-100
+    redundancyScore: number;              // 0-100 (higher = worse)
+    fillerRatio: number;                  // 0-1
+    fractalScore: number;                 // how much genuine new content appears at deeper levels
+    qualitativeAssessment: string;        // sharp, specific judgment
+  },
+  stylometricThumbprint: {
+    signaturePhrases: string[];
+    abstractionLevel: string;
+    sentenceRhythmNotes: string;
+    notableStylisticTraits: string[];
+    // Keep light. Avoid generic psychological profiling.
+  }
+}
+Intelligence scoring rules (strict)
+Base the score primarily on properties of the cleaned tree:
+
+Ratio of real claims to structural/promissory nodes
+Depth and genuine branching (fractal test)
+Conceptual compression vs. redundancy
+How much new intellectual content appears at Level 3/4 that was not already present at Level 1
+
+High-signal original philosophy (Chomsky piece, determinism chapter, Freud micro-paper) must score clearly higher than low-signal academic scaffolding (MAC abstract).
+A pure structure-announcing abstract should land in the 45–65 range. Dense, original argumentative prose should be able to reach the mid-to-high 80s.
+Quotes
+Extract only high-signal passages that directly support surviving positions. Quality over quantity.
+Arguments
+Derive them from parent–child or premise–conclusion relations visible in the cleaned tree. Do not invent large numbers of near-duplicate arguments.
+
+3. Derive the Individual 2.0 Functions from the Book Database
+Once a Book Database object exists for a text, the following 2.0 buttons must use it (or trigger its creation if it does not yet exist):
+
+Positions 2.0 → display the cleaned positions array (core vs supporting clearly distinguished)
+Arguments 2.0 → display the derived arguments
+Quotes 2.0 → display the high-signal quotes
+Intelligence 2.0 → display the new intelligence metrics + qualitative assessment
+Stylometrics 2.0 → display the light stylometric thumbprint (no generic psych profiling)
+Tractatus 2.0 / Tractatus Tree 2.0 → display the cleaned tree
+Concept Clusters (if exposed) → from the clusters array
+
+If the user clicks any of these 2.0 buttons on a text that has not yet been processed by Book-to-Database 2.0, the system should either:
+
+automatically run Book-to-Database 2.0 first, or
+offer to run it and then show the derived view.
+
+
+4. Persistence & Library
+
+Users must be able to Save a completed Book Database.
+Users must be able to Load previously saved ones.
+Extend the schema (shared/schema.ts + Drizzle) with a book_databases table (or equivalent).
+Saved objects become the source of truth for later Query / RAG / comparison features.
+
+
+5. Frontend (Home.tsx / 2.0 section)
+
+The 2.0 buttons the user has already created must wire to the new endpoints.
+Book-to-Database 2.0 should appear as a first-class prominent action (or be the implicit engine behind the 2.0 suite).
+Results views must make core vs supporting positions visually obvious.
+Show multi-stage progress when running the full pipeline (Tree → Cleaning → Database assembly).
+Provide “Download JSON” and “Save Book Database”.
+Keep visual language consistent with the rest of the app.
+
+
+6. Technical Constraints
+
+Reuse existing long-text infrastructure (outlineService, sectioned processing, fileParser). Do not invent a parallel chunking system.
+Prefer Claude (Anthropic) for the cleaning and discrimination stages when available.
+All new code must be properly typed.
+Credit deduction must be fair and transparent (this pipeline is expensive).
+Make the pipeline resilient: section failures should not kill the entire run.
+Leave every 1.0 function completely untouched.
+
+
+7. Acceptance Criteria (must pass)
+Test on these known texts:
+
+Freud micro-paper (high-signal, short)
+→ Few strong positions (≈ 3–8), high intelligence score relative to length, clean tree with real branching.
+Chomsky piece (high-signal)
+→ Clean core positions around poverty of stimulus + cognitive framework vs contents + productivity/systematicity. Fractal expansion at deeper levels. Intelligence clearly higher than the MAC abstract.
+MAC dissertation abstract (low-signal)
+→ Mostly structural nodes after cleaning. Low intelligence score (target mid 50s–low 60s). Minimal genuine theoretical branching. Claim density clearly lower than the Chomsky and Freud texts.
+Determinism chapter (high-signal, longer)
+→ Rich set of real positions on determinism vs predictability, supervenience, software/hardware, statistics vs probability. Intelligence score clearly higher than MAC.
+
+If the system still:
+
+gives the MAC abstract a higher claim density or similar overall score to the dense philosophical texts, or
+produces dozens of near-duplicate positions/arguments on short high-signal texts,
+
+then the cleaning pass and intelligence calibration have failed and must be tightened further.
+
+8. Implementation Order
+
+Harden Tractatus Tree 2.0
+Build the cleaning pass + Book Database schema + service
+Wire Book-to-Database 2.0 endpoint
+Derive Positions 2.0, Arguments 2.0, Quotes 2.0, Intelligence 2.0, Stylometrics 2.0 from the Book Database object
+Add Save/Load
+Connect the existing 2.0 UI buttons
+Test against the four calibration texts above and adjust the cleaning prompts until the quality separation is clear
+
+
+Build this as a proper foundation. The 2.0 suite succeeds only if every function is a view of the same cleaned intellectual object rather than an independent noisy extractor.
+The old 1.0 functions remain as safety fallbacks.

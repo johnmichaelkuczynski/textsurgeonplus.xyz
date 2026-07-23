@@ -470,6 +470,20 @@ export default function Home() {
   const [showWriteNew2, setShowWriteNew2] = useState(false);
   const [showLongAnswer2, setShowLongAnswer2] = useState(false);
   const [showCustom2, setShowCustom2] = useState(false);
+
+  // ── Book Database 2.0 shared state ────────────────────────────────────────
+  const [showBookDatabase2, setShowBookDatabase2] = useState(false);
+  const [bookDb2Tab, setBookDb2Tab] = useState<string>("positions");
+  const [bookDb2Data, setBookDb2Data] = useState<any | null>(null);
+  const [bookDb2Title, setBookDb2Title] = useState("");
+  const [bookDb2Author, setBookDb2Author] = useState("");
+  const [isRunningBookDb2, setIsRunningBookDb2] = useState(false);
+  const [bookDb2Progress, setBookDb2Progress] = useState<{stage:string;message:string;current:number;total:number}|null>(null);
+  const [bookDb2Error, setBookDb2Error] = useState<string|null>(null);
+  const [savedBookDatabases, setSavedBookDatabases] = useState<any[]>([]);
+  const [isSavingBookDb2, setIsSavingBookDb2] = useState(false);
+  const [bookDb2SavedId, setBookDb2SavedId] = useState<number|null>(null);
+
   const [customAnalyzerProgress, setCustomAnalyzerProgress] = useState<{stage: string, message: string, current?: number, total?: number} | null>(null);
   const [customAnalyzerOutput, setCustomAnalyzerOutput] = useState("");
   const [customRefineInstructions, setCustomRefineInstructions] = useState("");
@@ -2525,6 +2539,100 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     a.download = `stylometric_report.${format}`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // ── Book Database 2.0 handlers ────────────────────────────────────────────
+
+  const handleRunBookDatabase2 = async () => {
+    if (!text.trim()) return;
+    setIsRunningBookDb2(true);
+    setBookDb2Data(null);
+    setBookDb2Error(null);
+    setBookDb2Progress(null);
+    setBookDb2SavedId(null);
+    try {
+      const response = await fetch("/api/book-to-database-2", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          text,
+          provider: selectedLLM,
+          title: bookDb2Title,
+          author: bookDb2Author,
+        }),
+      });
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      if (!reader) throw new Error("No response stream");
+      let buf = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += decoder.decode(value, { stream: true });
+        const lines = buf.split("\n");
+        buf = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const parsed = JSON.parse(line.slice(6));
+          if (parsed.type === "progress") {
+            setBookDb2Progress({ stage: parsed.stage, message: parsed.message, current: parsed.current, total: parsed.total });
+          } else if (parsed.type === "complete") {
+            setBookDb2Data(parsed.result);
+            setBookDb2Progress(null);
+          } else if (parsed.type === "error") {
+            setBookDb2Error(parsed.message);
+          }
+        }
+      }
+    } catch (err: any) {
+      setBookDb2Error(err.message || "Failed to run Book Database 2.0");
+    } finally {
+      setIsRunningBookDb2(false);
+    }
+  };
+
+  const handleSaveBookDatabase2 = async () => {
+    if (!bookDb2Data) return;
+    setIsSavingBookDb2(true);
+    try {
+      const resp = await fetch("/api/book-databases/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: bookDb2Data.meta?.title || bookDb2Title || "",
+          author: bookDb2Data.meta?.author || bookDb2Author || "",
+          wordCount: bookDb2Data.meta?.wordCount,
+          provider: bookDb2Data.meta?.provider,
+          inputPreview: text.slice(0, 300),
+          data: bookDb2Data,
+        }),
+      });
+      const row = await resp.json();
+      if (row.id) setBookDb2SavedId(row.id);
+    } catch (err: any) {
+      setBookDb2Error("Save failed: " + err.message);
+    } finally {
+      setIsSavingBookDb2(false);
+    }
+  };
+
+  const handleDownloadBookDatabase2 = () => {
+    if (!bookDb2Data) return;
+    const blob = new Blob([JSON.stringify(bookDb2Data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `book-database-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const openBookDb2Tab = (tab: string) => {
+    setBookDb2Tab(tab);
+    setShowBookDatabase2(true);
+    if (!bookDb2Data && !isRunningBookDb2) handleRunBookDatabase2();
   };
 
   const handleStylometricsFileUploadB = (file: File) => {
@@ -4744,46 +4852,46 @@ ${parsed.analyzer}`);
                 <div className="mt-4 border-t-2 border-dashed border-primary/30 pt-4">
                   <p className="text-xs font-bold text-primary/60 uppercase tracking-widest mb-3">2.0 Functions</p>
                   <div className="grid grid-cols-2 gap-3">
-                    <Button onClick={() => setShowQuotes2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-quotes-2">
+                    <Button onClick={() => openBookDb2Tab("quotes")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-quotes-2">
                       <Quote className="w-5 h-5 mr-2" />QUOTES 2.0
                     </Button>
-                    <Button onClick={() => setShowStylometrics2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-stylometrics-2">
+                    <Button onClick={() => openBookDb2Tab("stylometrics")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-stylometrics-2">
                       <BarChart3 className="w-5 h-5 mr-2" />STYLOMETRICS 2.0
                     </Button>
-                    <Button onClick={() => setShowIntelligence2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-intelligence-2">
+                    <Button onClick={() => openBookDb2Tab("intelligence")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-intelligence-2">
                       <Sparkles className="w-5 h-5 mr-2" />INTELLIGENCE 2.0
                     </Button>
-                    <Button onClick={() => setShowPositions2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-positions-2">
+                    <Button onClick={() => openBookDb2Tab("positions")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-positions-2">
                       <FileText className="w-5 h-5 mr-2" />POSITIONS 2.0
                     </Button>
-                    <Button onClick={() => setShowArguments2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-arguments-2">
+                    <Button onClick={() => openBookDb2Tab("arguments")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-arguments-2">
                       <Layers className="w-5 h-5 mr-2" />ARGUMENTS 2.0
                     </Button>
-                    <Button onClick={() => setShowTractatus2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-tractatus-2">
+                    <Button onClick={() => openBookDb2Tab("tree")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-tractatus-2">
                       <List className="w-5 h-5 mr-2" />TRACTATUS 2.0
                     </Button>
-                    <Button onClick={() => setShowTractatusTree2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-yellow-600 to-amber-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-tractatus-tree-2">
+                    <Button onClick={() => openBookDb2Tab("tree")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-yellow-600 to-amber-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-tractatus-tree-2">
                       <GitBranch className="w-5 h-5 mr-2" />TRACTATUS TREE 2.0
                     </Button>
-                    <Button onClick={() => setShowTextToAudio2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-text-to-audio-2">
-                      <Volume2 className="w-5 h-5 mr-2" />TEXT TO AUDIO 2.0
+                    <Button onClick={() => openBookDb2Tab("clusters")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-text-to-audio-2">
+                      <Volume2 className="w-5 h-5 mr-2" />CLUSTERS 2.0
                     </Button>
-                    <Button onClick={() => setShowSummary2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-summary-2">
+                    <Button onClick={() => openBookDb2Tab("positions")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-summary-2">
                       <FileText className="w-5 h-5 mr-2" />SUMMARY 2.0
                     </Button>
-                    <Button onClick={() => setShowOutline2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-slate-600 to-zinc-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-outline-2">
+                    <Button onClick={() => openBookDb2Tab("tree")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-slate-600 to-zinc-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-outline-2">
                       <Layers className="w-5 h-5 mr-2" />OUTLINE 2.0
                     </Button>
-                    <Button onClick={() => setShowFullRewrite2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-full-rewrite-2">
+                    <Button onClick={() => openBookDb2Tab("positions")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-full-rewrite-2">
                       <FileText className="w-5 h-5 mr-2" />FULL REWRITE 2.0
                     </Button>
-                    <Button onClick={() => setShowWriteNew2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-write-new-2">
+                    <Button onClick={() => openBookDb2Tab("positions")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-write-new-2">
                       <Sparkles className="w-5 h-5 mr-2" />WRITE NEW 2.0
                     </Button>
-                    <Button onClick={() => setShowLongAnswer2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-violet-600 to-indigo-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-long-answer-2">
+                    <Button onClick={() => openBookDb2Tab("intelligence")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-violet-600 to-indigo-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-long-answer-2">
                       <BookOpen className="w-5 h-5 mr-2" />LONG ANSWER 2.0
                     </Button>
-                    <Button onClick={() => setShowCustom2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-rose-600 to-orange-500 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-custom-2">
+                    <Button onClick={() => openBookDb2Tab("positions")} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-rose-600 to-orange-500 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-custom-2">
                       <Sparkles className="w-5 h-5 mr-2" />CUSTOM 2.0
                     </Button>
                   </div>
@@ -8897,35 +9005,298 @@ Freedom is the ratio essendi of the moral law."
         </ResizableDialogContent>
       </ResizableDialog>
 
-      {/* ── 2.0 STUB DIALOGS ── */}
-      {[
-        { open: showQuotes2, setOpen: setShowQuotes2, title: "QUOTES 2.0", testid: "dialog-quotes-2" },
-        { open: showStylometrics2, setOpen: setShowStylometrics2, title: "STYLOMETRICS 2.0", testid: "dialog-stylometrics-2" },
-        { open: showIntelligence2, setOpen: setShowIntelligence2, title: "INTELLIGENCE 2.0", testid: "dialog-intelligence-2" },
-        { open: showPositions2, setOpen: setShowPositions2, title: "POSITIONS 2.0", testid: "dialog-positions-2" },
-        { open: showArguments2, setOpen: setShowArguments2, title: "ARGUMENTS 2.0", testid: "dialog-arguments-2" },
-        { open: showTractatus2, setOpen: setShowTractatus2, title: "TRACTATUS 2.0", testid: "dialog-tractatus-2" },
-        { open: showTractatusTree2, setOpen: setShowTractatusTree2, title: "TRACTATUS TREE 2.0", testid: "dialog-tractatus-tree-2" },
-        { open: showTextToAudio2, setOpen: setShowTextToAudio2, title: "TEXT TO AUDIO 2.0", testid: "dialog-text-to-audio-2" },
-        { open: showSummary2, setOpen: setShowSummary2, title: "SUMMARY 2.0", testid: "dialog-summary-2" },
-        { open: showOutline2, setOpen: setShowOutline2, title: "OUTLINE 2.0", testid: "dialog-outline-2" },
-        { open: showFullRewrite2, setOpen: setShowFullRewrite2, title: "FULL REWRITE 2.0", testid: "dialog-full-rewrite-2" },
-        { open: showWriteNew2, setOpen: setShowWriteNew2, title: "WRITE NEW 2.0", testid: "dialog-write-new-2" },
-        { open: showLongAnswer2, setOpen: setShowLongAnswer2, title: "LONG ANSWER 2.0", testid: "dialog-long-answer-2" },
-        { open: showCustom2, setOpen: setShowCustom2, title: "CUSTOM 2.0", testid: "dialog-custom-2" },
-      ].map(({ open, setOpen, title, testid }) => (
-        <ResizableDialog key={testid} open={open} onOpenChange={setOpen}>
-          <ResizableDialogContent className="w-[700px]" data-testid={testid}>
-            <ResizableDialogHeader>
-              <ResizableDialogTitle>{title}</ResizableDialogTitle>
-              <ResizableDialogDescription>Logic coming soon.</ResizableDialogDescription>
-            </ResizableDialogHeader>
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm py-16">
-              Ready for implementation.
-            </div>
-          </ResizableDialogContent>
-        </ResizableDialog>
-      ))}
+      {/* ── BOOK DATABASE 2.0 SHARED DIALOG ── */}
+      <ResizableDialog open={showBookDatabase2} onOpenChange={setShowBookDatabase2}>
+        <ResizableDialogContent className="w-[860px]" data-testid="dialog-book-database-2">
+          <ResizableDialogHeader>
+            <ResizableDialogTitle className="flex items-center gap-2">
+              <GitBranch className="w-5 h-5 text-primary" />
+              BOOK DATABASE 2.0
+              {bookDb2Data && (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  {bookDb2Data.meta?.wordCount?.toLocaleString()} words · {bookDb2Data.meta?.provider}
+                </span>
+              )}
+            </ResizableDialogTitle>
+            <ResizableDialogDescription>
+              {bookDb2Data
+                ? "Cleaned intellectual skeleton derived from Tractatus Tree 2.0"
+                : "Runs a 4-stage pipeline: Tree → Cleaning → Database Assembly → Done"}
+            </ResizableDialogDescription>
+          </ResizableDialogHeader>
+
+          <div className="flex-1 overflow-auto flex flex-col gap-4 p-1">
+
+            {/* ── Meta inputs (before run) ── */}
+            {!bookDb2Data && !isRunningBookDb2 && (
+              <div className="flex gap-3">
+                <input
+                  className="flex-1 border rounded px-3 py-2 text-sm"
+                  placeholder="Title (optional)"
+                  value={bookDb2Title}
+                  onChange={e => setBookDb2Title(e.target.value)}
+                />
+                <input
+                  className="flex-1 border rounded px-3 py-2 text-sm"
+                  placeholder="Author (optional)"
+                  value={bookDb2Author}
+                  onChange={e => setBookDb2Author(e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* ── Progress ── */}
+            {isRunningBookDb2 && bookDb2Progress && (
+              <div className="border rounded-lg p-5 bg-primary/5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+                  <span className="font-semibold text-sm">{bookDb2Progress.message}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all"
+                    style={{ width: `${(bookDb2Progress.current / bookDb2Progress.total) * 100}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Stage {bookDb2Progress.current} of {bookDb2Progress.total}
+                </p>
+              </div>
+            )}
+            {isRunningBookDb2 && !bookDb2Progress && (
+              <div className="flex items-center gap-3 text-sm text-muted-foreground py-4">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary border-t-transparent" />
+                Initialising pipeline…
+              </div>
+            )}
+
+            {/* ── Error ── */}
+            {bookDb2Error && (
+              <div className="border border-red-200 rounded p-3 bg-red-50 text-red-700 text-sm">
+                {bookDb2Error}
+              </div>
+            )}
+
+            {/* ── Run button ── */}
+            {!bookDb2Data && !isRunningBookDb2 && (
+              <Button
+                onClick={handleRunBookDatabase2}
+                disabled={!text}
+                className="w-full h-12 bg-gradient-to-r from-primary to-secondary text-white font-semibold"
+                data-testid="button-run-book-database-2"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Generate Book Database 2.0
+              </Button>
+            )}
+
+            {/* ── Data views ── */}
+            {bookDb2Data && (
+              <>
+                {/* Tab bar */}
+                <div className="flex gap-1 flex-wrap border-b pb-2">
+                  {[
+                    { key: "positions", label: "Positions" },
+                    { key: "quotes", label: "Quotes" },
+                    { key: "arguments", label: "Arguments" },
+                    { key: "intelligence", label: "Intelligence" },
+                    { key: "stylometrics", label: "Stylometrics" },
+                    { key: "tree", label: "Clean Tree" },
+                    { key: "clusters", label: "Clusters" },
+                  ].map(t => (
+                    <button
+                      key={t.key}
+                      onClick={() => setBookDb2Tab(t.key)}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${bookDb2Tab === t.key ? "bg-primary text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* POSITIONS */}
+                {bookDb2Tab === "positions" && (
+                  <div className="space-y-2">
+                    {(bookDb2Data.positions || []).length === 0 && (
+                      <p className="text-muted-foreground text-sm">No positions extracted.</p>
+                    )}
+                    {(bookDb2Data.positions || []).map((p: any, i: number) => (
+                      <div key={p.id || i} className={`rounded-lg border p-3 ${p.type === "core" ? "border-primary/40 bg-primary/5" : p.type === "doctrinal" ? "border-amber-300 bg-amber-50" : "border-gray-200 bg-gray-50"}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded-full uppercase ${p.type === "core" ? "bg-primary text-white" : p.type === "doctrinal" ? "bg-amber-500 text-white" : "bg-gray-300 text-gray-700"}`}>{p.type}</span>
+                          <span className="text-xs text-muted-foreground">Level {p.level} · {p.confidence}% confidence</span>
+                        </div>
+                        <p className="text-sm">{p.claim}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* QUOTES */}
+                {bookDb2Tab === "quotes" && (
+                  <div className="space-y-3">
+                    {(bookDb2Data.quotes || []).length === 0 && (
+                      <p className="text-muted-foreground text-sm">No high-signal quotes extracted.</p>
+                    )}
+                    {(bookDb2Data.quotes || []).map((q: any, i: number) => (
+                      <div key={q.id || i} className="border rounded-lg p-3 bg-amber-50 border-amber-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: 10 }).map((_, s) => (
+                              <div key={s} className={`w-2 h-2 rounded-full ${s < q.signalStrength ? "bg-amber-500" : "bg-gray-200"}`} />
+                            ))}
+                          </div>
+                          <span className="text-xs text-muted-foreground">Signal {q.signalStrength}/10</span>
+                        </div>
+                        <blockquote className="text-sm italic border-l-2 border-amber-400 pl-3 mb-2">"{q.text}"</blockquote>
+                        <p className="text-xs text-muted-foreground">{q.whyHighSignal}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ARGUMENTS */}
+                {bookDb2Tab === "arguments" && (
+                  <div className="space-y-3">
+                    {(bookDb2Data.arguments || []).length === 0 && (
+                      <p className="text-muted-foreground text-sm">No arguments extracted.</p>
+                    )}
+                    {(bookDb2Data.arguments || []).map((a: any, i: number) => (
+                      <div key={a.id || i} className="border rounded-lg p-3 bg-teal-50 border-teal-200">
+                        <p className="text-xs font-bold text-teal-700 mb-1">ARGUMENT {i + 1}</p>
+                        <div className="space-y-1 mb-2">
+                          {(a.premises || []).map((pr: string, pi: number) => (
+                            <p key={pi} className="text-sm"><span className="text-xs text-muted-foreground mr-1">P{pi+1}.</span>{pr}</p>
+                          ))}
+                        </div>
+                        <div className="border-t border-teal-200 pt-2">
+                          <p className="text-sm"><span className="text-xs font-bold text-teal-700 mr-1">∴</span>{a.conclusion}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* INTELLIGENCE */}
+                {bookDb2Tab === "intelligence" && (() => {
+                  const intel = bookDb2Data.intelligence || {};
+                  return (
+                    <div className="space-y-4">
+                      <div className="border rounded-xl p-5 bg-gradient-to-br from-amber-50 to-orange-50">
+                        <div className="flex items-end gap-3 mb-3">
+                          <span className="text-6xl font-black text-amber-600">{intel.overallScore ?? "—"}</span>
+                          <span className="text-gray-400 text-lg mb-1">/100</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+                          <div className="bg-gradient-to-r from-amber-400 to-orange-500 h-3 rounded-full" style={{ width: `${intel.overallScore || 0}%` }} />
+                        </div>
+                        <p className="text-sm text-gray-700 leading-relaxed">{intel.qualitativeAssessment}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: "Claim Density", value: intel.claimDensity, unit: "/1k words" },
+                          { label: "Conceptual Compression", value: intel.conceptualCompression, unit: "/100" },
+                          { label: "Redundancy Score", value: intel.redundancyScore, unit: "/100 (lower=better)" },
+                          { label: "Filler Ratio", value: typeof intel.fillerRatio === "number" ? (intel.fillerRatio * 100).toFixed(0) : "—", unit: "%" },
+                          { label: "Fractal Depth Score", value: intel.fractalScore, unit: "/100" },
+                        ].map(m => (
+                          <div key={m.label} className="border rounded-lg p-3 bg-white">
+                            <p className="text-xs text-muted-foreground mb-1">{m.label}</p>
+                            <p className="text-xl font-bold text-gray-800">{m.value ?? "—"}<span className="text-xs font-normal text-muted-foreground ml-1">{m.unit}</span></p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* STYLOMETRICS */}
+                {bookDb2Tab === "stylometrics" && (() => {
+                  const s = bookDb2Data.stylometricThumbprint || {};
+                  return (
+                    <div className="space-y-3">
+                      <div className="border rounded-lg p-3">
+                        <p className="text-xs font-bold text-muted-foreground mb-1 uppercase">Abstraction Level</p>
+                        <p className="text-sm">{s.abstractionLevel || "—"}</p>
+                      </div>
+                      <div className="border rounded-lg p-3">
+                        <p className="text-xs font-bold text-muted-foreground mb-1 uppercase">Sentence Rhythm</p>
+                        <p className="text-sm">{s.sentenceRhythmNotes || "—"}</p>
+                      </div>
+                      <div className="border rounded-lg p-3">
+                        <p className="text-xs font-bold text-muted-foreground mb-2 uppercase">Signature Phrases</p>
+                        <div className="flex flex-wrap gap-2">
+                          {(s.signaturePhrases || []).map((ph: string, i: number) => (
+                            <span key={i} className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs">"{ph}"</span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="border rounded-lg p-3">
+                        <p className="text-xs font-bold text-muted-foreground mb-2 uppercase">Notable Traits</p>
+                        <ul className="space-y-1">
+                          {(s.notableStylisticTraits || []).map((t: string, i: number) => (
+                            <li key={i} className="text-sm flex gap-2"><span className="text-primary">•</span>{t}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* CLEAN TREE */}
+                {bookDb2Tab === "tree" && (
+                  <div className="font-mono text-xs space-y-1 bg-gray-50 rounded p-3 overflow-auto max-h-[60vh]">
+                    {(bookDb2Data.cleanedTree || []).length === 0 && (
+                      <p className="text-muted-foreground">No tree data.</p>
+                    )}
+                    {(bookDb2Data.cleanedTree || []).map((node: any, i: number) => (
+                      <div key={node.id || i} className={`flex gap-2 py-0.5 ${node.type === "core" ? "text-primary font-semibold" : node.type === "doctrinal" ? "text-amber-600" : "text-gray-600"}`} style={{ paddingLeft: `${node.depth * 16}px` }}>
+                        <span className="text-gray-400 select-none">{node.number}</span>
+                        <span>{node.claim}</span>
+                        <span className="ml-auto text-gray-400 text-xs">[{node.type}]</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* CONCEPT CLUSTERS */}
+                {bookDb2Tab === "clusters" && (
+                  <div className="space-y-3">
+                    {(bookDb2Data.conceptClusters || []).length === 0 && (
+                      <p className="text-muted-foreground text-sm">No concept clusters found.</p>
+                    )}
+                    {(bookDb2Data.conceptClusters || []).map((c: any, i: number) => (
+                      <div key={c.id || i} className="border rounded-lg p-3 bg-violet-50 border-violet-200">
+                        <p className="font-bold text-sm text-violet-800 mb-1">{c.label}</p>
+                        <p className="text-sm text-gray-700">{c.description}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Action bar */}
+                <div className="flex gap-2 pt-2 border-t">
+                  <Button size="sm" variant="outline" onClick={handleDownloadBookDatabase2} className="gap-1.5">
+                    <Download className="w-4 h-4" />Download JSON
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleSaveBookDatabase2}
+                    disabled={isSavingBookDb2 || !!bookDb2SavedId}
+                    className="gap-1.5"
+                  >
+                    {isSavingBookDb2 ? "Saving…" : bookDb2SavedId ? "✓ Saved" : "Save to Library"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => { setBookDb2Data(null); setBookDb2SavedId(null); handleRunBookDatabase2(); }} className="gap-1.5 ml-auto">
+                    Regenerate
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </ResizableDialogContent>
+      </ResizableDialog>
 
     </div>
   );

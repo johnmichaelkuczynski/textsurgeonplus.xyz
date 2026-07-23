@@ -3261,6 +3261,79 @@ Otherwise return JSON array:
     }
   });
 
+  // ── Book Database 2.0 ─────────────────────────────────────────────────────
+
+  app.post("/api/book-to-database-2", async (req, res) => {
+    const { text, provider = "anthropic", title = "", author = "" } = req.body;
+    if (!text || typeof text !== "string") {
+      return res.status(400).json({ error: "text is required" });
+    }
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+    try {
+      const { generateBookDatabase2 } = await import("./services/bookToDatabase2");
+      const result = await generateBookDatabase2(
+        text,
+        provider,
+        { title, author },
+        (p) => send({ type: "progress", ...p })
+      );
+      send({ type: "complete", result });
+    } catch (err: any) {
+      send({ type: "error", message: err.message || "Book Database 2.0 failed" });
+    } finally {
+      res.end();
+    }
+  });
+
+  app.get("/api/book-databases", async (req, res) => {
+    const userId = (req as any).user?.id;
+    if (!userId) return res.json([]);
+    try {
+      const rows = await storage.getBookDatabases(userId);
+      res.json(rows);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.post("/api/book-databases/save", async (req, res) => {
+    const userId = (req as any).user?.id;
+    const { title, author, wordCount, provider, inputPreview, data } = req.body;
+    if (!data) return res.status(400).json({ error: "data is required" });
+    try {
+      const row = await storage.saveBookDatabase({
+        userId: userId || null,
+        title: title || null,
+        author: author || null,
+        wordCount: wordCount || null,
+        provider: provider || null,
+        inputPreview: inputPreview || null,
+        data,
+      });
+      res.json(row);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/book-databases/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+    try {
+      await storage.deleteBookDatabase(id);
+      res.json({ ok: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
