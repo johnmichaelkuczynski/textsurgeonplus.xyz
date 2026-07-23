@@ -454,6 +454,22 @@ export default function Home() {
   
   // Custom Analyzer state
   const [showCustomAnalyzer, setShowCustomAnalyzer] = useState(false);
+
+  // 2.0 stub dialogs
+  const [showQuotes2, setShowQuotes2] = useState(false);
+  const [showStylometrics2, setShowStylometrics2] = useState(false);
+  const [showIntelligence2, setShowIntelligence2] = useState(false);
+  const [showPositions2, setShowPositions2] = useState(false);
+  const [showArguments2, setShowArguments2] = useState(false);
+  const [showTractatus2, setShowTractatus2] = useState(false);
+  const [showTractatusTree2, setShowTractatusTree2] = useState(false);
+  const [showTextToAudio2, setShowTextToAudio2] = useState(false);
+  const [showSummary2, setShowSummary2] = useState(false);
+  const [showOutline2, setShowOutline2] = useState(false);
+  const [showFullRewrite2, setShowFullRewrite2] = useState(false);
+  const [showWriteNew2, setShowWriteNew2] = useState(false);
+  const [showLongAnswer2, setShowLongAnswer2] = useState(false);
+  const [showCustom2, setShowCustom2] = useState(false);
   const [customAnalyzerProgress, setCustomAnalyzerProgress] = useState<{stage: string, message: string, current?: number, total?: number} | null>(null);
   const [customAnalyzerOutput, setCustomAnalyzerOutput] = useState("");
   const [customRefineInstructions, setCustomRefineInstructions] = useState("");
@@ -4723,6 +4739,55 @@ ${parsed.analyzer}`);
                     )}
                   </Button>
                 </div>
+
+                {/* 2.0 Functions */}
+                <div className="mt-4 border-t-2 border-dashed border-primary/30 pt-4">
+                  <p className="text-xs font-bold text-primary/60 uppercase tracking-widest mb-3">2.0 Functions</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button onClick={() => setShowQuotes2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-primary to-secondary text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-quotes-2">
+                      <Quote className="w-5 h-5 mr-2" />QUOTES 2.0
+                    </Button>
+                    <Button onClick={() => setShowStylometrics2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-stylometrics-2">
+                      <BarChart3 className="w-5 h-5 mr-2" />STYLOMETRICS 2.0
+                    </Button>
+                    <Button onClick={() => setShowIntelligence2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-intelligence-2">
+                      <Sparkles className="w-5 h-5 mr-2" />INTELLIGENCE 2.0
+                    </Button>
+                    <Button onClick={() => setShowPositions2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-positions-2">
+                      <FileText className="w-5 h-5 mr-2" />POSITIONS 2.0
+                    </Button>
+                    <Button onClick={() => setShowArguments2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-arguments-2">
+                      <Layers className="w-5 h-5 mr-2" />ARGUMENTS 2.0
+                    </Button>
+                    <Button onClick={() => setShowTractatus2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-tractatus-2">
+                      <List className="w-5 h-5 mr-2" />TRACTATUS 2.0
+                    </Button>
+                    <Button onClick={() => setShowTractatusTree2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-yellow-600 to-amber-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-tractatus-tree-2">
+                      <GitBranch className="w-5 h-5 mr-2" />TRACTATUS TREE 2.0
+                    </Button>
+                    <Button onClick={() => setShowTextToAudio2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-text-to-audio-2">
+                      <Volume2 className="w-5 h-5 mr-2" />TEXT TO AUDIO 2.0
+                    </Button>
+                    <Button onClick={() => setShowSummary2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-teal-600 to-cyan-600 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-summary-2">
+                      <FileText className="w-5 h-5 mr-2" />SUMMARY 2.0
+                    </Button>
+                    <Button onClick={() => setShowOutline2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-slate-600 to-zinc-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-outline-2">
+                      <Layers className="w-5 h-5 mr-2" />OUTLINE 2.0
+                    </Button>
+                    <Button onClick={() => setShowFullRewrite2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-full-rewrite-2">
+                      <FileText className="w-5 h-5 mr-2" />FULL REWRITE 2.0
+                    </Button>
+                    <Button onClick={() => setShowWriteNew2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-write-new-2">
+                      <Sparkles className="w-5 h-5 mr-2" />WRITE NEW 2.0
+                    </Button>
+                    <Button onClick={() => setShowLongAnswer2(true)} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-violet-600 to-indigo-700 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-long-answer-2">
+                      <BookOpen className="w-5 h-5 mr-2" />LONG ANSWER 2.0
+                    </Button>
+                    <Button onClick={() => setShowCustom2(true)} disabled={!text} className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-rose-600 to-orange-500 text-white hover:shadow-lg transition-all hover:scale-105 opacity-90" data-testid="button-custom-2">
+                      <Sparkles className="w-5 h-5 mr-2" />CUSTOM 2.0
+                    </Button>
+                  </div>
+                </div>
               </div>
             </Card>
           </section>
@@ -8831,6 +8896,37 @@ Freedom is the ratio essendi of the moral law."
           </div>
         </ResizableDialogContent>
       </ResizableDialog>
+
+      {/* ── 2.0 STUB DIALOGS ── */}
+      {[
+        { open: showQuotes2, setOpen: setShowQuotes2, title: "QUOTES 2.0", testid: "dialog-quotes-2" },
+        { open: showStylometrics2, setOpen: setShowStylometrics2, title: "STYLOMETRICS 2.0", testid: "dialog-stylometrics-2" },
+        { open: showIntelligence2, setOpen: setShowIntelligence2, title: "INTELLIGENCE 2.0", testid: "dialog-intelligence-2" },
+        { open: showPositions2, setOpen: setShowPositions2, title: "POSITIONS 2.0", testid: "dialog-positions-2" },
+        { open: showArguments2, setOpen: setShowArguments2, title: "ARGUMENTS 2.0", testid: "dialog-arguments-2" },
+        { open: showTractatus2, setOpen: setShowTractatus2, title: "TRACTATUS 2.0", testid: "dialog-tractatus-2" },
+        { open: showTractatusTree2, setOpen: setShowTractatusTree2, title: "TRACTATUS TREE 2.0", testid: "dialog-tractatus-tree-2" },
+        { open: showTextToAudio2, setOpen: setShowTextToAudio2, title: "TEXT TO AUDIO 2.0", testid: "dialog-text-to-audio-2" },
+        { open: showSummary2, setOpen: setShowSummary2, title: "SUMMARY 2.0", testid: "dialog-summary-2" },
+        { open: showOutline2, setOpen: setShowOutline2, title: "OUTLINE 2.0", testid: "dialog-outline-2" },
+        { open: showFullRewrite2, setOpen: setShowFullRewrite2, title: "FULL REWRITE 2.0", testid: "dialog-full-rewrite-2" },
+        { open: showWriteNew2, setOpen: setShowWriteNew2, title: "WRITE NEW 2.0", testid: "dialog-write-new-2" },
+        { open: showLongAnswer2, setOpen: setShowLongAnswer2, title: "LONG ANSWER 2.0", testid: "dialog-long-answer-2" },
+        { open: showCustom2, setOpen: setShowCustom2, title: "CUSTOM 2.0", testid: "dialog-custom-2" },
+      ].map(({ open, setOpen, title, testid }) => (
+        <ResizableDialog key={testid} open={open} onOpenChange={setOpen}>
+          <ResizableDialogContent className="w-[700px]" data-testid={testid}>
+            <ResizableDialogHeader>
+              <ResizableDialogTitle>{title}</ResizableDialogTitle>
+              <ResizableDialogDescription>Logic coming soon.</ResizableDialogDescription>
+            </ResizableDialogHeader>
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm py-16">
+              Ready for implementation.
+            </div>
+          </ResizableDialogContent>
+        </ResizableDialog>
+      ))}
+
     </div>
   );
 }
