@@ -402,6 +402,9 @@ export default function Home() {
   const [bookDbText, setBookDbText] = useState("");
   const [bookDbTitle, setBookDbTitle] = useState("");
   const [bookDbAuthor, setBookDbAuthor] = useState("");
+  const [bookDbQueryText, setBookDbQueryText] = useState("");
+  const [bookDbQueryResult, setBookDbQueryResult] = useState("");
+  const [isQueryingBookDb, setIsQueryingBookDb] = useState(false);
   const [isRunningBookDb, setIsRunningBookDb] = useState(false);
   const [bookDbProgress, setBookDbProgress] = useState<{stage: string, message: string, current?: number, total?: number} | null>(null);
   const [bookDbResult, setBookDbResult] = useState<any | null>(null);
@@ -3942,6 +3945,33 @@ ${parsed.analyzer}`);
     } finally {
       setIsRunningBookDb(false);
       fetchCredits();
+    }
+  };
+
+  const handleQueryBookDb = async () => {
+    if (!bookDbResult || !bookDbQueryText.trim()) return;
+    setIsQueryingBookDb(true);
+    setBookDbQueryResult("");
+    try {
+      const positions = (bookDbResult.positions || []).map((p: any) => `[${p.id}] (${p.type}) ${p.claim}`).join("\n");
+      const quotes = (bookDbResult.quotes || []).map((q: any) => `[${q.id}] "${q.text}"`).join("\n");
+      const prompt = `You are querying a structured intellectual database built from a text.\n\nPOSITIONS:\n${positions}\n\nQUOTES:\n${quotes}\n\nQUESTION: ${bookDbQueryText}\n\nAnswer based only on the positions and quotes above. Be specific and cite IDs where relevant. If the database doesn't contain enough information to answer, say so clearly.`;
+      const res = await fetch('/api/intelligence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ text: prompt, provider: selectedLLM, username: username || undefined })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setBookDbQueryResult(data.analysis || data.result || JSON.stringify(data));
+      } else {
+        throw new Error("Query failed");
+      }
+    } catch (e: any) {
+      toast({ variant: "destructive", description: e.message || "Query failed" });
+    } finally {
+      setIsQueryingBookDb(false);
     }
   };
 
@@ -8359,14 +8389,14 @@ Freedom is the ratio essendi of the moral law."
 
       {/* Book to Database Dialog */}
       <ResizableDialog open={showBookDbDialog} onOpenChange={setShowBookDbDialog}>
-        <ResizableDialogContent defaultWidth={1000} defaultHeight={750} minWidth={600} minHeight={500}>
+        <ResizableDialogContent defaultWidth={1050} defaultHeight={780} minWidth={650} minHeight={520}>
           <ResizableDialogHeader>
             <ResizableDialogTitle className="flex items-center gap-2 text-xl">
               <Database className="w-6 h-6 text-indigo-600" />
-              Books to Database
+              Book to Database
             </ResizableDialogTitle>
             <ResizableDialogDescription>
-              Decompose a book or long document into a structured intellectual database of positions, quotes, arguments, and concept clusters.
+              Extract only genuine intellectual commitments — positions, arguments, quotes — with strict filtering and calibrated scoring.
             </ResizableDialogDescription>
           </ResizableDialogHeader>
 
@@ -8375,26 +8405,12 @@ Freedom is the ratio essendi of the moral law."
               <div className="flex flex-col gap-3 overflow-y-auto flex-1">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="bookdb-title" className="text-xs font-medium text-muted-foreground mb-1 block">Book Title (optional)</Label>
-                    <Input
-                      id="bookdb-title"
-                      placeholder="e.g. Being and Time"
-                      value={bookDbTitle}
-                      onChange={e => setBookDbTitle(e.target.value)}
-                      disabled={isRunningBookDb}
-                      data-testid="input-bookdb-title"
-                    />
+                    <Label htmlFor="bookdb-title" className="text-xs font-medium text-muted-foreground mb-1 block">Title (optional)</Label>
+                    <Input id="bookdb-title" placeholder="e.g. Being and Time" value={bookDbTitle} onChange={e => setBookDbTitle(e.target.value)} disabled={isRunningBookDb} data-testid="input-bookdb-title" />
                   </div>
                   <div>
                     <Label htmlFor="bookdb-author" className="text-xs font-medium text-muted-foreground mb-1 block">Author (optional)</Label>
-                    <Input
-                      id="bookdb-author"
-                      placeholder="e.g. Martin Heidegger"
-                      value={bookDbAuthor}
-                      onChange={e => setBookDbAuthor(e.target.value)}
-                      disabled={isRunningBookDb}
-                      data-testid="input-bookdb-author"
-                    />
+                    <Input id="bookdb-author" placeholder="e.g. Martin Heidegger" value={bookDbAuthor} onChange={e => setBookDbAuthor(e.target.value)} disabled={isRunningBookDb} data-testid="input-bookdb-author" />
                   </div>
                 </div>
                 <div className="flex-1 flex flex-col min-h-0">
@@ -8402,11 +8418,11 @@ Freedom is the ratio essendi of the moral law."
                     Text {bookDbText ? `(${bookDbText.split(/\s+/).filter(Boolean).length} words)` : text ? `— using main input (${text.split(/\s+/).filter(Boolean).length} words)` : ""}
                   </Label>
                   <Textarea
-                    placeholder="Paste the full text of the book here, or leave blank to use the main input area text…"
+                    placeholder="Paste text here, or leave blank to use the main input area…"
                     value={bookDbText}
                     onChange={e => setBookDbText(e.target.value)}
                     disabled={isRunningBookDb}
-                    className="flex-1 min-h-[200px] resize-none font-mono text-sm"
+                    className="flex-1 min-h-[220px] resize-none font-mono text-sm"
                     data-testid="textarea-bookdb-text"
                   />
                 </div>
@@ -8416,90 +8432,129 @@ Freedom is the ratio essendi of the moral law."
                       {isRunningBookDb && <div className="animate-spin rounded-full h-4 w-4 border-2 border-indigo-600 border-t-transparent" />}
                       <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">{bookDbProgress.message}</span>
                     </div>
-                    {bookDbProgress.current && bookDbProgress.total && (
-                      <div className="text-xs text-indigo-600 dark:text-indigo-400">
-                        Step {bookDbProgress.current} of {bookDbProgress.total}
+                    {bookDbProgress.current != null && bookDbProgress.total != null && (
+                      <div className="w-full h-1.5 bg-indigo-200 rounded-full mt-2 overflow-hidden">
+                        <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${Math.round((bookDbProgress.current / bookDbProgress.total) * 100)}%` }} />
                       </div>
                     )}
-                    <div className="text-xs text-muted-foreground capitalize mt-0.5">Stage: {bookDbProgress.stage}</div>
                   </div>
                 )}
               </div>
             ) : (
               <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Meta header */}
-                <div className="flex items-start justify-between mb-3 flex-shrink-0">
+                {/* Meta + score header */}
+                <div className="flex items-start justify-between mb-2 flex-shrink-0">
                   <div>
-                    <h3 className="font-bold text-lg">{bookDbResult.meta?.title || "Untitled Document"}</h3>
+                    <h3 className="font-bold text-lg leading-tight">{bookDbResult.meta?.title || "Untitled"}</h3>
                     {bookDbResult.meta?.author && <p className="text-sm text-muted-foreground">{bookDbResult.meta.author}</p>}
-                    <p className="text-xs text-muted-foreground">{bookDbResult.meta?.wordCount?.toLocaleString()} words · {new Date(bookDbResult.meta?.processedAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-muted-foreground">{bookDbResult.meta?.wordCount?.toLocaleString()} words · {bookDbResult.meta?.provider?.toUpperCase()} · {new Date(bookDbResult.meta?.processedAt).toLocaleDateString()}</p>
                   </div>
-                  <div className="text-center">
-                    <div className={`text-4xl font-black ${bookDbResult.intelligence?.overallScore >= 70 ? 'text-green-600' : bookDbResult.intelligence?.overallScore >= 40 ? 'text-amber-600' : 'text-red-500'}`}>
+                  <div className="text-right">
+                    <div className={`text-5xl font-black leading-none ${bookDbResult.intelligence?.overallScore >= 70 ? 'text-green-600' : bookDbResult.intelligence?.overallScore >= 45 ? 'text-amber-600' : 'text-red-500'}`}>
                       {bookDbResult.intelligence?.overallScore ?? '—'}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">INTELLIGENCE SCORE</div>
+                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Intelligence Score</div>
                   </div>
                 </div>
 
-                {/* Intelligence row */}
-                <div className="grid grid-cols-3 gap-2 mb-3 flex-shrink-0">
-                  <div className="rounded border p-2 text-center">
-                    <div className="text-lg font-bold text-indigo-700">{bookDbResult.intelligence?.claimDensity?.toFixed(1)}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Claims/1k words</div>
+                {/* Metrics row */}
+                <div className="grid grid-cols-4 gap-2 mb-2 flex-shrink-0">
+                  <div className="rounded border p-2 text-center bg-indigo-50/50">
+                    <div className="text-base font-bold text-indigo-700">{bookDbResult.intelligence?.claimDensity?.toFixed(1)}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase">Claims/1k words</div>
                   </div>
-                  <div className="rounded border p-2 text-center">
-                    <div className="text-lg font-bold text-violet-700">{bookDbResult.intelligence?.conceptualCompression}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Conceptual Compression</div>
+                  <div className="rounded border p-2 text-center bg-violet-50/50">
+                    <div className="text-base font-bold text-violet-700">{bookDbResult.intelligence?.conceptualCompression}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase">Compression</div>
                   </div>
-                  <div className="rounded border p-2 text-center">
-                    <div className="text-lg font-bold text-slate-700">{bookDbResult.intelligence?.redundancyScore}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Redundancy Score</div>
+                  <div className="rounded border p-2 text-center bg-orange-50/50">
+                    <div className="text-base font-bold text-orange-700">{bookDbResult.intelligence?.redundancyScore}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase">Redundancy</div>
+                  </div>
+                  <div className="rounded border p-2 text-center bg-slate-50">
+                    <div className="text-base font-bold text-slate-600">{bookDbResult.intelligence?.fillerRatio != null ? `${Math.round(bookDbResult.intelligence.fillerRatio * 100)}%` : '—'}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase">Filler Ratio</div>
                   </div>
                 </div>
                 {bookDbResult.intelligence?.qualitativeAssessment && (
-                  <p className="text-xs text-muted-foreground italic mb-3 flex-shrink-0">{bookDbResult.intelligence.qualitativeAssessment}</p>
+                  <p className="text-xs text-muted-foreground italic mb-2 flex-shrink-0 border-l-2 border-indigo-300 pl-2">{bookDbResult.intelligence.qualitativeAssessment}</p>
                 )}
 
                 {/* Tabs */}
-                <Tabs value={bookDbActiveTab} onValueChange={setBookDbActiveTab} className="flex-1 flex flex-col overflow-hidden">
-                  <TabsList className="grid grid-cols-5 flex-shrink-0">
-                    <TabsTrigger value="positions">Positions ({bookDbResult.positions?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="quotes">Quotes ({bookDbResult.quotes?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="arguments">Arguments ({bookDbResult.arguments?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="clusters">Clusters ({bookDbResult.conceptClusters?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="stylometrics">Style</TabsTrigger>
+                <Tabs value={bookDbActiveTab} onValueChange={setBookDbActiveTab} className="flex-1 flex flex-col overflow-hidden min-h-0">
+                  <TabsList className="grid grid-cols-6 flex-shrink-0 h-8">
+                    <TabsTrigger value="positions" className="text-xs">Positions ({bookDbResult.positions?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="quotes" className="text-xs">Quotes ({bookDbResult.quotes?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="arguments" className="text-xs">Arguments ({bookDbResult.arguments?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="clusters" className="text-xs">Clusters ({bookDbResult.conceptClusters?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="style" className="text-xs">Style</TabsTrigger>
+                    <TabsTrigger value="query" className="text-xs">Query</TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="positions" className="flex-1 overflow-y-auto mt-2 space-y-2">
-                    {(bookDbResult.positions || []).map((p: any, i: number) => (
-                      <div key={p.id} className="rounded border p-2.5">
-                        <div className="flex items-start gap-2">
-                          <span className="text-xs font-mono text-muted-foreground mt-0.5 flex-shrink-0">{p.id}</span>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm">{p.claim}</p>
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${p.type === 'core' ? 'bg-indigo-100 text-indigo-700' : p.type === 'supporting' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{p.type}</span>
-                              {p.confidence && <span className="text-[10px] text-muted-foreground">confidence: {p.confidence}%</span>}
-                              {p.section && <span className="text-[10px] text-muted-foreground truncate">{p.section}</span>}
+                  {/* Positions — core positions are visually prominent */}
+                  <TabsContent value="positions" className="flex-1 overflow-y-auto mt-2 space-y-2 min-h-0">
+                    {(() => {
+                      const corePositions = (bookDbResult.positions || []).filter((p: any) => p.type === 'core');
+                      const otherPositions = (bookDbResult.positions || []).filter((p: any) => p.type !== 'core');
+                      return (
+                        <>
+                          {corePositions.length > 0 && (
+                            <div className="space-y-2">
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 px-1">Core Theses ({corePositions.length})</p>
+                              {corePositions.map((p: any) => (
+                                <div key={p.id} className="rounded-lg border-2 border-indigo-300 bg-indigo-50/60 dark:bg-indigo-950/20 p-3">
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-[10px] font-mono text-indigo-400 mt-0.5 flex-shrink-0 font-bold">{p.id}</span>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">{p.claim}</p>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-indigo-600 text-white">CORE</span>
+                                        <span className="text-[10px] text-indigo-600 font-medium">{p.confidence}% confidence</span>
+                                        {p.section && <span className="text-[10px] text-muted-foreground truncate">{p.section}</span>}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {(!bookDbResult.positions?.length) && <p className="text-sm text-muted-foreground text-center py-8">No positions extracted</p>}
+                          )}
+                          {otherPositions.length > 0 && (
+                            <div className="space-y-1.5">
+                              {corePositions.length > 0 && <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-1 mt-3">Supporting & Doctrinal ({otherPositions.length})</p>}
+                              {otherPositions.map((p: any) => (
+                                <div key={p.id} className="rounded border p-2.5 hover:bg-muted/30 transition-colors">
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-[10px] font-mono text-muted-foreground mt-0.5 flex-shrink-0">{p.id}</span>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm">{p.claim}</p>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${p.type === 'supporting' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{p.type}</span>
+                                        <span className="text-[10px] text-muted-foreground">{p.confidence}%</span>
+                                        {p.section && <span className="text-[10px] text-muted-foreground truncate">{p.section}</span>}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {!bookDbResult.positions?.length && <p className="text-sm text-muted-foreground text-center py-8">No positions extracted</p>}
+                        </>
+                      );
+                    })()}
                   </TabsContent>
 
-                  <TabsContent value="quotes" className="flex-1 overflow-y-auto mt-2 space-y-2">
-                    {(bookDbResult.quotes || []).map((q: any) => (
+                  <TabsContent value="quotes" className="flex-1 overflow-y-auto mt-2 space-y-2 min-h-0">
+                    {(bookDbResult.quotes || []).sort((a: any, b: any) => b.signalStrength - a.signalStrength).map((q: any) => (
                       <div key={q.id} className="rounded border p-2.5 border-l-4 border-l-amber-400">
                         <div className="flex items-start gap-2">
-                          <span className="text-xs font-mono text-muted-foreground mt-0.5 flex-shrink-0">{q.id}</span>
+                          <span className="text-[10px] font-mono text-muted-foreground mt-0.5 flex-shrink-0">{q.id}</span>
                           <div className="flex-1">
-                            <p className="text-sm italic">"{q.text}"</p>
-                            {q.context && <p className="text-xs text-muted-foreground mt-1">{q.context}</p>}
+                            <p className="text-sm italic text-slate-800 dark:text-slate-200">"{q.text}"</p>
+                            {q.whyHighSignal && <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">↑ {q.whyHighSignal}</p>}
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] text-amber-700 font-medium">signal: {q.signalStrength?.toFixed(1)}/10</span>
+                              <span className="text-[10px] text-amber-700 font-bold">signal: {typeof q.signalStrength === 'number' ? q.signalStrength.toFixed(1) : q.signalStrength}/10</span>
+                              {q.section && <span className="text-[10px] text-muted-foreground">{q.section}</span>}
                             </div>
                           </div>
                         </div>
@@ -8508,7 +8563,7 @@ Freedom is the ratio essendi of the moral law."
                     {(!bookDbResult.quotes?.length) && <p className="text-sm text-muted-foreground text-center py-8">No quotes extracted</p>}
                   </TabsContent>
 
-                  <TabsContent value="arguments" className="flex-1 overflow-y-auto mt-2 space-y-3">
+                  <TabsContent value="arguments" className="flex-1 overflow-y-auto mt-2 space-y-3 min-h-0">
                     {(bookDbResult.arguments || []).map((a: any) => (
                       <div key={a.id} className="rounded border p-3">
                         <div className="flex items-start gap-2 mb-2">
@@ -8517,21 +8572,14 @@ Freedom is the ratio essendi of the moral law."
                             <div className="mb-2">
                               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Premises</p>
                               {(a.premises || []).map((pr: string, i: number) => (
-                                <p key={i} className="text-sm text-slate-700 dark:text-slate-300 pl-2 border-l-2 border-slate-200 mb-1">{pr}</p>
+                                <p key={i} className="text-sm text-slate-700 dark:text-slate-300 pl-2 border-l-2 border-slate-200 mb-1">{i + 1}. {pr}</p>
                               ))}
                             </div>
                             <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded p-2">
-                              <p className="text-[10px] font-semibold text-indigo-700 uppercase tracking-wide mb-1">Conclusion</p>
+                              <p className="text-[10px] font-semibold text-indigo-700 uppercase tracking-wide mb-1">∴ Conclusion</p>
                               <p className="text-sm font-medium">{a.conclusion}</p>
                             </div>
-                            {a.counterarguments?.length > 0 && (
-                              <div className="mt-2">
-                                <p className="text-[10px] font-semibold text-red-600 uppercase tracking-wide mb-1">Counterarguments</p>
-                                {a.counterarguments.map((ca: string, i: number) => (
-                                  <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2 border-l-2 border-red-200">{ca}</p>
-                                ))}
-                              </div>
-                            )}
+                            {a.section && <p className="text-[10px] text-muted-foreground mt-1">{a.section}</p>}
                           </div>
                         </div>
                       </div>
@@ -8539,15 +8587,19 @@ Freedom is the ratio essendi of the moral law."
                     {(!bookDbResult.arguments?.length) && <p className="text-sm text-muted-foreground text-center py-8">No arguments extracted</p>}
                   </TabsContent>
 
-                  <TabsContent value="clusters" className="flex-1 overflow-y-auto mt-2 space-y-3">
-                    {(bookDbResult.conceptClusters || []).map((c: any, i: number) => (
-                      <div key={i} className="rounded border p-3">
-                        <h4 className="font-semibold text-sm mb-2 text-indigo-700">{c.label}</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {(c.relatedPositions || []).map((pid: string) => (
+                  <TabsContent value="clusters" className="flex-1 overflow-y-auto mt-2 space-y-3 min-h-0">
+                    {(bookDbResult.conceptClusters || []).map((c: any) => (
+                      <div key={c.id} className="rounded border p-3">
+                        <div className="flex items-start gap-2 mb-1">
+                          <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">{c.id}</span>
+                          <h4 className="font-semibold text-sm text-indigo-700">{c.label}</h4>
+                        </div>
+                        {c.description && <p className="text-xs text-muted-foreground mb-2 pl-5">{c.description}</p>}
+                        <div className="flex flex-wrap gap-1 pl-5">
+                          {(c.relatedPositionIds || c.relatedPositions || []).map((pid: string) => (
                             <span key={pid} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-mono">{pid}</span>
                           ))}
-                          {(c.relatedQuotes || []).map((qid: string) => (
+                          {(c.relatedQuoteIds || c.relatedQuotes || []).map((qid: string) => (
                             <span key={qid} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-mono">{qid}</span>
                           ))}
                         </div>
@@ -8556,42 +8608,37 @@ Freedom is the ratio essendi of the moral law."
                     {(!bookDbResult.conceptClusters?.length) && <p className="text-sm text-muted-foreground text-center py-8">No concept clusters generated</p>}
                   </TabsContent>
 
-                  <TabsContent value="stylometrics" className="flex-1 overflow-y-auto mt-2">
+                  <TabsContent value="style" className="flex-1 overflow-y-auto mt-2 min-h-0">
                     {bookDbResult.stylometricThumbprint ? (
                       <div className="space-y-3">
-                        {bookDbResult.stylometricThumbprint.aggregatedVerticalityScore !== undefined && (
-                          <div className="flex items-center gap-3 p-3 rounded border">
-                            <div className="text-2xl font-bold text-indigo-700">{(bookDbResult.stylometricThumbprint.aggregatedVerticalityScore * 100).toFixed(0)}%</div>
-                            <div>
-                              <p className="text-xs font-semibold text-muted-foreground uppercase">Verticality Score</p>
-                              <p className="text-sm">{bookDbResult.stylometricThumbprint.classification} · {bookDbResult.stylometricThumbprint.abstractionLevel}</p>
-                            </div>
+                        <div className="p-3 border rounded grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Abstraction Level</p>
+                            <p className="text-sm font-medium">{bookDbResult.stylometricThumbprint.abstractionLevel || '—'}</p>
                           </div>
-                        )}
-                        {bookDbResult.stylometricThumbprint.narrativeSummary && (
-                          <p className="text-sm text-muted-foreground italic p-3 border rounded">{bookDbResult.stylometricThumbprint.narrativeSummary}</p>
-                        )}
+                          <div>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Sentence Rhythm</p>
+                            <p className="text-sm">{bookDbResult.stylometricThumbprint.sentenceRhythmNotes || '—'}</p>
+                          </div>
+                        </div>
                         {bookDbResult.stylometricThumbprint.signaturePhrases?.length > 0 && (
                           <div className="p-3 border rounded">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Signature Phrases</p>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Signature Phrases</p>
                             <div className="flex flex-wrap gap-1">
-                              {bookDbResult.stylometricThumbprint.signaturePhrases.slice(0, 15).map((ph: string, i: number) => (
-                                <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">{ph}</span>
+                              {bookDbResult.stylometricThumbprint.signaturePhrases.map((ph: string, i: number) => (
+                                <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 italic">"{ph}"</span>
                               ))}
                             </div>
                           </div>
                         )}
-                        {bookDbResult.stylometricThumbprint.psychologicalProfile && (
+                        {bookDbResult.stylometricThumbprint.notableStylisticTraits?.length > 0 && (
                           <div className="p-3 border rounded">
-                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Psychological Profile</p>
-                            <div className="grid grid-cols-2 gap-1.5">
-                              {Object.entries(bookDbResult.stylometricThumbprint.psychologicalProfile).map(([key, val]: [string, any]) => (
-                                <div key={key}>
-                                  <span className="text-[10px] text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1')}: </span>
-                                  <span className="text-xs font-medium">{val}</span>
-                                </div>
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Notable Traits</p>
+                            <ul className="space-y-1">
+                              {bookDbResult.stylometricThumbprint.notableStylisticTraits.map((t: string, i: number) => (
+                                <li key={i} className="text-sm text-slate-700 dark:text-slate-300 flex gap-2"><span className="text-indigo-400">·</span>{t}</li>
                               ))}
-                            </div>
+                            </ul>
                           </div>
                         )}
                       </div>
@@ -8599,12 +8646,45 @@ Freedom is the ratio essendi of the moral law."
                       <p className="text-sm text-muted-foreground text-center py-8">No stylometric data available</p>
                     )}
                   </TabsContent>
+
+                  <TabsContent value="query" className="flex-1 flex flex-col gap-3 mt-2 min-h-0">
+                    <p className="text-xs text-muted-foreground">Ask a question answered from this database's positions and quotes only.</p>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="e.g. What are the two main contributions? What does the author say about consciousness?"
+                        value={bookDbQueryText}
+                        onChange={e => setBookDbQueryText(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleQueryBookDb(); } }}
+                        disabled={isQueryingBookDb}
+                        data-testid="input-bookdb-query"
+                      />
+                      <Button onClick={handleQueryBookDb} disabled={isQueryingBookDb || !bookDbQueryText.trim()} className="flex-shrink-0 bg-indigo-700 text-white" data-testid="button-bookdb-query">
+                        {isQueryingBookDb ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : "Ask"}
+                      </Button>
+                    </div>
+                    {bookDbQueryResult && (
+                      <ScrollArea className="flex-1 border rounded-lg p-3">
+                        <p className="text-sm whitespace-pre-wrap">{bookDbQueryResult}</p>
+                      </ScrollArea>
+                    )}
+                    {!bookDbQueryResult && !isQueryingBookDb && (
+                      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
+                        Enter a question above
+                      </div>
+                    )}
+                    {isQueryingBookDb && (
+                      <div className="flex-1 flex items-center justify-center gap-2 text-muted-foreground">
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-indigo-500 border-t-transparent" />
+                        <span className="text-sm">Querying database…</span>
+                      </div>
+                    )}
+                  </TabsContent>
                 </Tabs>
               </div>
             )}
           </div>
 
-          <div className="flex gap-2 pt-2 border-t flex-shrink-0 flex-wrap">
+          <div className="flex gap-2 pt-2 border-t flex-shrink-0 flex-wrap items-center">
             {bookDbResult ? (
               <>
                 <Button
@@ -8613,7 +8693,7 @@ Freedom is the ratio essendi of the moral law."
                     const blob = new Blob([json], { type: 'application/json' });
                     const a = document.createElement('a');
                     a.href = URL.createObjectURL(blob);
-                    a.download = `book-database-${bookDbResult.meta?.title?.replace(/\s+/g, '-') || 'export'}.json`;
+                    a.download = `book-database-${(bookDbResult.meta?.title || 'export').replace(/\s+/g, '-')}.json`;
                     a.click();
                   }}
                   variant="outline"
@@ -8624,15 +8704,10 @@ Freedom is the ratio essendi of the moral law."
                   Download JSON
                 </Button>
                 {bookDbSavedId && (
-                  <span className="text-xs text-green-600 flex items-center gap-1">
-                    ✓ Saved to library (#{bookDbSavedId})
-                  </span>
+                  <span className="text-xs text-green-600 flex items-center gap-1 font-medium">✓ Saved to library (#{bookDbSavedId})</span>
                 )}
-                <Button
-                  variant="outline"
-                  onClick={() => { setBookDbResult(null); setBookDbProgress(null); }}
-                  data-testid="button-bookdb-new"
-                >
+                <div className="flex-1" />
+                <Button variant="outline" onClick={() => { setBookDbResult(null); setBookDbProgress(null); setBookDbQueryResult(""); }} data-testid="button-bookdb-new">
                   New Analysis
                 </Button>
               </>
@@ -8640,29 +8715,17 @@ Freedom is the ratio essendi of the moral law."
               <Button
                 onClick={handleRunBookToDatabase}
                 disabled={isRunningBookDb || (!bookDbText.trim() && !text.trim())}
-                className="flex-1 bg-gradient-to-r from-indigo-700 to-violet-700 text-white"
+                className="flex-1 bg-gradient-to-r from-indigo-700 to-violet-700 text-white font-semibold"
                 data-testid="button-bookdb-run"
               >
                 {isRunningBookDb ? (
-                  <>
-                    <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Analyzing…
-                  </>
+                  <><div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />Analyzing…</>
                 ) : (
-                  <>
-                    <Database className="w-4 h-4 mr-2" />
-                    Build Database
-                  </>
+                  <><Database className="w-4 h-4 mr-2" />Build Database</>
                 )}
               </Button>
             )}
-            <Button
-              variant="outline"
-              onClick={() => setShowBookDbDialog(false)}
-              data-testid="button-bookdb-close"
-            >
-              Close
-            </Button>
+            <Button variant="outline" onClick={() => setShowBookDbDialog(false)} data-testid="button-bookdb-close">Close</Button>
           </div>
         </ResizableDialogContent>
       </ResizableDialog>
