@@ -308,6 +308,7 @@ function buildAccumulatedDisplay(
 
 export default function Home() {
   const [authLoaded, setAuthLoaded] = useState(false);
+  const [showLoginGate, setShowLoginGate] = useState(false);
   const [text, setText] = useState("");
   const [selectedLLM, setSelectedLLM] = useState<LLM>("deepseek");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -584,7 +585,17 @@ export default function Home() {
       loadHistory(historyTypeFilter);
     }
   }, [username]);
-  
+
+  // Soft login gate: fire when anonymous user receives significant output (>150 words)
+  const LOGIN_GATE_WORDS = 150;
+  useEffect(() => {
+    if (username || showLoginGate) return;
+    const output = streamingOutput || (result ? JSON.stringify(result) : "");
+    if (output.split(/\s+/).filter(Boolean).length >= LOGIN_GATE_WORDS) {
+      setShowLoginGate(true);
+    }
+  }, [streamingOutput, result, username, showLoginGate]);
+
   // Update chunks when text changes, preserving processed state
   useEffect(() => {
     if (needsChunking) {
@@ -3988,46 +3999,37 @@ ${parsed.analyzer}`);
     else setIsDraggingIntelB(false);
   };
 
-  // Login wall — show spinner while checking, then login screen if not authed
-  if (!authLoaded) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!username) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center p-6">
-        <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full flex flex-col items-center gap-8 border border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary text-white rounded-xl flex items-center justify-center shadow-lg">
-              <Stethoscope className="w-7 h-7" />
-            </div>
-            <h1 className="font-bold text-3xl tracking-tight text-foreground">TEXT SURGEON</h1>
-          </div>
-          <div className="text-center space-y-2">
-            <p className="text-lg font-semibold text-foreground">Sign in to continue</p>
-            <p className="text-sm text-muted-foreground">Access is restricted to authorised users.</p>
-          </div>
-          <a
-            href="/api/auth/google"
-            target="_top"
-            onClick={handleGoogleLoginClick}
-            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:border-primary hover:shadow-md rounded-xl px-6 py-3.5 font-semibold text-foreground transition-all duration-150"
-            data-testid="button-login-wall"
-          >
-            <GoogleGIcon className="w-5 h-5" />
-            Sign in with Google
-          </a>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
+
+      {/* Soft login gate — appears after anonymous user generates significant output */}
+      {showLoginGate && (
+        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-md w-full flex flex-col items-center gap-6 border border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 bg-gradient-to-br from-primary to-secondary text-white rounded-xl flex items-center justify-center shadow-lg">
+                <Stethoscope className="w-6 h-6" />
+              </div>
+              <h2 className="font-bold text-2xl tracking-tight text-foreground">TEXT SURGEON</h2>
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-lg font-semibold text-foreground">Sign in to keep going</p>
+              <p className="text-sm text-muted-foreground">You've seen what it can do. Sign in with Google to continue — it's free and takes 10 seconds.</p>
+            </div>
+            <a
+              href="/api/auth/google"
+              target="_top"
+              onClick={handleGoogleLoginClick}
+              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:border-primary hover:shadow-md rounded-xl px-6 py-3.5 font-semibold text-foreground transition-all duration-150"
+              data-testid="button-login-gate"
+            >
+              <GoogleGIcon className="w-5 h-5" />
+              Sign in with Google
+            </a>
+          </div>
+        </div>
+      )}
+
       <header className="border-b-4 border-primary sticky top-0 z-50 bg-white shadow-lg">
         <div className="w-full px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
