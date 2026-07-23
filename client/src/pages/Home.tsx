@@ -365,6 +365,9 @@ export default function Home() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<any>(null);
   const [historyTypeFilter, setHistoryTypeFilter] = useState<string>("all");
+  const [storageStatus, setStorageStatus] = useState<{ count: number; limit: number; percent: number; nearFull: boolean } | null>(null);
+  const [storageBannerDismissed, setStorageBannerDismissed] = useState(false);
+  const [isFlushingHistory, setIsFlushingHistory] = useState(false);
   
   const stylometricsFileRefB = useRef<HTMLInputElement>(null);
   
@@ -579,6 +582,7 @@ export default function Home() {
   useEffect(() => {
     if (username) {
       loadHistory(historyTypeFilter);
+      fetchStorageStatus();
     }
   }, [username]);
 
@@ -812,6 +816,63 @@ export default function Home() {
   // No login system: the app is fully open, no paywall gating
   const hasCredits = true;
   
+  const fetchStorageStatus = async () => {
+    if (!username) return;
+    try {
+      const res = await fetch(`/api/storage-status?username=${encodeURIComponent(username)}`, { credentials: 'include' });
+      if (res.ok) {
+        const data = await res.json();
+        setStorageStatus(data);
+        if (data.nearFull) setStorageBannerDismissed(false);
+      }
+    } catch {}
+  };
+
+  const handleFlushOldest = async (count: number = 50) => {
+    if (!username) return;
+    setIsFlushingHistory(true);
+    try {
+      const res = await fetch('/api/history/flush', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username, count })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        toast({ description: `Deleted ${data.deleted} oldest entries. ${data.newCount} remaining.` });
+        await fetchStorageStatus();
+        await loadHistory(historyTypeFilter);
+      }
+    } catch (e) {
+      toast({ variant: 'destructive', description: 'Failed to flush history' });
+    } finally {
+      setIsFlushingHistory(false);
+    }
+  };
+
+  const handleClearAllHistory = async () => {
+    if (!username) return;
+    setIsFlushingHistory(true);
+    try {
+      const res = await fetch(`/api/history/all?username=${encodeURIComponent(username)}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        toast({ description: `Cleared all ${data.deleted} history entries.` });
+        setHistoryItems([]);
+        setSelectedHistoryItem(null);
+        await fetchStorageStatus();
+      }
+    } catch (e) {
+      toast({ variant: 'destructive', description: 'Failed to clear history' });
+    } finally {
+      setIsFlushingHistory(false);
+    }
+  };
+
   const loadHistory = async (typeFilter?: string) => {
     if (!username) return;
     
@@ -844,6 +905,7 @@ export default function Home() {
     }
     setShowHistoryDialog(true);
     loadHistory(historyTypeFilter);
+    fetchStorageStatus();
   };
   
   const handleDeleteHistoryItem = async (itemId: number) => {
@@ -4017,6 +4079,31 @@ ${parsed.analyzer}`);
         </div>
       </header>
 
+      {/* Storage warning banner */}
+      {username && storageStatus && storageStatus.nearFull && !storageBannerDismissed && (
+        <div className={`w-full px-10 py-2 flex items-center justify-between gap-4 text-sm font-medium ${storageStatus.percent >= 100 ? 'bg-red-100 border-b border-red-300 text-red-800' : 'bg-amber-100 border-b border-amber-300 text-amber-800'}`}>
+          <div className="flex items-center gap-3">
+            <span className="text-lg">{storageStatus.percent >= 100 ? '🚨' : '⚠️'}</span>
+            <span>
+              {storageStatus.percent >= 100
+                ? `Your history is full (${storageStatus.count}/${storageStatus.limit}). Oldest entries will be auto-deleted as you generate more.`
+                : `Your history is ${storageStatus.percent}% full (${storageStatus.count}/${storageStatus.limit} entries). Clean up before it fills.`}
+            </span>
+            <div className="flex-1 max-w-[200px] h-2 bg-white/60 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${storageStatus.percent >= 90 ? 'bg-red-500' : 'bg-amber-500'}`} style={{ width: `${Math.min(storageStatus.percent, 100)}%` }} />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="outline" className="h-7 text-xs border-current hover:bg-current/10" onClick={() => { setShowHistoryDialog(true); loadHistory(historyTypeFilter); }} data-testid="button-storage-manage">
+              Manage
+            </Button>
+            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setStorageBannerDismissed(true)} data-testid="button-storage-dismiss">
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      )}
+
       <main className="w-full px-10 py-6">
         <ResizablePanelGroup direction="horizontal" className="gap-8" style={{minHeight: 'calc(100vh - 6rem)'}}>
           <ResizablePanel defaultSize={50} minSize={30}>
@@ -5347,19 +5434,44 @@ ${parsed.analyzer}`);
       
       {/* History Dialog */}
       <ResizableDialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
-        <ResizableDialogContent defaultWidth={900} defaultHeight={600} minWidth={500} minHeight={400}>
+        <ResizableDialogContent defaultWidth={950} defaultHeight={650} minWidth={500} minHeight={400}>
           <ResizableDialogHeader>
             <ResizableDialogTitle className="flex items-center gap-2">
               <History className="w-5 h-5 text-primary" />
               Analysis History
             </ResizableDialogTitle>
             <ResizableDialogDescription>
-              View your past analyses. All outputs are automatically saved when logged in.
+              All outputs saved automatically when logged in. Limit: 500 entries. Oldest are auto-deleted when full.
             </ResizableDialogDescription>
           </ResizableDialogHeader>
+
+          {/* Storage bar */}
+          {storageStatus && (
+            <div className="mb-3 p-3 rounded-lg border bg-muted/30 space-y-1.5">
+              <div className="flex items-center justify-between text-xs font-medium">
+                <span className={storageStatus.percent >= 90 ? 'text-red-600' : storageStatus.percent >= 80 ? 'text-amber-600' : 'text-muted-foreground'}>
+                  {storageStatus.count} / {storageStatus.limit} entries used ({storageStatus.percent}%)
+                </span>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline" className="h-6 text-xs px-2" disabled={isFlushingHistory || historyItems.length === 0} onClick={() => handleFlushOldest(50)} data-testid="button-flush-oldest">
+                    {isFlushingHistory ? 'Working…' : 'Delete oldest 50'}
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-6 text-xs px-2 border-red-300 text-red-600 hover:bg-red-50" disabled={isFlushingHistory || historyItems.length === 0} onClick={handleClearAllHistory} data-testid="button-clear-all-history">
+                    Clear all
+                  </Button>
+                </div>
+              </div>
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all ${storageStatus.percent >= 90 ? 'bg-red-500' : storageStatus.percent >= 80 ? 'bg-amber-500' : 'bg-primary'}`}
+                  style={{ width: `${Math.min(storageStatus.percent, 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
           
-          <div className="flex gap-2 items-center mb-4">
-            <Label className="text-sm font-medium">Filter by type:</Label>
+          <div className="flex gap-2 items-center mb-3">
+            <Label className="text-sm font-medium">Filter:</Label>
             <Select 
               value={historyTypeFilter} 
               onValueChange={(v) => {
@@ -5373,11 +5485,19 @@ ${parsed.analyzer}`);
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="quotes">Quotes</SelectItem>
+                <SelectItem value="positions">Positions</SelectItem>
+                <SelectItem value="arguments">Arguments</SelectItem>
+                <SelectItem value="stylometrics">Stylometrics</SelectItem>
+                <SelectItem value="summary">Summary</SelectItem>
+                <SelectItem value="tractatus">Tractatus</SelectItem>
+                <SelectItem value="full_rewrite">Full Rewrite</SelectItem>
+                <SelectItem value="book_database">Books to DB</SelectItem>
               </SelectContent>
             </Select>
+            <span className="text-xs text-muted-foreground ml-auto">{historyItems.length} shown</span>
           </div>
           
-          <div className="flex gap-4 h-[60vh]">
+          <div className="flex gap-4 h-[55vh]">
             <ScrollArea className="flex-1 border rounded-lg p-2">
               {isLoadingHistory ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -5447,8 +5567,26 @@ ${parsed.analyzer}`);
                       <Button
                         variant="ghost"
                         size="sm"
+                        title="Download as JSON"
+                        onClick={() => {
+                          const content = JSON.stringify(selectedHistoryItem.outputData, null, 2);
+                          const blob = new Blob([content], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${selectedHistoryItem.analysisType}-${selectedHistoryItem.id}.json`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        data-testid="button-download-history"
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteHistoryItem(selectedHistoryItem.id)}
+                        onClick={async () => { await handleDeleteHistoryItem(selectedHistoryItem.id); fetchStorageStatus(); }}
                         data-testid="button-delete-history"
                       >
                         <Trash2 className="w-4 h-4" />

@@ -49,11 +49,14 @@ export interface IStorage {
   updateStylometricAuthor(id: number, author: Partial<InsertStylometricAuthor>): Promise<StylometricAuthor | undefined>;
   deleteStylometricAuthor(id: number): Promise<boolean>;
   
-  createAnalysisHistory(history: InsertAnalysisHistory): Promise<AnalysisHistory>;
+  createAnalysisHistory(history: InsertAnalysisHistory): Promise<{ entry: AnalysisHistory; autoFlushed: number }>;
   getAnalysisHistory(userId: number): Promise<AnalysisHistory[]>;
   getAnalysisHistoryByType(userId: number, analysisType: string): Promise<AnalysisHistory[]>;
   getAnalysisHistoryItem(id: number): Promise<AnalysisHistory | undefined>;
   deleteAnalysisHistoryItem(id: number): Promise<boolean>;
+  countAnalysisHistory(userId: number): Promise<number>;
+  flushOldestHistory(userId: number, deleteCount: number): Promise<number>;
+  deleteAllAnalysisHistory(userId: number): Promise<number>;
   
   // Corpus management
   getAllCorpusAuthors(): Promise<CorpusAuthor[]>;
@@ -200,9 +203,20 @@ export class DatabaseStorage implements IStorage {
     return true;
   }
   
-  async createAnalysisHistory(history: InsertAnalysisHistory): Promise<AnalysisHistory> {
+  static readonly HISTORY_LIMIT = 500;
+  static readonly HISTORY_WARNING_AT = 400;
+  static readonly HISTORY_AUTO_FLUSH = 50;
+
+  async createAnalysisHistory(history: InsertAnalysisHistory): Promise<{ entry: AnalysisHistory; autoFlushed: number }> {
+    let autoFlushed = 0;
+    if (history.userId) {
+      const count = await this.countAnalysisHistory(history.userId);
+      if (count >= DatabaseStorage.HISTORY_LIMIT) {
+        autoFlushed = await this.flushOldestHistory(history.userId, DatabaseStorage.HISTORY_AUTO_FLUSH);
+      }
+    }
     const [created] = await db.insert(analysisHistory).values(history).returning();
-    return created;
+    return { entry: created, autoFlushed };
   }
   
   async getAnalysisHistory(userId: number): Promise<AnalysisHistory[]> {
@@ -231,7 +245,37 @@ export class DatabaseStorage implements IStorage {
     await db.delete(analysisHistory).where(eq(analysisHistory.id, id));
     return true;
   }
-  
+
+  async countAnalysisHistory(userId: number): Promise<number> {
+    const [row] = await db.select({ count: sql<number>`count(*)::int` })
+      .from(analysisHistory)
+      .where(eq(analysisHistory.userId, userId));
+    return row?.count ?? 0;
+  }
+
+  async flushOldestHistory(userId: number, deleteCount: number): Promise<number> {
+    const oldest = await db.select({ id: analysisHistory.id })
+      .from(analysisHistory)
+      .where(eq(analysisHistory.userId, userId))
+      .orderBy(analysisHistory.createdAt)
+      .limit(deleteCount);
+    if (oldest.length === 0) return 0;
+    const ids = oldest.map(r => r.id);
+    await db.delete(analysisHistory).where(
+      sql`${analysisHistory.id} = ANY(ARRAY[${sql.join(ids.map(id => sql`${id}`), sql`, `)}]::int[])`
+    );
+    return oldest.length;
+  }
+
+  async deleteAllAnalysisHistory(userId: number): Promise<number> {
+    const rows = await db.select({ id: analysisHistory.id })
+      .from(analysisHistory)
+      .where(eq(analysisHistory.userId, userId));
+    if (rows.length === 0) return 0;
+    await db.delete(analysisHistory).where(eq(analysisHistory.userId, userId));
+    return rows.length;
+  }
+
   // Corpus management implementations
   async getAllCorpusAuthors(): Promise<CorpusAuthor[]> {
     return await db.select().from(corpusAuthors).orderBy(corpusAuthors.name);

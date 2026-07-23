@@ -2375,6 +2375,61 @@ Output the refined document now:`;
     }
   });
 
+  // Storage status endpoint
+  app.get("/api/storage-status", async (req, res) => {
+    try {
+      const { username } = req.query;
+      if (!username || typeof username !== "string") {
+        return res.status(400).json({ error: "Username required" });
+      }
+      const user = await storage.getUserByUsername(username.trim().toLowerCase());
+      if (!user) {
+        return res.json({ count: 0, limit: 500, warningAt: 400, percent: 0, nearFull: false, autoFlushed: 0 });
+      }
+      const count = await storage.countAnalysisHistory(user.id);
+      const limit = 500;
+      const warningAt = 400;
+      const percent = Math.round((count / limit) * 100);
+      res.json({ count, limit, warningAt, percent, nearFull: count >= warningAt, autoFlushed: 0 });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to get storage status" });
+    }
+  });
+
+  // Flush oldest history entries
+  app.post("/api/history/flush", async (req, res) => {
+    try {
+      const { username, count: flushCount } = req.body;
+      if (!username || typeof username !== "string") {
+        return res.status(400).json({ error: "Username required" });
+      }
+      const user = await storage.getUserByUsername(username.trim().toLowerCase());
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const n = typeof flushCount === "number" && flushCount > 0 ? flushCount : 50;
+      const deleted = await storage.flushOldestHistory(user.id, n);
+      const newCount = await storage.countAnalysisHistory(user.id);
+      res.json({ success: true, deleted, newCount });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to flush history" });
+    }
+  });
+
+  // Delete ALL history for user
+  app.delete("/api/history/all", async (req, res) => {
+    try {
+      const { username } = req.query;
+      if (!username || typeof username !== "string") {
+        return res.status(400).json({ error: "Username required" });
+      }
+      const user = await storage.getUserByUsername(username.trim().toLowerCase());
+      if (!user) return res.status(404).json({ error: "User not found" });
+      const deleted = await storage.deleteAllAnalysisHistory(user.id);
+      res.json({ success: true, deleted });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message || "Failed to clear history" });
+    }
+  });
+
   app.post("/api/intelligence", async (req, res) => {
     try {
       const { text, provider, username } = req.body;
