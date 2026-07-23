@@ -972,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('X-Accel-Buffering', 'no');
 
     try {
-      const selectedProvider = provider || 'openai';
+      const selectedProvider = provider || "grok";
       const resolutionLevel = typeof resolution === 'number' ? resolution : 0;
       const recognizeContent = recognizeContentSections === true;
 
@@ -1350,158 +1350,6 @@ Output the refined document now:`;
     }
   });
 
-  // ============ BOOK TO DATABASE ============
-  app.post("/api/book-to-database/stream", async (req, res) => {
-    const { text, provider, title, author, username } = req.body;
-
-    if (!text || typeof text !== "string" || text.trim().length < 100) {
-      return res.status(400).json({ error: "Text must be at least 100 characters" });
-    }
-
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-    res.flushHeaders();
-
-    let isComplete = false;
-    let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
-
-    const cleanup = () => {
-      isComplete = true;
-      if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
-    };
-
-    const flushResponse = () => {
-      if (typeof (res as any).flush === 'function') (res as any).flush();
-    };
-
-    heartbeatInterval = setInterval(() => {
-      if (!isComplete) {
-        try { res.write(`data: ${JSON.stringify({ type: 'heartbeat' })}\n\n`); flushResponse(); } catch {}
-      }
-    }, 15000);
-
-    req.on('close', cleanup);
-    req.on('error', cleanup);
-
-    res.write(`data: ${JSON.stringify({ type: 'progress', stage: 'starting', message: 'Starting Book to Database analysis…' })}\n\n`);
-    flushResponse();
-
-    try {
-      const { runBookToDatabase } = await import("./services/bookToDatabase");
-      const result = await runBookToDatabase(
-        text,
-        provider || "anthropic",
-        title,
-        author,
-        (progress) => {
-          if (!isComplete) {
-            res.write(`data: ${JSON.stringify({ type: 'progress', ...progress })}\n\n`);
-            flushResponse();
-          }
-        }
-      );
-
-      // Save to history
-      if (username && typeof username === "string" && username.trim().length >= 2) {
-        try {
-          const cleanUsername = username.trim().toLowerCase();
-          let user = await storage.getUserByUsername(cleanUsername);
-          if (!user) user = await storage.createUser({ username: cleanUsername });
-          await storage.createAnalysisHistory({
-            userId: user.id,
-            analysisType: "book-to-database",
-            provider: provider || "anthropic",
-            inputPreview: text.substring(0, 200) + (text.length > 200 ? "..." : ""),
-            outputData: result
-          });
-        } catch (saveError) {
-          console.error("Failed to save book database to history:", saveError);
-        }
-      }
-
-      // Save to book_databases if authenticated
-      let savedId: number | undefined;
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const saved = await storage.createBookDatabase({
-            userId: req.user.id,
-            title: title || result.meta.title || null,
-            author: author || result.meta.author || null,
-            wordCount: result.meta.wordCount,
-            provider: provider || "anthropic",
-            result: result as any,
-          });
-          savedId = saved.id;
-        } catch (dbErr) {
-          console.error("Failed to save book database:", dbErr);
-        }
-
-        // Deduct credits
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const outputText = JSON.stringify(result);
-          const wordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "anthropic", wordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
-          flushResponse();
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
-        }
-      }
-
-      cleanup();
-      res.write(`data: ${JSON.stringify({ type: 'complete', result, savedId })}\n\n`);
-      flushResponse();
-      res.end();
-    } catch (error: any) {
-      cleanup();
-      console.error("Book to database error:", error);
-      res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
-      flushResponse();
-      res.end();
-    }
-  });
-
-  // GET saved book databases for the current user
-  app.get("/api/book-databases", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user) {
-      return res.json([]);
-    }
-    try {
-      const dbs = await storage.getBookDatabases(req.user.id);
-      res.json(dbs);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.get("/api/book-databases/:id", async (req, res) => {
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
-    try {
-      const db = await storage.getBookDatabase(id);
-      if (!db) return res.status(404).json({ error: "Not found" });
-      res.json(db);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
-  app.delete("/api/book-databases/:id", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user) return res.status(401).json({ error: "Unauthorized" });
-    const id = parseInt(req.params.id);
-    if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
-    try {
-      const deleted = await storage.deleteBookDatabase(id);
-      res.json({ success: deleted });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
   app.post("/api/tts", async (req, res) => {
     try {
       const { text, format, mode, voice, speakers, instructions, username } = req.body || {};
@@ -1593,7 +1441,7 @@ Output the refined document now:`;
       const rawFeatures = computeRawFeatures(text);
       const prompt = buildSingleTextPrompt(authorName, sourceTitle || '', text, rawFeatures);
       
-      const llmResponse = await callLLM(provider || 'openai', prompt);
+      const llmResponse = await callLLM(provider || 'grok', prompt);
       
       let llmResult;
       try {
@@ -1658,7 +1506,7 @@ Output the refined document now:`;
           await storage.createAnalysisHistory({
             userId: user.id,
             analysisType: "stylometrics",
-            provider: provider || 'openai',
+            provider: provider || "grok",
             inputPreview: inputPreview,
             outputData: responseData.data
           });
@@ -1711,7 +1559,7 @@ Output the refined document now:`;
 
       const prompt = buildSingleTextPrompt(authorName, sourceTitle || '', text, rawFeatures);
       
-      const llmResponse = await callLLM(provider || 'openai', prompt);
+      const llmResponse = await callLLM(provider || 'grok', prompt);
       
       for (let i = 0; i < llmResponse.length; i += 100) {
         const chunk = llmResponse.slice(i, i + 100);
@@ -1782,7 +1630,7 @@ Output the refined document now:`;
         try {
           const { calculateCreditsForWords } = await import("./services/stripe");
           const outputWordCount = fullReport.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || 'openai', outputWordCount);
+          const creditsUsed = calculateCreditsForWords(provider || "grok", outputWordCount);
           await storage.deductCredits(req.user.id, creditsUsed);
           res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
         } catch (creditError) {
@@ -1827,7 +1675,7 @@ Output the refined document now:`;
         { authorName: textB.authorName, text: textB.text, rawFeatures: rawFeaturesB }
       );
 
-      const llmResponse = await callLLM(provider || 'openai', prompt);
+      const llmResponse = await callLLM(provider || 'grok', prompt);
       
       let llmResult;
       try {
@@ -1895,7 +1743,7 @@ Output the refined document now:`;
           await storage.createAnalysisHistory({
             userId: user.id,
             analysisType: "stylometrics_compare",
-            provider: provider || 'openai',
+            provider: provider || "grok",
             inputPreview: inputPreview,
             outputData: responseData.data
           });
@@ -1983,7 +1831,7 @@ Output the refined document now:`;
         result = await compareStylometricsHolistic(
           text,
           textB,
-          provider || 'openai',
+          provider || 'grok',
           authorName,
           authorNameB || 'Unknown B',
           (progress) => {
@@ -2013,7 +1861,7 @@ Output the refined document now:`;
             await storage.createAnalysisHistory({
               userId: user.id,
               analysisType: "stylometrics_holistic_compare",
-              provider: provider || 'openai',
+              provider: provider || "grok",
               inputPreview: `Holistic: ${authorName} vs ${authorNameB}`,
               outputData: result
             });
@@ -2024,7 +1872,7 @@ Output the refined document now:`;
       } else {
         result = await analyzeStylometricsHolistic(
           text,
-          provider || 'openai',
+          provider || 'grok',
           authorName,
           (progress) => {
             if (!aborted) {
@@ -2053,7 +1901,7 @@ Output the refined document now:`;
             await storage.createAnalysisHistory({
               userId: user.id,
               analysisType: "stylometrics_holistic",
-              provider: provider || 'openai',
+              provider: provider || "grok",
               inputPreview: `Holistic: ${authorName} - ${text.substring(0, 150)}...`,
               outputData: result
             });
@@ -2069,7 +1917,7 @@ Output the refined document now:`;
           const { calculateCreditsForWords } = await import("./services/stripe");
           const outputText = JSON.stringify(result);
           const outputWordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || 'openai', outputWordCount);
+          const creditsUsed = calculateCreditsForWords(provider || "grok", outputWordCount);
           await storage.deductCredits(req.user.id, creditsUsed);
           res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
         } catch (creditError) {
@@ -2372,61 +2220,6 @@ Output the refined document now:`;
       res.status(500).json({ 
         error: error.message || "Failed to delete history item" 
       });
-    }
-  });
-
-  // Storage status endpoint
-  app.get("/api/storage-status", async (req, res) => {
-    try {
-      const { username } = req.query;
-      if (!username || typeof username !== "string") {
-        return res.status(400).json({ error: "Username required" });
-      }
-      const user = await storage.getUserByUsername(username.trim().toLowerCase());
-      if (!user) {
-        return res.json({ count: 0, limit: 500, warningAt: 400, percent: 0, nearFull: false, autoFlushed: 0 });
-      }
-      const count = await storage.countAnalysisHistory(user.id);
-      const limit = 500;
-      const warningAt = 400;
-      const percent = Math.round((count / limit) * 100);
-      res.json({ count, limit, warningAt, percent, nearFull: count >= warningAt, autoFlushed: 0 });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message || "Failed to get storage status" });
-    }
-  });
-
-  // Flush oldest history entries
-  app.post("/api/history/flush", async (req, res) => {
-    try {
-      const { username, count: flushCount } = req.body;
-      if (!username || typeof username !== "string") {
-        return res.status(400).json({ error: "Username required" });
-      }
-      const user = await storage.getUserByUsername(username.trim().toLowerCase());
-      if (!user) return res.status(404).json({ error: "User not found" });
-      const n = typeof flushCount === "number" && flushCount > 0 ? flushCount : 50;
-      const deleted = await storage.flushOldestHistory(user.id, n);
-      const newCount = await storage.countAnalysisHistory(user.id);
-      res.json({ success: true, deleted, newCount });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message || "Failed to flush history" });
-    }
-  });
-
-  // Delete ALL history for user
-  app.delete("/api/history/all", async (req, res) => {
-    try {
-      const { username } = req.query;
-      if (!username || typeof username !== "string") {
-        return res.status(400).json({ error: "Username required" });
-      }
-      const user = await storage.getUserByUsername(username.trim().toLowerCase());
-      if (!user) return res.status(404).json({ error: "User not found" });
-      const deleted = await storage.deleteAllAnalysisHistory(user.id);
-      res.json({ success: true, deleted });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message || "Failed to clear history" });
     }
   });
 

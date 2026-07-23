@@ -14,8 +14,6 @@ import {
   type PhilosophicalPosition,
   type InsertPhilosophicalPosition,
   type Visit,
-  type BookDatabase,
-  type InsertBookDatabase,
   users, 
   stylometricAuthors,
   analysisHistory,
@@ -23,8 +21,7 @@ import {
   corpusWorks,
   workSections,
   philosophicalPositions,
-  visits,
-  bookDatabases,
+  visits
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, ilike, or, sql, gte } from "drizzle-orm";
@@ -49,14 +46,11 @@ export interface IStorage {
   updateStylometricAuthor(id: number, author: Partial<InsertStylometricAuthor>): Promise<StylometricAuthor | undefined>;
   deleteStylometricAuthor(id: number): Promise<boolean>;
   
-  createAnalysisHistory(history: InsertAnalysisHistory): Promise<{ entry: AnalysisHistory; autoFlushed: number }>;
+  createAnalysisHistory(history: InsertAnalysisHistory): Promise<AnalysisHistory>;
   getAnalysisHistory(userId: number): Promise<AnalysisHistory[]>;
   getAnalysisHistoryByType(userId: number, analysisType: string): Promise<AnalysisHistory[]>;
   getAnalysisHistoryItem(id: number): Promise<AnalysisHistory | undefined>;
   deleteAnalysisHistoryItem(id: number): Promise<boolean>;
-  countAnalysisHistory(userId: number): Promise<number>;
-  flushOldestHistory(userId: number, deleteCount: number): Promise<number>;
-  deleteAllAnalysisHistory(userId: number): Promise<number>;
   
   // Corpus management
   getAllCorpusAuthors(): Promise<CorpusAuthor[]>;
@@ -88,12 +82,6 @@ export interface IStorage {
   getLastVisit(userId: number): Promise<Visit | undefined>;
   getVisits(limit: number): Promise<Visit[]>;
   getVisitTimestampsSince(since: Date | null): Promise<Date[]>;
-
-  // Book databases
-  createBookDatabase(entry: InsertBookDatabase): Promise<BookDatabase>;
-  getBookDatabases(userId: number): Promise<BookDatabase[]>;
-  getBookDatabase(id: number): Promise<BookDatabase | undefined>;
-  deleteBookDatabase(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -203,20 +191,9 @@ export class DatabaseStorage implements IStorage {
     return true;
   }
   
-  static readonly HISTORY_LIMIT = 500;
-  static readonly HISTORY_WARNING_AT = 400;
-  static readonly HISTORY_AUTO_FLUSH = 50;
-
-  async createAnalysisHistory(history: InsertAnalysisHistory): Promise<{ entry: AnalysisHistory; autoFlushed: number }> {
-    let autoFlushed = 0;
-    if (history.userId) {
-      const count = await this.countAnalysisHistory(history.userId);
-      if (count >= DatabaseStorage.HISTORY_LIMIT) {
-        autoFlushed = await this.flushOldestHistory(history.userId, DatabaseStorage.HISTORY_AUTO_FLUSH);
-      }
-    }
+  async createAnalysisHistory(history: InsertAnalysisHistory): Promise<AnalysisHistory> {
     const [created] = await db.insert(analysisHistory).values(history).returning();
-    return { entry: created, autoFlushed };
+    return created;
   }
   
   async getAnalysisHistory(userId: number): Promise<AnalysisHistory[]> {
@@ -245,37 +222,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(analysisHistory).where(eq(analysisHistory.id, id));
     return true;
   }
-
-  async countAnalysisHistory(userId: number): Promise<number> {
-    const [row] = await db.select({ count: sql<number>`count(*)::int` })
-      .from(analysisHistory)
-      .where(eq(analysisHistory.userId, userId));
-    return row?.count ?? 0;
-  }
-
-  async flushOldestHistory(userId: number, deleteCount: number): Promise<number> {
-    const oldest = await db.select({ id: analysisHistory.id })
-      .from(analysisHistory)
-      .where(eq(analysisHistory.userId, userId))
-      .orderBy(analysisHistory.createdAt)
-      .limit(deleteCount);
-    if (oldest.length === 0) return 0;
-    const ids = oldest.map(r => r.id);
-    await db.delete(analysisHistory).where(
-      sql`${analysisHistory.id} = ANY(ARRAY[${sql.join(ids.map(id => sql`${id}`), sql`, `)}]::int[])`
-    );
-    return oldest.length;
-  }
-
-  async deleteAllAnalysisHistory(userId: number): Promise<number> {
-    const rows = await db.select({ id: analysisHistory.id })
-      .from(analysisHistory)
-      .where(eq(analysisHistory.userId, userId));
-    if (rows.length === 0) return 0;
-    await db.delete(analysisHistory).where(eq(analysisHistory.userId, userId));
-    return rows.length;
-  }
-
+  
   // Corpus management implementations
   async getAllCorpusAuthors(): Promise<CorpusAuthor[]> {
     return await db.select().from(corpusAuthors).orderBy(corpusAuthors.name);
@@ -451,27 +398,6 @@ export class DatabaseStorage implements IStorage {
       ? await db.select({ visitedAt: visits.visitedAt }).from(visits).where(gte(visits.visitedAt, since))
       : await db.select({ visitedAt: visits.visitedAt }).from(visits);
     return rows.map((r) => r.visitedAt);
-  }
-
-  async createBookDatabase(entry: InsertBookDatabase): Promise<BookDatabase> {
-    const [created] = await db.insert(bookDatabases).values(entry).returning();
-    return created;
-  }
-
-  async getBookDatabases(userId: number): Promise<BookDatabase[]> {
-    return await db.select().from(bookDatabases)
-      .where(eq(bookDatabases.userId, userId))
-      .orderBy(desc(bookDatabases.createdAt));
-  }
-
-  async getBookDatabase(id: number): Promise<BookDatabase | undefined> {
-    const [entry] = await db.select().from(bookDatabases).where(eq(bookDatabases.id, id));
-    return entry;
-  }
-
-  async deleteBookDatabase(id: number): Promise<boolean> {
-    const result = await db.delete(bookDatabases).where(eq(bookDatabases.id, id)).returning();
-    return result.length > 0;
   }
 }
 

@@ -84,7 +84,7 @@ import {
   ResizableDialogTitle,
   ResizableDialogDescription,
 } from "@/components/ui/resizable-dialog";
-import { analyzeText, analyzeTextStreaming, AnalysisResult } from "@/lib/llm";
+import { analyzeText, analyzeTextStreaming, AnalysisResult, measureIntelligence, compareIntelligence, IntelligenceResult, IntelligenceCompareResult } from "@/lib/llm";
 
 function GoogleGIcon({ className }: { className?: string }) {
   return (
@@ -132,7 +132,7 @@ function GoogleHeaderLoginButton() {
   );
 }
 
-type LLM = "openai" | "anthropic";
+type LLM = "grok" | "openai" | "anthropic" | "perplexity" | "deepseek";
 
 interface Chunk {
   id: number;
@@ -308,9 +308,8 @@ function buildAccumulatedDisplay(
 
 export default function Home() {
   const [authLoaded, setAuthLoaded] = useState(false);
-  const [showLoginGate, setShowLoginGate] = useState(false);
   const [text, setText] = useState("");
-  const [selectedLLM, setSelectedLLM] = useState<LLM>("openai");
+  const [selectedLLM, setSelectedLLM] = useState<LLM>("deepseek");
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -365,11 +364,23 @@ export default function Home() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [selectedHistoryItem, setSelectedHistoryItem] = useState<any>(null);
   const [historyTypeFilter, setHistoryTypeFilter] = useState<string>("all");
-  const [storageStatus, setStorageStatus] = useState<{ count: number; limit: number; percent: number; nearFull: boolean } | null>(null);
-  const [storageBannerDismissed, setStorageBannerDismissed] = useState(false);
-  const [isFlushingHistory, setIsFlushingHistory] = useState(false);
   
+  const [showIntelligenceDialog, setShowIntelligenceDialog] = useState(false);
+  const [intelligenceTab, setIntelligenceTab] = useState<"single" | "compare">("single");
+  const [intelligenceTextA, setIntelligenceTextA] = useState("");
+  const [intelligenceTextB, setIntelligenceTextB] = useState("");
+  const [intelligenceResult, setIntelligenceResult] = useState<IntelligenceResult | null>(null);
+  const [intelligenceCompareResult, setIntelligenceCompareResult] = useState<IntelligenceCompareResult | null>(null);
+  const [isAnalyzingIntelligence, setIsAnalyzingIntelligence] = useState(false);
+  const [isDraggingIntelA, setIsDraggingIntelA] = useState(false);
+  const [isDraggingIntelB, setIsDraggingIntelB] = useState(false);
+  const intelFileRefA = useRef<HTMLInputElement>(null);
+  const intelFileRefB = useRef<HTMLInputElement>(null);
   const stylometricsFileRefB = useRef<HTMLInputElement>(null);
+  const [useIntelOutlineMode, setUseIntelOutlineMode] = useState(true);
+  const [intelligenceProgress, setIntelligenceProgress] = useState<{stage: string, message: string, current?: number, total?: number} | null>(null);
+  const [holisticIntelResult, setHolisticIntelResult] = useState<{score: number, ratio: number, totalTextLength: number, totalSignalLength: number, quotes: {author: string, quote: string, source: string, charLength: number}[], analysis: string, mode: string} | null>(null);
+  const [intelligenceAuthor, setIntelligenceAuthor] = useState("");
   
   const [allDayMode, setAllDayMode] = useState(false);
   const [allDayProgress, setAllDayProgress] = useState<{current: number, total: number, timeRemaining: string} | null>(null);
@@ -396,20 +407,6 @@ export default function Home() {
   const [positionExtractionSummary, setPositionExtractionSummary] = useState("");
   const [positionExtractorAuthor, setPositionExtractorAuthor] = useState("");
   const [positionExtractionDepth, setPositionExtractionDepth] = useState(8);
-
-  // Book to Database state
-  const [showBookDbDialog, setShowBookDbDialog] = useState(false);
-  const [bookDbText, setBookDbText] = useState("");
-  const [bookDbTitle, setBookDbTitle] = useState("");
-  const [bookDbAuthor, setBookDbAuthor] = useState("");
-  const [bookDbQueryText, setBookDbQueryText] = useState("");
-  const [bookDbQueryResult, setBookDbQueryResult] = useState("");
-  const [isQueryingBookDb, setIsQueryingBookDb] = useState(false);
-  const [isRunningBookDb, setIsRunningBookDb] = useState(false);
-  const [bookDbProgress, setBookDbProgress] = useState<{stage: string, message: string, current?: number, total?: number} | null>(null);
-  const [bookDbResult, setBookDbResult] = useState<any | null>(null);
-  const [bookDbActiveTab, setBookDbActiveTab] = useState("positions");
-  const [bookDbSavedId, setBookDbSavedId] = useState<number | null>(null);
 
   // Holistic Quote Extractor state
   const [showQuoteExtractor, setShowQuoteExtractor] = useState(false);
@@ -585,20 +582,9 @@ export default function Home() {
   useEffect(() => {
     if (username) {
       loadHistory(historyTypeFilter);
-      fetchStorageStatus();
     }
   }, [username]);
-
-  // Soft login gate: fire when anonymous user receives significant output (>150 words)
-  const LOGIN_GATE_WORDS = 150;
-  useEffect(() => {
-    if (username || showLoginGate) return;
-    const output = streamingOutput || (result ? JSON.stringify(result) : "");
-    if (output.split(/\s+/).filter(Boolean).length >= LOGIN_GATE_WORDS) {
-      setShowLoginGate(true);
-    }
-  }, [streamingOutput, result, username, showLoginGate]);
-
+  
   // Update chunks when text changes, preserving processed state
   useEffect(() => {
     if (needsChunking) {
@@ -819,63 +805,6 @@ export default function Home() {
   // No login system: the app is fully open, no paywall gating
   const hasCredits = true;
   
-  const fetchStorageStatus = async () => {
-    if (!username) return;
-    try {
-      const res = await fetch(`/api/storage-status?username=${encodeURIComponent(username)}`, { credentials: 'include' });
-      if (res.ok) {
-        const data = await res.json();
-        setStorageStatus(data);
-        if (data.nearFull) setStorageBannerDismissed(false);
-      }
-    } catch {}
-  };
-
-  const handleFlushOldest = async (count: number = 50) => {
-    if (!username) return;
-    setIsFlushingHistory(true);
-    try {
-      const res = await fetch('/api/history/flush', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ username, count })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        toast({ description: `Deleted ${data.deleted} oldest entries. ${data.newCount} remaining.` });
-        await fetchStorageStatus();
-        await loadHistory(historyTypeFilter);
-      }
-    } catch (e) {
-      toast({ variant: 'destructive', description: 'Failed to flush history' });
-    } finally {
-      setIsFlushingHistory(false);
-    }
-  };
-
-  const handleClearAllHistory = async () => {
-    if (!username) return;
-    setIsFlushingHistory(true);
-    try {
-      const res = await fetch(`/api/history/all?username=${encodeURIComponent(username)}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
-      if (res.ok) {
-        const data = await res.json();
-        toast({ description: `Cleared all ${data.deleted} history entries.` });
-        setHistoryItems([]);
-        setSelectedHistoryItem(null);
-        await fetchStorageStatus();
-      }
-    } catch (e) {
-      toast({ variant: 'destructive', description: 'Failed to clear history' });
-    } finally {
-      setIsFlushingHistory(false);
-    }
-  };
-
   const loadHistory = async (typeFilter?: string) => {
     if (!username) return;
     
@@ -908,7 +837,6 @@ export default function Home() {
     }
     setShowHistoryDialog(true);
     loadHistory(historyTypeFilter);
-    fetchStorageStatus();
   };
   
   const handleDeleteHistoryItem = async (itemId: number) => {
@@ -1541,6 +1469,120 @@ export default function Home() {
     }
   };
 
+  const handleMeasureIntelligence = async () => {
+    const textToAnalyze = intelligenceTab === "single" ? (intelligenceTextA || text) : intelligenceTextA;
+    
+    if (!textToAnalyze.trim()) {
+      toast({
+        title: "Text required",
+        description: "Please enter or paste text to analyze",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsAnalyzingIntelligence(true);
+    setIntelligenceResult(null);
+    setIntelligenceCompareResult(null);
+    setHolisticIntelResult(null);
+    setIntelligenceProgress(null);
+    
+    try {
+      if (intelligenceTab === "single") {
+        if (useIntelOutlineMode) {
+          const response = await fetch('/api/intelligence/stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              text: textToAnalyze,
+              provider: selectedLLM,
+              username: username || undefined,
+              author: intelligenceAuthor || undefined,
+              useOutlineMode: true
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to start intelligence analysis');
+          }
+
+          const reader = response.body?.getReader();
+          if (!reader) throw new Error('No response body');
+
+          const decoder = new TextDecoder();
+          let buffer = '';
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const parsed = JSON.parse(line.slice(6));
+                  if (parsed.type === 'progress') {
+                    setIntelligenceProgress(parsed.progress);
+                  } else if (parsed.type === 'result') {
+                    setHolisticIntelResult(parsed.result);
+                    setIntelligenceProgress({ stage: "complete", message: `Score: ${parsed.result.score}/100` });
+                    toast({
+                      title: "Intelligence Measured",
+                      description: `Score: ${parsed.result.score}/100 (${parsed.result.quotes?.length || 0} signal quotes found)`,
+                    });
+                  } else if (parsed.type === 'error') {
+                    throw new Error(parsed.error);
+                  }
+                } catch (parseError) {
+                  console.error('Failed to parse SSE data:', parseError);
+                }
+              }
+            }
+          }
+        } else {
+          const result = await measureIntelligence(textToAnalyze, selectedLLM, username || undefined);
+          setIntelligenceResult(result);
+          
+          toast({
+            title: "Intelligence Measured",
+            description: `Score: ${result.score}/100 (${result.quoteCount} sharp quotes found)`,
+          });
+        }
+      } else {
+        if (!intelligenceTextB.trim()) {
+          toast({
+            title: "Text B required",
+            description: "Please provide both texts for comparison",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        const result = await compareIntelligence(textToAnalyze, intelligenceTextB, selectedLLM, username || undefined);
+        setIntelligenceCompareResult(result);
+        
+        toast({
+          title: "Comparison Complete",
+          description: result.winner,
+        });
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        title: "Analysis Failed",
+        description: error.message || "Unknown error occurred",
+        variant: "destructive",
+      });
+      setIntelligenceProgress({ stage: "error", message: error.message || "Analysis failed" });
+    } finally {
+      setIsAnalyzingIntelligence(false);
+      fetchCredits();
+    }
+  };
 
   const handlePositionsFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -3878,108 +3920,18 @@ ${parsed.analyzer}`);
     }
   };
 
-  const handleRunBookToDatabase = async () => {
-    const inputText = bookDbText.trim() || text.trim();
-    if (!inputText) {
-      toast({ title: "Text required", description: "Paste text or upload a file to analyze", variant: "destructive" });
-      return;
-    }
-    setIsRunningBookDb(true);
-    setBookDbResult(null);
-    setBookDbProgress({ stage: "starting", message: "Starting…" });
-    setBookDbSavedId(null);
-
-    try {
-      const response = await fetch('/api/book-to-database/stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          text: inputText,
-          provider: selectedLLM,
-          title: bookDbTitle || undefined,
-          author: bookDbAuthor || undefined,
-          username: username || undefined,
-        })
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Failed to start analysis');
-      }
-
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error('No response body');
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          try {
-            const parsed = JSON.parse(line.slice(6));
-            if (parsed.type === 'progress') {
-              setBookDbProgress({ stage: parsed.stage, message: parsed.message, current: parsed.current, total: parsed.total });
-            } else if (parsed.type === 'complete') {
-              setBookDbResult(parsed.result);
-              if (parsed.savedId) setBookDbSavedId(parsed.savedId);
-              setBookDbProgress({ stage: 'complete', message: 'Database assembled' });
-              toast({ title: "Book Database Ready", description: `${parsed.result?.positions?.length || 0} positions · ${parsed.result?.quotes?.length || 0} quotes · ${parsed.result?.arguments?.length || 0} arguments` });
-            } else if (parsed.type === 'error') {
-              throw new Error(parsed.error);
-            }
-          } catch (parseErr: any) {
-            if (parseErr.message?.includes('Failed to start')) throw parseErr;
-          }
-        }
-      }
-    } catch (error: any) {
-      console.error(error);
-      toast({ title: "Analysis Failed", description: error.message || "Unknown error", variant: "destructive" });
-      setBookDbProgress({ stage: "error", message: error.message || "Failed" });
-    } finally {
-      setIsRunningBookDb(false);
-      fetchCredits();
-    }
-  };
-
-  const handleQueryBookDb = async () => {
-    if (!bookDbResult || !bookDbQueryText.trim()) return;
-    setIsQueryingBookDb(true);
-    setBookDbQueryResult("");
-    try {
-      const positions = (bookDbResult.positions || []).map((p: any) => `[${p.id}] (${p.type}) ${p.claim}`).join("\n");
-      const quotes = (bookDbResult.quotes || []).map((q: any) => `[${q.id}] "${q.text}"`).join("\n");
-      const prompt = `You are querying a structured intellectual database built from a text.\n\nPOSITIONS:\n${positions}\n\nQUOTES:\n${quotes}\n\nQUESTION: ${bookDbQueryText}\n\nAnswer based only on the positions and quotes above. Be specific and cite IDs where relevant. If the database doesn't contain enough information to answer, say so clearly.`;
-      const res = await fetch('/api/intelligence', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ text: prompt, provider: selectedLLM, username: username || undefined })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setBookDbQueryResult(data.analysis || data.result || JSON.stringify(data));
-      } else {
-        throw new Error("Query failed");
-      }
-    } catch (e: any) {
-      toast({ variant: "destructive", description: e.message || "Query failed" });
-    } finally {
-      setIsQueryingBookDb(false);
-    }
-  };
-
   const openStylometricsWithText = () => {
     if (text.trim()) {
       setStylometricsText(text);
     }
     setShowStylometricsDialog(true);
+  };
+
+  const openIntelligenceWithText = () => {
+    if (text.trim()) {
+      setIntelligenceTextA(text);
+    }
+    setShowIntelligenceDialog(true);
   };
 
   const openQuoteFinderWithText = () => {
@@ -3989,38 +3941,93 @@ ${parsed.analyzer}`);
     setShowQuoteFinderDialog(true);
   };
 
+  const handleIntelFileUpload = (file: File, target: 'A' | 'B') => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (target === 'A') {
+        setIntelligenceTextA(content);
+      } else {
+        setIntelligenceTextB(content);
+      }
+      toast({
+        title: "File Uploaded",
+        description: `${file.name} loaded to Text ${target} (${content.split(/\s+/).filter(Boolean).length} words)`,
+      });
+    };
+    reader.onerror = () => {
+      toast({
+        title: "Error",
+        description: "Could not read file",
+        variant: "destructive",
+      });
+    };
+    reader.readAsText(file);
+  };
+
+  const handleIntelDrop = (e: React.DragEvent, target: 'A' | 'B') => {
+    e.preventDefault();
+    if (target === 'A') setIsDraggingIntelA(false);
+    else setIsDraggingIntelB(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      handleIntelFileUpload(file, target);
+    }
+  };
+
+  const handleIntelDragOver = (e: React.DragEvent, target: 'A' | 'B') => {
+    e.preventDefault();
+    if (target === 'A') setIsDraggingIntelA(true);
+    else setIsDraggingIntelB(true);
+  };
+
+  const handleIntelDragLeave = (e: React.DragEvent, target: 'A' | 'B') => {
+    e.preventDefault();
+    if (target === 'A') setIsDraggingIntelA(false);
+    else setIsDraggingIntelB(false);
+  };
+
+  // Login wall — show spinner while checking, then login screen if not authed
+  if (!authLoaded) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!username) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full flex flex-col items-center gap-8 border border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary text-white rounded-xl flex items-center justify-center shadow-lg">
+              <Stethoscope className="w-7 h-7" />
+            </div>
+            <h1 className="font-bold text-3xl tracking-tight text-foreground">TEXT SURGEON</h1>
+          </div>
+          <div className="text-center space-y-2">
+            <p className="text-lg font-semibold text-foreground">Sign in to continue</p>
+            <p className="text-sm text-muted-foreground">Access is restricted to authorised users.</p>
+          </div>
+          <a
+            href="/api/auth/google"
+            target="_top"
+            onClick={handleGoogleLoginClick}
+            className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:border-primary hover:shadow-md rounded-xl px-6 py-3.5 font-semibold text-foreground transition-all duration-150"
+            data-testid="button-login-wall"
+          >
+            <GoogleGIcon className="w-5 h-5" />
+            Sign in with Google
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
-
-      {/* Soft login gate — appears after anonymous user generates significant output */}
-      {showLoginGate && (
-        <div className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6">
-          <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-md w-full flex flex-col items-center gap-6 border border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-gradient-to-br from-primary to-secondary text-white rounded-xl flex items-center justify-center shadow-lg">
-                <Stethoscope className="w-6 h-6" />
-              </div>
-              <h2 className="font-bold text-2xl tracking-tight text-foreground">TEXT SURGEON</h2>
-            </div>
-            <div className="text-center space-y-2">
-              <p className="text-lg font-semibold text-foreground">Sign in to keep going</p>
-              <p className="text-sm text-muted-foreground">You've seen what it can do. Sign in with Google to continue — it's free and takes 10 seconds.</p>
-            </div>
-            <a
-              href="/api/auth/google"
-              target="_top"
-              onClick={handleGoogleLoginClick}
-              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-slate-200 hover:border-primary hover:shadow-md rounded-xl px-6 py-3.5 font-semibold text-foreground transition-all duration-150"
-              data-testid="button-login-gate"
-            >
-              <GoogleGIcon className="w-5 h-5" />
-              Sign in with Google
-            </a>
-          </div>
-        </div>
-      )}
-
       <header className="border-b-4 border-primary sticky top-0 z-50 bg-white shadow-lg">
         <div className="w-full px-10 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -4060,8 +4067,11 @@ ${parsed.analyzer}`);
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="openai">OpenAI</SelectItem>
-                  <SelectItem value="anthropic">Anthropic</SelectItem>
+                  <SelectItem value="grok">Zhi 1</SelectItem>
+                  <SelectItem value="openai">Zhi 2</SelectItem>
+                  <SelectItem value="anthropic">Zhi 3</SelectItem>
+                  <SelectItem value="perplexity">Zhi 4</SelectItem>
+                  <SelectItem value="deepseek">Zhi 5</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -4108,31 +4118,6 @@ ${parsed.analyzer}`);
           </div>
         </div>
       </header>
-
-      {/* Storage warning banner */}
-      {username && storageStatus && storageStatus.nearFull && !storageBannerDismissed && (
-        <div className={`w-full px-10 py-2 flex items-center justify-between gap-4 text-sm font-medium ${storageStatus.percent >= 100 ? 'bg-red-100 border-b border-red-300 text-red-800' : 'bg-amber-100 border-b border-amber-300 text-amber-800'}`}>
-          <div className="flex items-center gap-3">
-            <span className="text-lg">{storageStatus.percent >= 100 ? '🚨' : '⚠️'}</span>
-            <span>
-              {storageStatus.percent >= 100
-                ? `Your history is full (${storageStatus.count}/${storageStatus.limit}). Oldest entries will be auto-deleted as you generate more.`
-                : `Your history is ${storageStatus.percent}% full (${storageStatus.count}/${storageStatus.limit} entries). Clean up before it fills.`}
-            </span>
-            <div className="flex-1 max-w-[200px] h-2 bg-white/60 rounded-full overflow-hidden">
-              <div className={`h-full rounded-full transition-all ${storageStatus.percent >= 90 ? 'bg-red-500' : 'bg-amber-500'}`} style={{ width: `${Math.min(storageStatus.percent, 100)}%` }} />
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="outline" className="h-7 text-xs border-current hover:bg-current/10" onClick={() => { setShowHistoryDialog(true); loadHistory(historyTypeFilter); }} data-testid="button-storage-manage">
-              Manage
-            </Button>
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setStorageBannerDismissed(true)} data-testid="button-storage-dismiss">
-              Dismiss
-            </Button>
-          </div>
-        </div>
-      )}
 
       <main className="w-full px-10 py-6">
         <ResizablePanelGroup direction="horizontal" className="gap-8" style={{minHeight: 'calc(100vh - 6rem)'}}>
@@ -4579,6 +4564,15 @@ ${parsed.analyzer}`);
                     STYLOMETRICS
                   </Button>
                   <Button 
+                    onClick={openIntelligenceWithText}
+                    disabled={isProcessing}
+                    className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:shadow-lg transition-all hover:scale-105"
+                    data-testid="button-intelligence"
+                  >
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    INTELLIGENCE
+                  </Button>
+                  <Button 
                     onClick={() => setShowPositionExtractor(true)}
                     disabled={isProcessing || !text}
                     className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:shadow-lg transition-all hover:scale-105"
@@ -4707,30 +4701,6 @@ ${parsed.analyzer}`);
                       <>
                         <BookOpen className="w-5 h-5 mr-2" />
                         LONG ANSWER
-                      </>
-                    )}
-                  </Button>
-                  <Button 
-                    onClick={() => {
-                      if (text.trim()) setBookDbText(text);
-                      setShowBookDbDialog(true);
-                      if (text.trim() || bookDbText.trim()) {
-                        handleRunBookToDatabase();
-                      }
-                    }}
-                    disabled={isRunningBookDb}
-                    className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white hover:shadow-lg transition-all hover:scale-105"
-                    data-testid="button-book-to-database"
-                  >
-                    {isRunningBookDb ? (
-                      <>
-                        <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        ANALYZING...
-                      </>
-                    ) : (
-                      <>
-                        <Database className="w-5 h-5 mr-2" />
-                        BOOKS TO DB
                       </>
                     )}
                   </Button>
@@ -5465,46 +5435,542 @@ ${parsed.analyzer}`);
         </ResizableDialogContent>
       </ResizableDialog>
       
+      {/* Intelligence Meter Dialog */}
+      <ResizableDialog open={showIntelligenceDialog} onOpenChange={setShowIntelligenceDialog}>
+        <ResizableDialogContent defaultWidth={900} defaultHeight={700} minWidth={500} minHeight={400}>
+          <ResizableDialogHeader>
+            <ResizableDialogTitle className="flex items-center gap-2 text-xl">
+              <Sparkles className="w-6 h-6 text-amber-600" />
+              Intelligence Meter
+            </ResizableDialogTitle>
+            <ResizableDialogDescription>
+              Extract truly sharp, knife-like insights and measure intellectual density.
+            </ResizableDialogDescription>
+          </ResizableDialogHeader>
+          
+          <Tabs value={intelligenceTab} onValueChange={(v) => setIntelligenceTab(v as "single" | "compare")} className="flex-1 flex flex-col overflow-hidden">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="single" className="gap-2">
+                <BookOpen className="w-4 h-4" />
+                Measure Intelligence
+              </TabsTrigger>
+              <TabsTrigger value="compare" className="gap-2">
+                <GitCompare className="w-4 h-4" />
+                Compare Intelligence
+              </TabsTrigger>
+            </TabsList>
+            
+            <div className="flex-1 overflow-y-auto mt-4">
+              <TabsContent value="single" className="mt-0 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="intelligence-text">Text to Analyze</Label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="file"
+                        ref={intelFileRefA}
+                        accept=".txt,.md,.text"
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleIntelFileUpload(e.target.files[0], 'A')}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => intelFileRefA.current?.click()}
+                        className="h-7 text-xs gap-1"
+                      >
+                        <Upload className="w-3 h-3" />
+                        Upload
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        {(intelligenceTextA || text).split(/\s+/).filter(Boolean).length} words
+                      </span>
+                    </div>
+                  </div>
+                  <div
+                    className={`relative rounded-lg transition-all ${isDraggingIntelA ? 'ring-2 ring-amber-500 bg-amber-50' : ''}`}
+                    onDrop={(e) => handleIntelDrop(e, 'A')}
+                    onDragOver={(e) => handleIntelDragOver(e, 'A')}
+                    onDragLeave={(e) => handleIntelDragLeave(e, 'A')}
+                  >
+                    <Textarea
+                      id="intelligence-text"
+                      placeholder="Paste text here, drag & drop a file, or click Upload..."
+                      value={intelligenceTextA}
+                      onChange={(e) => setIntelligenceTextA(e.target.value)}
+                      className="min-h-[200px] font-serif"
+                      data-testid="textarea-intelligence"
+                    />
+                    {isDraggingIntelA && (
+                      <div className="absolute inset-0 bg-amber-100/80 rounded-lg flex items-center justify-center pointer-events-none">
+                        <div className="text-amber-700 font-medium flex items-center gap-2">
+                          <Upload className="w-5 h-5" />
+                          Drop file here
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {!intelligenceTextA && text && (
+                    <p className="text-xs text-muted-foreground">Will use main input text ({text.split(/\s+/).filter(Boolean).length} words)</p>
+                  )}
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="intel-author">Author (optional)</Label>
+                    <Input
+                      id="intel-author"
+                      placeholder="Inferred from text if not provided"
+                      value={intelligenceAuthor}
+                      onChange={(e) => setIntelligenceAuthor(e.target.value)}
+                      data-testid="input-intel-author"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3 pt-6">
+                    <Switch
+                      id="use-intel-outline"
+                      checked={useIntelOutlineMode}
+                      onCheckedChange={setUseIntelOutlineMode}
+                      data-testid="switch-intel-outline"
+                    />
+                    <Label htmlFor="use-intel-outline" className="text-sm">
+                      Use Outline Mode (for large texts)
+                    </Label>
+                  </div>
+                </div>
+
+                {intelligenceProgress && isAnalyzingIntelligence && (
+                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-amber-600 border-t-transparent" />
+                      <div>
+                        <p className="font-medium text-amber-800">{intelligenceProgress.message}</p>
+                        {intelligenceProgress.current && intelligenceProgress.total && (
+                          <p className="text-sm text-amber-600">
+                            Section {intelligenceProgress.current} of {intelligenceProgress.total}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {holisticIntelResult && (() => {
+                  const totalWords = holisticIntelResult.analysis.split(/\s+/).filter(Boolean).length + 
+                    holisticIntelResult.quotes.reduce((sum, q) => sum + q.quote.split(/\s+/).filter(Boolean).length, 0);
+                  const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
+                  
+                  if (shouldPaywall) {
+                    return (
+                      <div className="space-y-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-lg text-amber-800">Intelligence Score</h4>
+                          <div className="text-5xl font-bold text-amber-600">{holisticIntelResult.score}</div>
+                        </div>
+                        <div className="text-sm text-amber-700 truncate bg-white/40 p-3 rounded-lg">
+                          {holisticIntelResult.analysis.substring(0, 200)}...
+                        </div>
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
+                          <div className="flex flex-col items-center text-center space-y-4">
+                            <div className="bg-amber-100 p-3 rounded-full">
+                              <Lock className="w-8 h-8 text-amber-600" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-900">Full Intelligence Report Paywalled</h3>
+                              <p className="text-sm text-gray-600 mt-1">
+                                {holisticIntelResult.quotes.length} signal quotes with {totalWords.toLocaleString()} total words. Purchase credits to unlock.
+                              </p>
+                            </div>
+                            <Button
+                              onClick={handleBuyCredits}
+                              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
+                              data-testid="button-intel-paywall-buy-credits"
+                            >
+                              <CreditCard className="w-5 h-5 mr-2" />
+                              Buy Credits to Unlock
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                  <div className="space-y-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-lg text-amber-800">Intelligence Score</h4>
+                      <div className="text-5xl font-bold text-amber-600">
+                        {holisticIntelResult.score}
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div className="p-3 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-amber-700">{(holisticIntelResult.ratio * 100).toFixed(1)}%</div>
+                        <div className="text-xs text-muted-foreground">Signal Ratio</div>
+                      </div>
+                      <div className="p-3 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-amber-700">{holisticIntelResult.totalSignalLength.toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">Signal Chars</div>
+                      </div>
+                      <div className="p-3 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-amber-700">{holisticIntelResult.quotes.length}</div>
+                        <div className="text-xs text-muted-foreground">Unique Quotes</div>
+                      </div>
+                    </div>
+
+                    <div className="text-sm text-amber-700 whitespace-pre-wrap bg-white/40 p-3 rounded-lg">
+                      {holisticIntelResult.analysis}
+                    </div>
+
+                    <div className="flex justify-end">
+                      <Button
+                        size="sm"
+                        variant="default"
+                        className="bg-amber-600 hover:bg-amber-700"
+                        onClick={() => {
+                          const fullReport = `INTELLIGENCE METER REPORT
+========================================
+
+${holisticIntelResult.analysis}
+
+========================================
+EXTRACTED SIGNAL QUOTES (${holisticIntelResult.quotes.length} total)
+========================================
+
+${holisticIntelResult.quotes.map((q, i) => `${i + 1}. [${q.source}]
+"${q.quote}"
+— ${q.author}
+`).join('\n')}`;
+                          const blob = new Blob([fullReport], { type: 'text/plain' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'intelligence_report.txt';
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        data-testid="button-download-intel-report"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download Full Report
+                      </Button>
+                    </div>
+                    
+                    {holisticIntelResult.quotes.length > 0 && (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label>Signal Quotes ({holisticIntelResult.quotes.length}):</Label>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const formatted = holisticIntelResult.quotes
+                                  .map((q) => `${q.quote} | ${q.source}`)
+                                  .join('\n');
+                                navigator.clipboard.writeText(formatted);
+                                toast({ title: "Copied", description: "Quotes copied to clipboard" });
+                              }}
+                              data-testid="button-copy-intel-quotes"
+                            >
+                              <Copy className="w-4 h-4 mr-1" />
+                              Copy
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const formatted = holisticIntelResult.quotes
+                                  .map((q) => `${q.quote} | ${q.source}`)
+                                  .join('\n');
+                                const blob = new Blob([formatted], { type: 'text/plain' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = 'intelligence_quotes.txt';
+                                a.click();
+                                URL.revokeObjectURL(url);
+                              }}
+                              data-testid="button-download-intel-quotes"
+                            >
+                              <Download className="w-4 h-4 mr-1" />
+                              Download
+                            </Button>
+                          </div>
+                        </div>
+                        <ScrollArea className="h-[200px] border rounded-lg p-3 bg-white/60">
+                          <div className="space-y-2">
+                            {holisticIntelResult.quotes.map((q, i) => (
+                              <div key={i} className="text-sm font-serif text-gray-700 p-2 border-b last:border-b-0">
+                                {q.quote} <span className="text-xs text-muted-foreground">| {q.source}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    )}
+                  </div>
+                  );
+                })()}
+
+                {intelligenceResult && !holisticIntelResult && (
+                  <div className="space-y-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-bold text-lg text-amber-800">Intelligence Score</h4>
+                      <div className="text-4xl font-bold text-amber-600">
+                        {intelligenceResult.score}/100
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div className="p-3 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-amber-700">{intelligenceResult.wordCount}</div>
+                        <div className="text-xs text-muted-foreground">Total Words</div>
+                      </div>
+                      <div className="p-3 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-amber-700">{intelligenceResult.quoteCount}</div>
+                        <div className="text-xs text-muted-foreground">Sharp Quotes</div>
+                      </div>
+                      <div className="p-3 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-amber-700">{intelligenceResult.density}</div>
+                        <div className="text-xs text-muted-foreground">Per 1000 Words</div>
+                      </div>
+                    </div>
+                    
+                    {(intelligenceResult.sharpQuotes || []).filter(q => q).length > 0 ? (
+                      <div className="space-y-2">
+                        <Label>Sharp Quotes Found:</Label>
+                        <ScrollArea className="h-[200px] border rounded-lg p-3 bg-white/60">
+                          <ol className="list-decimal list-inside space-y-2">
+                            {(intelligenceResult.sharpQuotes || []).filter(q => q).map((quote, i) => (
+                              <li key={i} className="text-sm font-serif italic text-gray-700">
+                                "{quote}"
+                              </li>
+                            ))}
+                          </ol>
+                        </ScrollArea>
+                      </div>
+                    ) : (
+                      <div className="text-center py-4 text-muted-foreground">
+                        No unmistakably sharp quotes detected in this text.
+                      </div>
+                    )}
+                    
+                    {intelligenceResult.analysis && (
+                      <p className="text-sm text-muted-foreground italic">{intelligenceResult.analysis}</p>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="compare" className="mt-0 space-y-4">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-blue-800">Text A</h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => intelFileRefA.current?.click()}
+                        className="h-6 text-xs gap-1 bg-white"
+                      >
+                        <Upload className="w-3 h-3" />
+                        Upload
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Text *</Label>
+                        <span className="text-xs text-muted-foreground">
+                          {intelligenceTextA.split(/\s+/).filter(Boolean).length} words
+                        </span>
+                      </div>
+                      <div
+                        className={`relative rounded-lg transition-all ${isDraggingIntelA ? 'ring-2 ring-blue-500 bg-blue-100' : ''}`}
+                        onDrop={(e) => handleIntelDrop(e, 'A')}
+                        onDragOver={(e) => handleIntelDragOver(e, 'A')}
+                        onDragLeave={(e) => handleIntelDragLeave(e, 'A')}
+                      >
+                        <Textarea
+                          placeholder="Paste Text A or drag & drop file..."
+                          value={intelligenceTextA}
+                          onChange={(e) => setIntelligenceTextA(e.target.value)}
+                          className="min-h-[150px] font-serif text-sm"
+                          data-testid="textarea-intel-a"
+                        />
+                        {isDraggingIntelA && (
+                          <div className="absolute inset-0 bg-blue-200/80 rounded-lg flex items-center justify-center pointer-events-none">
+                            <div className="text-blue-700 font-medium flex items-center gap-2">
+                              <Upload className="w-4 h-4" />
+                              Drop file
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-semibold text-purple-800">Text B</h4>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => intelFileRefB.current?.click()}
+                        className="h-6 text-xs gap-1 bg-white"
+                      >
+                        <Upload className="w-3 h-3" />
+                        Upload
+                      </Button>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Text *</Label>
+                        <span className="text-xs text-muted-foreground">
+                          {intelligenceTextB.split(/\s+/).filter(Boolean).length} words
+                        </span>
+                      </div>
+                      <div
+                        className={`relative rounded-lg transition-all ${isDraggingIntelB ? 'ring-2 ring-purple-500 bg-purple-100' : ''}`}
+                        onDrop={(e) => handleIntelDrop(e, 'B')}
+                        onDragOver={(e) => handleIntelDragOver(e, 'B')}
+                        onDragLeave={(e) => handleIntelDragLeave(e, 'B')}
+                      >
+                        <Textarea
+                          placeholder="Paste Text B or drag & drop file..."
+                          value={intelligenceTextB}
+                          onChange={(e) => setIntelligenceTextB(e.target.value)}
+                          className="min-h-[150px] font-serif text-sm"
+                          data-testid="textarea-intel-b"
+                        />
+                        {isDraggingIntelB && (
+                          <div className="absolute inset-0 bg-purple-200/80 rounded-lg flex items-center justify-center pointer-events-none">
+                            <div className="text-purple-700 font-medium flex items-center gap-2">
+                              <Upload className="w-4 h-4" />
+                              Drop file
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <input
+                  type="file"
+                  ref={intelFileRefB}
+                  accept=".txt,.md,.text"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleIntelFileUpload(e.target.files[0], 'B')}
+                />
+                
+                {intelligenceCompareResult && (
+                  <div className="space-y-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-amber-800 mb-2">{intelligenceCompareResult.winner}</div>
+                      <p className="text-sm text-muted-foreground italic">{intelligenceCompareResult.verdict}</p>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-blue-100/50 rounded-lg border border-blue-200">
+                        <h5 className="font-semibold text-blue-800 mb-2">Text A: {intelligenceCompareResult.textA.score}/100</h5>
+                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                          <div>Words: {intelligenceCompareResult.textA.wordCount}</div>
+                          <div>Density: {intelligenceCompareResult.textA.density}</div>
+                        </div>
+                        {(intelligenceCompareResult.textA.sharpQuotes || []).filter(q => q).length > 0 ? (
+                          <ScrollArea className="h-[120px]">
+                            <ol className="list-decimal list-inside space-y-1 text-xs">
+                              {(intelligenceCompareResult.textA.sharpQuotes || []).filter(q => q).map((q, i) => (
+                                <li key={i} className="italic">"{q}"</li>
+                              ))}
+                            </ol>
+                          </ScrollArea>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">No sharp quotes found</p>
+                        )}
+                      </div>
+                      
+                      <div className="p-4 bg-purple-100/50 rounded-lg border border-purple-200">
+                        <h5 className="font-semibold text-purple-800 mb-2">Text B: {intelligenceCompareResult.textB.score}/100</h5>
+                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                          <div>Words: {intelligenceCompareResult.textB.wordCount}</div>
+                          <div>Density: {intelligenceCompareResult.textB.density}</div>
+                        </div>
+                        {(intelligenceCompareResult.textB.sharpQuotes || []).filter(q => q).length > 0 ? (
+                          <ScrollArea className="h-[120px]">
+                            <ol className="list-decimal list-inside space-y-1 text-xs">
+                              {(intelligenceCompareResult.textB.sharpQuotes || []).filter(q => q).map((q, i) => (
+                                <li key={i} className="italic">"{q}"</li>
+                              ))}
+                            </ol>
+                          </ScrollArea>
+                        ) : (
+                          <p className="text-xs text-muted-foreground">No sharp quotes found</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            </div>
+          </Tabs>
+          
+          <div className="flex justify-between items-center pt-4 border-t mt-4">
+            <div className="text-sm text-muted-foreground">
+              Using: <span className="font-semibold uppercase">{selectedLLM}</span>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIntelligenceResult(null);
+                  setIntelligenceCompareResult(null);
+                  setIntelligenceTextA("");
+                  setIntelligenceTextB("");
+                }}
+              >
+                Clear
+              </Button>
+              <Button
+                onClick={handleMeasureIntelligence}
+                disabled={isAnalyzingIntelligence}
+                className="bg-gradient-to-r from-amber-600 to-orange-600 text-white"
+                data-testid="button-measure-intelligence"
+              >
+                {isAnalyzingIntelligence ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                    Measuring...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    {intelligenceTab === "single" ? "Measure Intelligence" : "Compare Intelligence"}
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </ResizableDialogContent>
+      </ResizableDialog>
+      
       {/* History Dialog */}
       <ResizableDialog open={showHistoryDialog} onOpenChange={setShowHistoryDialog}>
-        <ResizableDialogContent defaultWidth={950} defaultHeight={650} minWidth={500} minHeight={400}>
+        <ResizableDialogContent defaultWidth={900} defaultHeight={600} minWidth={500} minHeight={400}>
           <ResizableDialogHeader>
             <ResizableDialogTitle className="flex items-center gap-2">
               <History className="w-5 h-5 text-primary" />
               Analysis History
             </ResizableDialogTitle>
             <ResizableDialogDescription>
-              All outputs saved automatically when logged in. Limit: 500 entries. Oldest are auto-deleted when full.
+              View your past analyses. All outputs are automatically saved when logged in.
             </ResizableDialogDescription>
           </ResizableDialogHeader>
-
-          {/* Storage bar */}
-          {storageStatus && (
-            <div className="mb-3 p-3 rounded-lg border bg-muted/30 space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-medium">
-                <span className={storageStatus.percent >= 90 ? 'text-red-600' : storageStatus.percent >= 80 ? 'text-amber-600' : 'text-muted-foreground'}>
-                  {storageStatus.count} / {storageStatus.limit} entries used ({storageStatus.percent}%)
-                </span>
-                <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="h-6 text-xs px-2" disabled={isFlushingHistory || historyItems.length === 0} onClick={() => handleFlushOldest(50)} data-testid="button-flush-oldest">
-                    {isFlushingHistory ? 'Working…' : 'Delete oldest 50'}
-                  </Button>
-                  <Button size="sm" variant="outline" className="h-6 text-xs px-2 border-red-300 text-red-600 hover:bg-red-50" disabled={isFlushingHistory || historyItems.length === 0} onClick={handleClearAllHistory} data-testid="button-clear-all-history">
-                    Clear all
-                  </Button>
-                </div>
-              </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${storageStatus.percent >= 90 ? 'bg-red-500' : storageStatus.percent >= 80 ? 'bg-amber-500' : 'bg-primary'}`}
-                  style={{ width: `${Math.min(storageStatus.percent, 100)}%` }}
-                />
-              </div>
-            </div>
-          )}
           
-          <div className="flex gap-2 items-center mb-3">
-            <Label className="text-sm font-medium">Filter:</Label>
+          <div className="flex gap-2 items-center mb-4">
+            <Label className="text-sm font-medium">Filter by type:</Label>
             <Select 
               value={historyTypeFilter} 
               onValueChange={(v) => {
@@ -5518,19 +5984,11 @@ ${parsed.analyzer}`);
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
                 <SelectItem value="quotes">Quotes</SelectItem>
-                <SelectItem value="positions">Positions</SelectItem>
-                <SelectItem value="arguments">Arguments</SelectItem>
-                <SelectItem value="stylometrics">Stylometrics</SelectItem>
-                <SelectItem value="summary">Summary</SelectItem>
-                <SelectItem value="tractatus">Tractatus</SelectItem>
-                <SelectItem value="full_rewrite">Full Rewrite</SelectItem>
-                <SelectItem value="book_database">Books to DB</SelectItem>
               </SelectContent>
             </Select>
-            <span className="text-xs text-muted-foreground ml-auto">{historyItems.length} shown</span>
           </div>
           
-          <div className="flex gap-4 h-[55vh]">
+          <div className="flex gap-4 h-[60vh]">
             <ScrollArea className="flex-1 border rounded-lg p-2">
               {isLoadingHistory ? (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -5600,26 +6058,8 @@ ${parsed.analyzer}`);
                       <Button
                         variant="ghost"
                         size="sm"
-                        title="Download as JSON"
-                        onClick={() => {
-                          const content = JSON.stringify(selectedHistoryItem.outputData, null, 2);
-                          const blob = new Blob([content], { type: 'application/json' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `${selectedHistoryItem.analysisType}-${selectedHistoryItem.id}.json`;
-                          a.click();
-                          URL.revokeObjectURL(url);
-                        }}
-                        data-testid="button-download-history"
-                      >
-                        <Download className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
                         className="text-destructive hover:text-destructive"
-                        onClick={async () => { await handleDeleteHistoryItem(selectedHistoryItem.id); fetchStorageStatus(); }}
+                        onClick={() => handleDeleteHistoryItem(selectedHistoryItem.id)}
                         data-testid="button-delete-history"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -8008,6 +8448,8 @@ Freedom is the ratio essendi of the moral law."
                   <SelectContent>
                     <SelectItem value="openai">OpenAI (GPT-4o)</SelectItem>
                     <SelectItem value="anthropic">Claude (Anthropic)</SelectItem>
+                    <SelectItem value="deepseek">DeepSeek</SelectItem>
+                    <SelectItem value="grok">Grok (xAI)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -8386,465 +8828,6 @@ Freedom is the ratio essendi of the moral law."
                 Close
               </Button>
             </div>
-          </div>
-        </ResizableDialogContent>
-      </ResizableDialog>
-
-      {/* Book to Database Dialog */}
-      <ResizableDialog open={showBookDbDialog} onOpenChange={setShowBookDbDialog}>
-        <ResizableDialogContent defaultWidth={1050} defaultHeight={780} minWidth={650} minHeight={520}>
-          <ResizableDialogHeader>
-            <ResizableDialogTitle className="flex items-center gap-2 text-xl">
-              <Database className="w-6 h-6 text-indigo-600" />
-              Book to Database
-            </ResizableDialogTitle>
-            <ResizableDialogDescription>
-              Extract only genuine intellectual commitments — positions, arguments, quotes — with strict filtering and calibrated scoring.
-            </ResizableDialogDescription>
-          </ResizableDialogHeader>
-
-          <div className="flex-1 flex flex-col overflow-hidden gap-3">
-            {!bookDbResult ? (
-              <div className="flex flex-col gap-3 overflow-y-auto flex-1">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="bookdb-title" className="text-xs font-medium text-muted-foreground mb-1 block">Title (optional)</Label>
-                    <Input id="bookdb-title" placeholder="e.g. Being and Time" value={bookDbTitle} onChange={e => setBookDbTitle(e.target.value)} disabled={isRunningBookDb} data-testid="input-bookdb-title" />
-                  </div>
-                  <div>
-                    <Label htmlFor="bookdb-author" className="text-xs font-medium text-muted-foreground mb-1 block">Author (optional)</Label>
-                    <Input id="bookdb-author" placeholder="e.g. Martin Heidegger" value={bookDbAuthor} onChange={e => setBookDbAuthor(e.target.value)} disabled={isRunningBookDb} data-testid="input-bookdb-author" />
-                  </div>
-                </div>
-                <div className="flex-1 flex flex-col min-h-0">
-                  <Label className="text-xs font-medium text-muted-foreground mb-1 block">
-                    Text {bookDbText ? `(${bookDbText.split(/\s+/).filter(Boolean).length} words)` : text ? `— using main input (${text.split(/\s+/).filter(Boolean).length} words)` : ""}
-                  </Label>
-                  <Textarea
-                    placeholder="Paste text here, or leave blank to use the main input area…"
-                    value={bookDbText}
-                    onChange={e => setBookDbText(e.target.value)}
-                    disabled={isRunningBookDb}
-                    className="flex-1 min-h-[220px] resize-none font-mono text-sm"
-                    data-testid="textarea-bookdb-text"
-                  />
-                </div>
-                {bookDbProgress && (
-                  <div className="rounded-lg border bg-indigo-50 dark:bg-indigo-950/30 p-3">
-                    <div className="flex items-center gap-2 mb-1">
-                      {isRunningBookDb && <div className="animate-spin rounded-full h-4 w-4 border-2 border-indigo-600 border-t-transparent" />}
-                      <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">{bookDbProgress.message}</span>
-                    </div>
-                    {bookDbProgress.current != null && bookDbProgress.total != null && (
-                      <div className="w-full h-1.5 bg-indigo-200 rounded-full mt-2 overflow-hidden">
-                        <div className="h-full bg-indigo-600 rounded-full transition-all" style={{ width: `${Math.round((bookDbProgress.current / bookDbProgress.total) * 100)}%` }} />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Meta + score header */}
-                <div className="flex items-start justify-between mb-2 flex-shrink-0">
-                  <div>
-                    <h3 className="font-bold text-lg leading-tight">{bookDbResult.meta?.title || "Untitled"}</h3>
-                    {bookDbResult.meta?.author && <p className="text-sm text-muted-foreground">{bookDbResult.meta.author}</p>}
-                    <p className="text-xs text-muted-foreground">{bookDbResult.meta?.wordCount?.toLocaleString()} words · {bookDbResult.meta?.provider?.toUpperCase()} · {new Date(bookDbResult.meta?.processedAt).toLocaleDateString()}</p>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-5xl font-black leading-none ${bookDbResult.intelligence?.overallScore >= 70 ? 'text-green-600' : bookDbResult.intelligence?.overallScore >= 45 ? 'text-amber-600' : 'text-red-500'}`}>
-                      {bookDbResult.intelligence?.overallScore ?? '—'}
-                    </div>
-                    <div className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wide">Intelligence Score</div>
-                  </div>
-                </div>
-
-                {/* Metrics row */}
-                <div className="grid grid-cols-4 gap-2 mb-2 flex-shrink-0">
-                  <div className="rounded border p-2 text-center bg-indigo-50/50">
-                    <div className="text-base font-bold text-indigo-700">{bookDbResult.intelligence?.claimDensity?.toFixed(1)}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">Claims/1k words</div>
-                  </div>
-                  <div className="rounded border p-2 text-center bg-violet-50/50">
-                    <div className="text-base font-bold text-violet-700">{bookDbResult.intelligence?.conceptualCompression}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">Compression</div>
-                  </div>
-                  <div className="rounded border p-2 text-center bg-orange-50/50">
-                    <div className="text-base font-bold text-orange-700">{bookDbResult.intelligence?.redundancyScore}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">Redundancy</div>
-                  </div>
-                  <div className="rounded border p-2 text-center bg-slate-50">
-                    <div className="text-base font-bold text-slate-600">{bookDbResult.intelligence?.fillerRatio != null ? `${Math.round(bookDbResult.intelligence.fillerRatio * 100)}%` : '—'}</div>
-                    <div className="text-[10px] text-muted-foreground uppercase">Filler Ratio</div>
-                  </div>
-                </div>
-                {bookDbResult.intelligence?.qualitativeAssessment && (
-                  <p className="text-xs text-muted-foreground italic mb-2 flex-shrink-0 border-l-2 border-indigo-300 pl-2">{bookDbResult.intelligence.qualitativeAssessment}</p>
-                )}
-
-                {/* Tabs */}
-                <Tabs value={bookDbActiveTab} onValueChange={setBookDbActiveTab} className="flex-1 flex flex-col overflow-hidden min-h-0">
-                  <TabsList className="grid grid-cols-6 flex-shrink-0 h-8">
-                    <TabsTrigger value="positions" className="text-xs">Positions ({bookDbResult.positions?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="quotes" className="text-xs">Quotes ({bookDbResult.quotes?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="arguments" className="text-xs">Arguments ({bookDbResult.arguments?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="clusters" className="text-xs">Clusters ({bookDbResult.conceptClusters?.length || 0})</TabsTrigger>
-                    <TabsTrigger value="style" className="text-xs">Style</TabsTrigger>
-                    <TabsTrigger value="query" className="text-xs">Query</TabsTrigger>
-                  </TabsList>
-
-                  {/* Positions — core positions are visually prominent */}
-                  <TabsContent value="positions" className="flex-1 overflow-y-auto mt-2 space-y-2 min-h-0">
-                    {(() => {
-                      const corePositions = (bookDbResult.positions || []).filter((p: any) => p.type === 'core');
-                      const otherPositions = (bookDbResult.positions || []).filter((p: any) => p.type !== 'core');
-                      return (
-                        <>
-                          {corePositions.length > 0 && (
-                            <div className="space-y-2">
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 px-1">Core Theses ({corePositions.length})</p>
-                              {corePositions.map((p: any) => (
-                                <div key={p.id} className="rounded-lg border-2 border-indigo-300 bg-indigo-50/60 dark:bg-indigo-950/20 p-3">
-                                  <div className="flex items-start gap-2">
-                                    <span className="text-[10px] font-mono text-indigo-400 mt-0.5 flex-shrink-0 font-bold">{p.id}</span>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-semibold text-indigo-900 dark:text-indigo-100">{p.claim}</p>
-                                      <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-indigo-600 text-white">CORE</span>
-                                        <span className="text-[10px] text-indigo-600 font-medium">{p.confidence}% confidence</span>
-                                        {p.section && <span className="text-[10px] text-muted-foreground truncate">{p.section}</span>}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {otherPositions.length > 0 && (
-                            <div className="space-y-1.5">
-                              {corePositions.length > 0 && <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 px-1 mt-3">Supporting & Doctrinal ({otherPositions.length})</p>}
-                              {otherPositions.map((p: any) => (
-                                <div key={p.id} className="rounded border p-2.5 hover:bg-muted/30 transition-colors">
-                                  <div className="flex items-start gap-2">
-                                    <span className="text-[10px] font-mono text-muted-foreground mt-0.5 flex-shrink-0">{p.id}</span>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm">{p.claim}</p>
-                                      <div className="flex items-center gap-2 mt-1">
-                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${p.type === 'supporting' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{p.type}</span>
-                                        <span className="text-[10px] text-muted-foreground">{p.confidence}%</span>
-                                        {p.section && <span className="text-[10px] text-muted-foreground truncate">{p.section}</span>}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          {!bookDbResult.positions?.length && <p className="text-sm text-muted-foreground text-center py-8">No positions extracted</p>}
-                        </>
-                      );
-                    })()}
-                  </TabsContent>
-
-                  <TabsContent value="quotes" className="flex-1 overflow-y-auto mt-2 space-y-2 min-h-0">
-                    {(bookDbResult.quotes || []).sort((a: any, b: any) => b.signalStrength - a.signalStrength).map((q: any) => (
-                      <div key={q.id} className="rounded border p-2.5 border-l-4 border-l-amber-400">
-                        <div className="flex items-start gap-2">
-                          <span className="text-[10px] font-mono text-muted-foreground mt-0.5 flex-shrink-0">{q.id}</span>
-                          <div className="flex-1">
-                            <p className="text-sm italic text-slate-800 dark:text-slate-200">"{q.text}"</p>
-                            {q.whyHighSignal && <p className="text-xs text-amber-700 dark:text-amber-400 mt-1">↑ {q.whyHighSignal}</p>}
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] text-amber-700 font-bold">signal: {typeof q.signalStrength === 'number' ? q.signalStrength.toFixed(1) : q.signalStrength}/10</span>
-                              {q.section && <span className="text-[10px] text-muted-foreground">{q.section}</span>}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {(!bookDbResult.quotes?.length) && <p className="text-sm text-muted-foreground text-center py-8">No quotes extracted</p>}
-                  </TabsContent>
-
-                  <TabsContent value="arguments" className="flex-1 overflow-y-auto mt-2 space-y-3 min-h-0">
-                    {(bookDbResult.arguments || []).map((a: any) => (
-                      <div key={a.id} className="rounded border p-3">
-                        <div className="flex items-start gap-2 mb-2">
-                          <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{a.id}</span>
-                          <div className="flex-1">
-                            <div className="mb-2">
-                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Premises</p>
-                              {(a.premises || []).map((pr: string, i: number) => (
-                                <p key={i} className="text-sm text-slate-700 dark:text-slate-300 pl-2 border-l-2 border-slate-200 mb-1">{i + 1}. {pr}</p>
-                              ))}
-                            </div>
-                            <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded p-2">
-                              <p className="text-[10px] font-semibold text-indigo-700 uppercase tracking-wide mb-1">∴ Conclusion</p>
-                              <p className="text-sm font-medium">{a.conclusion}</p>
-                            </div>
-                            {a.section && <p className="text-[10px] text-muted-foreground mt-1">{a.section}</p>}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {(!bookDbResult.arguments?.length) && <p className="text-sm text-muted-foreground text-center py-8">No arguments extracted</p>}
-                  </TabsContent>
-
-                  <TabsContent value="clusters" className="flex-1 overflow-y-auto mt-2 space-y-3 min-h-0">
-                    {(bookDbResult.conceptClusters || []).map((c: any) => (
-                      <div key={c.id} className="rounded border p-3">
-                        <div className="flex items-start gap-2 mb-1">
-                          <span className="text-[10px] font-mono text-muted-foreground flex-shrink-0">{c.id}</span>
-                          <h4 className="font-semibold text-sm text-indigo-700">{c.label}</h4>
-                        </div>
-                        {c.description && <p className="text-xs text-muted-foreground mb-2 pl-5">{c.description}</p>}
-                        <div className="flex flex-wrap gap-1 pl-5">
-                          {(c.relatedPositionIds || c.relatedPositions || []).map((pid: string) => (
-                            <span key={pid} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-mono">{pid}</span>
-                          ))}
-                          {(c.relatedQuoteIds || c.relatedQuotes || []).map((qid: string) => (
-                            <span key={qid} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-mono">{qid}</span>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                    {(!bookDbResult.conceptClusters?.length) && <p className="text-sm text-muted-foreground text-center py-8">No concept clusters generated</p>}
-                  </TabsContent>
-
-                  <TabsContent value="style" className="flex-1 overflow-y-auto mt-2 min-h-0">
-                    {bookDbResult.stylometricThumbprint ? (
-                      <div className="space-y-3">
-                        <div className="p-3 border rounded grid grid-cols-2 gap-3">
-                          <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Abstraction Level</p>
-                            <p className="text-sm font-medium">{bookDbResult.stylometricThumbprint.abstractionLevel || '—'}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Sentence Rhythm</p>
-                            <p className="text-sm">{bookDbResult.stylometricThumbprint.sentenceRhythmNotes || '—'}</p>
-                          </div>
-                        </div>
-                        {bookDbResult.stylometricThumbprint.signaturePhrases?.length > 0 && (
-                          <div className="p-3 border rounded">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Signature Phrases</p>
-                            <div className="flex flex-wrap gap-1">
-                              {bookDbResult.stylometricThumbprint.signaturePhrases.map((ph: string, i: number) => (
-                                <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 italic">"{ph}"</span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        {bookDbResult.stylometricThumbprint.notableStylisticTraits?.length > 0 && (
-                          <div className="p-3 border rounded">
-                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">Notable Traits</p>
-                            <ul className="space-y-1">
-                              {bookDbResult.stylometricThumbprint.notableStylisticTraits.map((t: string, i: number) => (
-                                <li key={i} className="text-sm text-slate-700 dark:text-slate-300 flex gap-2"><span className="text-indigo-400">·</span>{t}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground text-center py-8">No stylometric data available</p>
-                    )}
-                  </TabsContent>
-
-                  <TabsContent value="query" className="flex-1 flex flex-col gap-3 mt-2 min-h-0">
-                    <p className="text-xs text-muted-foreground">Ask a question answered from this database's positions and quotes only.</p>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="e.g. What are the two main contributions? What does the author say about consciousness?"
-                        value={bookDbQueryText}
-                        onChange={e => setBookDbQueryText(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleQueryBookDb(); } }}
-                        disabled={isQueryingBookDb}
-                        data-testid="input-bookdb-query"
-                      />
-                      <Button onClick={handleQueryBookDb} disabled={isQueryingBookDb || !bookDbQueryText.trim()} className="flex-shrink-0 bg-indigo-700 text-white" data-testid="button-bookdb-query">
-                        {isQueryingBookDb ? <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" /> : "Ask"}
-                      </Button>
-                    </div>
-                    {bookDbQueryResult && (
-                      <ScrollArea className="flex-1 border rounded-lg p-3">
-                        <p className="text-sm whitespace-pre-wrap">{bookDbQueryResult}</p>
-                      </ScrollArea>
-                    )}
-                    {!bookDbQueryResult && !isQueryingBookDb && (
-                      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-                        Enter a question above
-                      </div>
-                    )}
-                    {isQueryingBookDb && (
-                      <div className="flex-1 flex items-center justify-center gap-2 text-muted-foreground">
-                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-indigo-500 border-t-transparent" />
-                        <span className="text-sm">Querying database…</span>
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </div>
-            )}
-          </div>
-
-          <div className="flex gap-2 pt-2 border-t flex-shrink-0 flex-wrap items-center">
-            {bookDbResult ? (
-              <>
-                <Button
-                  onClick={() => {
-                    const json = JSON.stringify(bookDbResult, null, 2);
-                    const blob = new Blob([json], { type: 'application/json' });
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `book-database-${(bookDbResult.meta?.title || 'export').replace(/\s+/g, '-')}.json`;
-                    a.click();
-                  }}
-                  variant="outline"
-                  className="gap-2"
-                  data-testid="button-bookdb-download-json"
-                >
-                  <Download className="w-4 h-4" />
-                  JSON
-                </Button>
-                <Button
-                  onClick={() => {
-                    const r = bookDbResult;
-                    const slug = (r.meta?.title || 'export').replace(/\s+/g, '-');
-                    const lines: string[] = [];
-                    const hr = (ch = '=', n = 60) => ch.repeat(n);
-
-                    lines.push(`BOOK DATABASE: ${r.meta?.title || 'Untitled'}`);
-                    if (r.meta?.author) lines.push(`Author: ${r.meta.author}`);
-                    lines.push(`Words: ${r.meta?.wordCount?.toLocaleString()} · Provider: ${r.meta?.provider?.toUpperCase()} · ${new Date(r.meta?.processedAt).toLocaleDateString()}`);
-                    lines.push('');
-
-                    // Intelligence
-                    lines.push(hr());
-                    lines.push('INTELLIGENCE');
-                    lines.push(hr());
-                    const intel = r.intelligence || {};
-                    lines.push(`Overall Score:         ${intel.overallScore ?? '—'} / 100`);
-                    lines.push(`Claim Density:         ${intel.claimDensity?.toFixed(1) ?? '—'} claims / 1000 words`);
-                    lines.push(`Conceptual Compression:${intel.conceptualCompression ?? '—'} / 100`);
-                    lines.push(`Redundancy Score:      ${intel.redundancyScore ?? '—'} / 100`);
-                    lines.push(`Filler Ratio:          ${intel.fillerRatio != null ? Math.round(intel.fillerRatio * 100) + '%' : '—'}`);
-                    if (intel.qualitativeAssessment) lines.push(`\nAssessment: ${intel.qualitativeAssessment}`);
-                    lines.push('');
-
-                    // Positions
-                    lines.push(hr());
-                    lines.push(`POSITIONS (${(r.positions || []).length})`);
-                    lines.push(hr());
-                    const core = (r.positions || []).filter((p: any) => p.type === 'core');
-                    const other = (r.positions || []).filter((p: any) => p.type !== 'core');
-                    if (core.length) {
-                      lines.push('\n— CORE THESES —');
-                      core.forEach((p: any) => {
-                        lines.push(`\n[${p.id}] ${p.claim}`);
-                        lines.push(`     confidence: ${p.confidence}%${p.section ? ' · ' + p.section : ''}`);
-                      });
-                    }
-                    if (other.length) {
-                      lines.push('\n— SUPPORTING & DOCTRINAL —');
-                      other.forEach((p: any) => {
-                        lines.push(`\n[${p.id}] (${p.type}) ${p.claim}`);
-                        lines.push(`     confidence: ${p.confidence}%${p.section ? ' · ' + p.section : ''}`);
-                      });
-                    }
-                    lines.push('');
-
-                    // Quotes
-                    lines.push(hr());
-                    lines.push(`QUOTES (${(r.quotes || []).length})`);
-                    lines.push(hr());
-                    (r.quotes || []).sort((a: any, b: any) => b.signalStrength - a.signalStrength).forEach((q: any) => {
-                      lines.push(`\n[${q.id}] signal: ${typeof q.signalStrength === 'number' ? q.signalStrength.toFixed(1) : q.signalStrength}/10`);
-                      lines.push(`"${q.text}"`);
-                      if (q.whyHighSignal) lines.push(`↑ ${q.whyHighSignal}`);
-                    });
-                    lines.push('');
-
-                    // Arguments
-                    if ((r.arguments || []).length) {
-                      lines.push(hr());
-                      lines.push(`ARGUMENTS (${r.arguments.length})`);
-                      lines.push(hr());
-                      r.arguments.forEach((a: any) => {
-                        lines.push(`\n[${a.id}]${a.section ? ' ' + a.section : ''}`);
-                        lines.push('Premises:');
-                        (a.premises || []).forEach((pr: string, i: number) => lines.push(`  ${i + 1}. ${pr}`));
-                        lines.push(`∴ ${a.conclusion}`);
-                      });
-                      lines.push('');
-                    }
-
-                    // Clusters
-                    if ((r.conceptClusters || []).length) {
-                      lines.push(hr());
-                      lines.push(`CONCEPT CLUSTERS (${r.conceptClusters.length})`);
-                      lines.push(hr());
-                      r.conceptClusters.forEach((c: any) => {
-                        lines.push(`\n[${c.id}] ${c.label}`);
-                        if (c.description) lines.push(`  ${c.description}`);
-                        const pids = (c.relatedPositionIds || c.relatedPositions || []).join(', ');
-                        const qids = (c.relatedQuoteIds || c.relatedQuotes || []).join(', ');
-                        if (pids) lines.push(`  Positions: ${pids}`);
-                        if (qids) lines.push(`  Quotes: ${qids}`);
-                      });
-                      lines.push('');
-                    }
-
-                    // Stylometrics
-                    const st = r.stylometricThumbprint;
-                    if (st) {
-                      lines.push(hr());
-                      lines.push('STYLOMETRIC THUMBPRINT');
-                      lines.push(hr());
-                      if (st.abstractionLevel) lines.push(`Abstraction Level: ${st.abstractionLevel}`);
-                      if (st.sentenceRhythmNotes) lines.push(`Sentence Rhythm: ${st.sentenceRhythmNotes}`);
-                      if (st.signaturePhrases?.length) lines.push(`Signature Phrases: ${st.signaturePhrases.map((p: string) => `"${p}"`).join(' · ')}`);
-                      if (st.notableStylisticTraits?.length) {
-                        lines.push('Notable Traits:');
-                        st.notableStylisticTraits.forEach((t: string) => lines.push(`  · ${t}`));
-                      }
-                    }
-
-                    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
-                    const a = document.createElement('a');
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `book-database-${slug}.txt`;
-                    a.click();
-                  }}
-                  variant="outline"
-                  className="gap-2"
-                  data-testid="button-bookdb-download-txt"
-                >
-                  <Download className="w-4 h-4" />
-                  TXT
-                </Button>
-                {bookDbSavedId && (
-                  <span className="text-xs text-green-600 flex items-center gap-1 font-medium">✓ Saved to library (#{bookDbSavedId})</span>
-                )}
-                <div className="flex-1" />
-                <Button variant="outline" onClick={() => { setBookDbResult(null); setBookDbProgress(null); setBookDbQueryResult(""); }} data-testid="button-bookdb-new">
-                  New Analysis
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={handleRunBookToDatabase}
-                disabled={isRunningBookDb || (!bookDbText.trim() && !text.trim())}
-                className="flex-1 bg-gradient-to-r from-indigo-700 to-violet-700 text-white font-semibold"
-                data-testid="button-bookdb-run"
-              >
-                {isRunningBookDb ? (
-                  <><div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />Analyzing…</>
-                ) : (
-                  <><Database className="w-4 h-4 mr-2" />Build Database</>
-                )}
-              </Button>
-            )}
-            <Button variant="outline" onClick={() => setShowBookDbDialog(false)} data-testid="button-bookdb-close">Close</Button>
           </div>
         </ResizableDialogContent>
       </ResizableDialog>

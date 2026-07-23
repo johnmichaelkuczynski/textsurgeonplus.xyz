@@ -215,28 +215,6 @@ export const insertPhilosophicalPositionSchema = createInsertSchema(philosophica
 export type InsertPhilosophicalPosition = z.infer<typeof insertPhilosophicalPositionSchema>;
 export type PhilosophicalPosition = typeof philosophicalPositions.$inferSelect;
 
-// ============ BOOK DATABASES ============
-// Structured intellectual decompositions of books/long documents
-
-export const bookDatabases = pgTable("book_databases", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  title: varchar("title", { length: 500 }),
-  author: varchar("author", { length: 255 }),
-  wordCount: integer("word_count"),
-  provider: varchar("provider", { length: 50 }),
-  result: jsonb("result").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertBookDatabaseSchema = createInsertSchema(bookDatabases).omit({
-  id: true,
-  createdAt: true,
-});
-
-export type InsertBookDatabase = z.infer<typeof insertBookDatabaseSchema>;
-export type BookDatabase = typeof bookDatabases.$inferSelect;
-
 // ============ VISIT TRACKING ============
 // Records each Google (Clerk) sign-in visit for the admin dashboard
 
