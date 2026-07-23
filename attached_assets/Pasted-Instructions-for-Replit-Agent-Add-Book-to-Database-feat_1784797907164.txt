@@ -1,0 +1,127 @@
+Instructions for Replit Agent – Add “Book to Database” feature to Text Surgeon
+Goal
+Add a new top-level analysis mode called “Book to Database”.
+This mode takes an entire book (or long document), decomposes it into structured intellectual components, and produces a reusable, queryable database representation of the book’s content. It is not a summary. It is a structured intellectual object.
+The feature should feel native inside the existing Text Surgeon UI and architecture.
+Core Philosophy (keep this in mind while building)
+Books are bundles of commitments, signals, and structure.
+The output must be a computationally usable database of:
+
+Real positions / claims
+High-signal quotes
+Concept clusters / argument fragments
+Intelligence metrics (signal-to-noise)
+Stylometric thumbprint
+
+What already exists (reuse aggressively)
+Do not reinvent these. Call the existing services:
+
+outlineService.ts → structural map of the book
+positionExtractor.ts → positions & claims
+quoteExtractor.ts → high-signal quotes
+argumentExtractor.ts → argument fragments
+intelligenceAnalyzer.ts → signal-to-noise / intelligence score
+stylometricsHolistic.ts → stylometric thumbprint
+fileParser.ts → PDF / Word handling
+Existing streaming infrastructure and LLM abstraction in llm.ts and routes.ts
+
+New pieces that need to be built
+
+New service: server/services/bookToDatabase.ts
+Orchestrates the full pipeline
+Accepts full text (or file)
+Uses outlineService to break the book into coherent sections
+Runs the existing extractors across sections (with proper context / continuity)
+Aggregates results into a single structured object
+Computes overall intelligence metrics
+Generates a final stylometric thumbprint for the whole work
+Returns a clean, well-typed structured result
+
+Structured Output Schema (define this clearly)
+The final result must be a JSON object with roughly this shape:TypeScript{
+  meta: {
+    title?: string;
+    author?: string;
+    wordCount: number;
+    processedAt: string;
+  },
+  positions: Array<{
+    id: string;
+    claim: string;
+    type: "core" | "supporting" | "doctrinal";
+    section?: string;
+    confidence?: number;
+  }>,
+  quotes: Array<{
+    id: string;
+    text: string;
+    context?: string;
+    signalStrength: number;
+    section?: string;
+  }>,
+  arguments: Array<{
+    id: string;
+    premises: string[];
+    conclusion: string;
+    section?: string;
+  }>,
+  conceptClusters: Array<{
+    label: string;
+    relatedPositions: string[];
+    relatedQuotes: string[];
+  }>,
+  intelligence: {
+    overallScore: number;          // 0-100
+    claimDensity: number;
+    conceptualCompression: number;
+    redundancyScore: number;
+    qualitativeAssessment: string;
+  },
+  stylometricThumbprint: {
+    // reuse whatever shape stylometricsHolistic already produces
+    // plus any additional stable signature fields
+  },
+  rawSections?: any[];             // optional, for debugging
+}
+Backend route
+Add a new streaming (or non-streaming) endpoint, e.g.:
+POST /api/book-to-database/stream
+or
+POST /api/book-to-database
+Follow the same patterns already used by /api/positions/extract/stream, /api/intelligence/stream, etc.
+Database persistence (important)
+Extend the schema so users can save the resulting Book Database.
+Add a new table (e.g. book_databases or extend analysis_history with a special type)
+Store the full structured JSON
+Allow later retrieval / re-querying
+
+Frontend (Home.tsx)
+Add a new analysis mode / tab called “Book to Database”
+Same input area (text or file upload) as other modes
+When run, show progress (outline → extracting positions → quotes → arguments → intelligence → stylometrics → assembling database)
+Final view should present:
+Overall intelligence score prominently
+Expandable sections for Positions, Quotes, Arguments, Concept Clusters
+Stylometric thumbprint summary
+“Download as JSON” and “Save to Library” buttons
+
+Keep the UI consistent with the rest of Text Surgeon (cards, tabs, streaming feel where possible)
+
+
+Implementation notes & constraints
+
+Prefer Claude (Anthropic) as the default model for this mode when the user has it available — it is currently best at careful claim-vs-filler discrimination.
+Process long books via the existing outline + sectioned approach. Do not try to shove an entire 100k-token book into one prompt.
+Make the orchestrator resilient: if one section fails, continue with the rest and note the failure.
+Credit usage: this will be an expensive operation. Deduct credits appropriately (or show a clear cost estimate before running).
+Keep all new code typed and clean. Follow the existing patterns in services/ and routes.ts.
+
+Acceptance criteria
+
+User can upload a book (PDF/DOCX) or paste long text
+System produces a structured JSON database of the type described above
+Positions, quotes, and intelligence metrics are high quality (not just generic summaries)
+Result can be saved and later retrieved
+Feature appears as a first-class mode inside the existing Text Surgeon UI
+
+Build this cleanly on top of the existing architecture. Do not create a parallel system.

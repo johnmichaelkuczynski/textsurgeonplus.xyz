@@ -394,6 +394,17 @@ export default function Home() {
   const [positionExtractorAuthor, setPositionExtractorAuthor] = useState("");
   const [positionExtractionDepth, setPositionExtractionDepth] = useState(8);
 
+  // Book to Database state
+  const [showBookDbDialog, setShowBookDbDialog] = useState(false);
+  const [bookDbText, setBookDbText] = useState("");
+  const [bookDbTitle, setBookDbTitle] = useState("");
+  const [bookDbAuthor, setBookDbAuthor] = useState("");
+  const [isRunningBookDb, setIsRunningBookDb] = useState(false);
+  const [bookDbProgress, setBookDbProgress] = useState<{stage: string, message: string, current?: number, total?: number} | null>(null);
+  const [bookDbResult, setBookDbResult] = useState<any | null>(null);
+  const [bookDbActiveTab, setBookDbActiveTab] = useState("positions");
+  const [bookDbSavedId, setBookDbSavedId] = useState<number | null>(null);
+
   // Holistic Quote Extractor state
   const [showQuoteExtractor, setShowQuoteExtractor] = useState(false);
   const [quoteExtractorProgress, setQuoteExtractorProgress] = useState<{stage: string, message: string, current?: number, total?: number} | null>(null);
@@ -3802,6 +3813,76 @@ ${parsed.analyzer}`);
     }
   };
 
+  const handleRunBookToDatabase = async () => {
+    const inputText = bookDbText.trim() || text.trim();
+    if (!inputText) {
+      toast({ title: "Text required", description: "Paste text or upload a file to analyze", variant: "destructive" });
+      return;
+    }
+    setIsRunningBookDb(true);
+    setBookDbResult(null);
+    setBookDbProgress({ stage: "starting", message: "Starting…" });
+    setBookDbSavedId(null);
+
+    try {
+      const response = await fetch('/api/book-to-database/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          text: inputText,
+          provider: selectedLLM,
+          title: bookDbTitle || undefined,
+          author: bookDbAuthor || undefined,
+          username: username || undefined,
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to start analysis');
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No response body');
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          try {
+            const parsed = JSON.parse(line.slice(6));
+            if (parsed.type === 'progress') {
+              setBookDbProgress({ stage: parsed.stage, message: parsed.message, current: parsed.current, total: parsed.total });
+            } else if (parsed.type === 'complete') {
+              setBookDbResult(parsed.result);
+              if (parsed.savedId) setBookDbSavedId(parsed.savedId);
+              setBookDbProgress({ stage: 'complete', message: 'Database assembled' });
+              toast({ title: "Book Database Ready", description: `${parsed.result?.positions?.length || 0} positions · ${parsed.result?.quotes?.length || 0} quotes · ${parsed.result?.arguments?.length || 0} arguments` });
+            } else if (parsed.type === 'error') {
+              throw new Error(parsed.error);
+            }
+          } catch (parseErr: any) {
+            if (parseErr.message?.includes('Failed to start')) throw parseErr;
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast({ title: "Analysis Failed", description: error.message || "Unknown error", variant: "destructive" });
+      setBookDbProgress({ stage: "error", message: error.message || "Failed" });
+    } finally {
+      setIsRunningBookDb(false);
+      fetchCredits();
+    }
+  };
+
   const openStylometricsWithText = () => {
     if (text.trim()) {
       setStylometricsText(text);
@@ -4509,6 +4590,27 @@ ${parsed.analyzer}`);
                       <>
                         <BookOpen className="w-5 h-5 mr-2" />
                         LONG ANSWER
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      if (text.trim()) setBookDbText(text);
+                      setShowBookDbDialog(true);
+                    }}
+                    disabled={isRunningBookDb}
+                    className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white hover:shadow-lg transition-all hover:scale-105"
+                    data-testid="button-book-to-database"
+                  >
+                    {isRunningBookDb ? (
+                      <>
+                        <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ANALYZING...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="w-5 h-5 mr-2" />
+                        BOOKS TO DB
                       </>
                     )}
                   </Button>
@@ -8113,6 +8215,316 @@ Freedom is the ratio essendi of the moral law."
                 Close
               </Button>
             </div>
+          </div>
+        </ResizableDialogContent>
+      </ResizableDialog>
+
+      {/* Book to Database Dialog */}
+      <ResizableDialog open={showBookDbDialog} onOpenChange={setShowBookDbDialog}>
+        <ResizableDialogContent defaultWidth={1000} defaultHeight={750} minWidth={600} minHeight={500}>
+          <ResizableDialogHeader>
+            <ResizableDialogTitle className="flex items-center gap-2 text-xl">
+              <Database className="w-6 h-6 text-indigo-600" />
+              Books to Database
+            </ResizableDialogTitle>
+            <ResizableDialogDescription>
+              Decompose a book or long document into a structured intellectual database of positions, quotes, arguments, and concept clusters.
+            </ResizableDialogDescription>
+          </ResizableDialogHeader>
+
+          <div className="flex-1 flex flex-col overflow-hidden gap-3">
+            {!bookDbResult ? (
+              <div className="flex flex-col gap-3 overflow-y-auto flex-1">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="bookdb-title" className="text-xs font-medium text-muted-foreground mb-1 block">Book Title (optional)</Label>
+                    <Input
+                      id="bookdb-title"
+                      placeholder="e.g. Being and Time"
+                      value={bookDbTitle}
+                      onChange={e => setBookDbTitle(e.target.value)}
+                      disabled={isRunningBookDb}
+                      data-testid="input-bookdb-title"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bookdb-author" className="text-xs font-medium text-muted-foreground mb-1 block">Author (optional)</Label>
+                    <Input
+                      id="bookdb-author"
+                      placeholder="e.g. Martin Heidegger"
+                      value={bookDbAuthor}
+                      onChange={e => setBookDbAuthor(e.target.value)}
+                      disabled={isRunningBookDb}
+                      data-testid="input-bookdb-author"
+                    />
+                  </div>
+                </div>
+                <div className="flex-1 flex flex-col min-h-0">
+                  <Label className="text-xs font-medium text-muted-foreground mb-1 block">
+                    Text {bookDbText ? `(${bookDbText.split(/\s+/).filter(Boolean).length} words)` : text ? `— using main input (${text.split(/\s+/).filter(Boolean).length} words)` : ""}
+                  </Label>
+                  <Textarea
+                    placeholder="Paste the full text of the book here, or leave blank to use the main input area text…"
+                    value={bookDbText}
+                    onChange={e => setBookDbText(e.target.value)}
+                    disabled={isRunningBookDb}
+                    className="flex-1 min-h-[200px] resize-none font-mono text-sm"
+                    data-testid="textarea-bookdb-text"
+                  />
+                </div>
+                {bookDbProgress && (
+                  <div className="rounded-lg border bg-indigo-50 dark:bg-indigo-950/30 p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      {isRunningBookDb && <div className="animate-spin rounded-full h-4 w-4 border-2 border-indigo-600 border-t-transparent" />}
+                      <span className="text-sm font-medium text-indigo-800 dark:text-indigo-200">{bookDbProgress.message}</span>
+                    </div>
+                    {bookDbProgress.current && bookDbProgress.total && (
+                      <div className="text-xs text-indigo-600 dark:text-indigo-400">
+                        Step {bookDbProgress.current} of {bookDbProgress.total}
+                      </div>
+                    )}
+                    <div className="text-xs text-muted-foreground capitalize mt-0.5">Stage: {bookDbProgress.stage}</div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col overflow-hidden">
+                {/* Meta header */}
+                <div className="flex items-start justify-between mb-3 flex-shrink-0">
+                  <div>
+                    <h3 className="font-bold text-lg">{bookDbResult.meta?.title || "Untitled Document"}</h3>
+                    {bookDbResult.meta?.author && <p className="text-sm text-muted-foreground">{bookDbResult.meta.author}</p>}
+                    <p className="text-xs text-muted-foreground">{bookDbResult.meta?.wordCount?.toLocaleString()} words · {new Date(bookDbResult.meta?.processedAt).toLocaleDateString()}</p>
+                  </div>
+                  <div className="text-center">
+                    <div className={`text-4xl font-black ${bookDbResult.intelligence?.overallScore >= 70 ? 'text-green-600' : bookDbResult.intelligence?.overallScore >= 40 ? 'text-amber-600' : 'text-red-500'}`}>
+                      {bookDbResult.intelligence?.overallScore ?? '—'}
+                    </div>
+                    <div className="text-xs text-muted-foreground font-medium">INTELLIGENCE SCORE</div>
+                  </div>
+                </div>
+
+                {/* Intelligence row */}
+                <div className="grid grid-cols-3 gap-2 mb-3 flex-shrink-0">
+                  <div className="rounded border p-2 text-center">
+                    <div className="text-lg font-bold text-indigo-700">{bookDbResult.intelligence?.claimDensity?.toFixed(1)}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Claims/1k words</div>
+                  </div>
+                  <div className="rounded border p-2 text-center">
+                    <div className="text-lg font-bold text-violet-700">{bookDbResult.intelligence?.conceptualCompression}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Conceptual Compression</div>
+                  </div>
+                  <div className="rounded border p-2 text-center">
+                    <div className="text-lg font-bold text-slate-700">{bookDbResult.intelligence?.redundancyScore}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-wide">Redundancy Score</div>
+                  </div>
+                </div>
+                {bookDbResult.intelligence?.qualitativeAssessment && (
+                  <p className="text-xs text-muted-foreground italic mb-3 flex-shrink-0">{bookDbResult.intelligence.qualitativeAssessment}</p>
+                )}
+
+                {/* Tabs */}
+                <Tabs value={bookDbActiveTab} onValueChange={setBookDbActiveTab} className="flex-1 flex flex-col overflow-hidden">
+                  <TabsList className="grid grid-cols-5 flex-shrink-0">
+                    <TabsTrigger value="positions">Positions ({bookDbResult.positions?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="quotes">Quotes ({bookDbResult.quotes?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="arguments">Arguments ({bookDbResult.arguments?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="clusters">Clusters ({bookDbResult.conceptClusters?.length || 0})</TabsTrigger>
+                    <TabsTrigger value="stylometrics">Style</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="positions" className="flex-1 overflow-y-auto mt-2 space-y-2">
+                    {(bookDbResult.positions || []).map((p: any, i: number) => (
+                      <div key={p.id} className="rounded border p-2.5">
+                        <div className="flex items-start gap-2">
+                          <span className="text-xs font-mono text-muted-foreground mt-0.5 flex-shrink-0">{p.id}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm">{p.claim}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${p.type === 'core' ? 'bg-indigo-100 text-indigo-700' : p.type === 'supporting' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{p.type}</span>
+                              {p.confidence && <span className="text-[10px] text-muted-foreground">confidence: {p.confidence}%</span>}
+                              {p.section && <span className="text-[10px] text-muted-foreground truncate">{p.section}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(!bookDbResult.positions?.length) && <p className="text-sm text-muted-foreground text-center py-8">No positions extracted</p>}
+                  </TabsContent>
+
+                  <TabsContent value="quotes" className="flex-1 overflow-y-auto mt-2 space-y-2">
+                    {(bookDbResult.quotes || []).map((q: any) => (
+                      <div key={q.id} className="rounded border p-2.5 border-l-4 border-l-amber-400">
+                        <div className="flex items-start gap-2">
+                          <span className="text-xs font-mono text-muted-foreground mt-0.5 flex-shrink-0">{q.id}</span>
+                          <div className="flex-1">
+                            <p className="text-sm italic">"{q.text}"</p>
+                            {q.context && <p className="text-xs text-muted-foreground mt-1">{q.context}</p>}
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="text-[10px] text-amber-700 font-medium">signal: {q.signalStrength?.toFixed(1)}/10</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(!bookDbResult.quotes?.length) && <p className="text-sm text-muted-foreground text-center py-8">No quotes extracted</p>}
+                  </TabsContent>
+
+                  <TabsContent value="arguments" className="flex-1 overflow-y-auto mt-2 space-y-3">
+                    {(bookDbResult.arguments || []).map((a: any) => (
+                      <div key={a.id} className="rounded border p-3">
+                        <div className="flex items-start gap-2 mb-2">
+                          <span className="text-xs font-mono text-muted-foreground flex-shrink-0">{a.id}</span>
+                          <div className="flex-1">
+                            <div className="mb-2">
+                              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">Premises</p>
+                              {(a.premises || []).map((pr: string, i: number) => (
+                                <p key={i} className="text-sm text-slate-700 dark:text-slate-300 pl-2 border-l-2 border-slate-200 mb-1">{pr}</p>
+                              ))}
+                            </div>
+                            <div className="bg-indigo-50 dark:bg-indigo-950/30 rounded p-2">
+                              <p className="text-[10px] font-semibold text-indigo-700 uppercase tracking-wide mb-1">Conclusion</p>
+                              <p className="text-sm font-medium">{a.conclusion}</p>
+                            </div>
+                            {a.counterarguments?.length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-[10px] font-semibold text-red-600 uppercase tracking-wide mb-1">Counterarguments</p>
+                                {a.counterarguments.map((ca: string, i: number) => (
+                                  <p key={i} className="text-xs text-slate-600 dark:text-slate-400 pl-2 border-l-2 border-red-200">{ca}</p>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {(!bookDbResult.arguments?.length) && <p className="text-sm text-muted-foreground text-center py-8">No arguments extracted</p>}
+                  </TabsContent>
+
+                  <TabsContent value="clusters" className="flex-1 overflow-y-auto mt-2 space-y-3">
+                    {(bookDbResult.conceptClusters || []).map((c: any, i: number) => (
+                      <div key={i} className="rounded border p-3">
+                        <h4 className="font-semibold text-sm mb-2 text-indigo-700">{c.label}</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {(c.relatedPositions || []).map((pid: string) => (
+                            <span key={pid} className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 font-mono">{pid}</span>
+                          ))}
+                          {(c.relatedQuotes || []).map((qid: string) => (
+                            <span key={qid} className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-mono">{qid}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {(!bookDbResult.conceptClusters?.length) && <p className="text-sm text-muted-foreground text-center py-8">No concept clusters generated</p>}
+                  </TabsContent>
+
+                  <TabsContent value="stylometrics" className="flex-1 overflow-y-auto mt-2">
+                    {bookDbResult.stylometricThumbprint ? (
+                      <div className="space-y-3">
+                        {bookDbResult.stylometricThumbprint.aggregatedVerticalityScore !== undefined && (
+                          <div className="flex items-center gap-3 p-3 rounded border">
+                            <div className="text-2xl font-bold text-indigo-700">{(bookDbResult.stylometricThumbprint.aggregatedVerticalityScore * 100).toFixed(0)}%</div>
+                            <div>
+                              <p className="text-xs font-semibold text-muted-foreground uppercase">Verticality Score</p>
+                              <p className="text-sm">{bookDbResult.stylometricThumbprint.classification} · {bookDbResult.stylometricThumbprint.abstractionLevel}</p>
+                            </div>
+                          </div>
+                        )}
+                        {bookDbResult.stylometricThumbprint.narrativeSummary && (
+                          <p className="text-sm text-muted-foreground italic p-3 border rounded">{bookDbResult.stylometricThumbprint.narrativeSummary}</p>
+                        )}
+                        {bookDbResult.stylometricThumbprint.signaturePhrases?.length > 0 && (
+                          <div className="p-3 border rounded">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Signature Phrases</p>
+                            <div className="flex flex-wrap gap-1">
+                              {bookDbResult.stylometricThumbprint.signaturePhrases.slice(0, 15).map((ph: string, i: number) => (
+                                <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">{ph}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {bookDbResult.stylometricThumbprint.psychologicalProfile && (
+                          <div className="p-3 border rounded">
+                            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Psychological Profile</p>
+                            <div className="grid grid-cols-2 gap-1.5">
+                              {Object.entries(bookDbResult.stylometricThumbprint.psychologicalProfile).map(([key, val]: [string, any]) => (
+                                <div key={key}>
+                                  <span className="text-[10px] text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1')}: </span>
+                                  <span className="text-xs font-medium">{val}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-8">No stylometric data available</p>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-2 pt-2 border-t flex-shrink-0 flex-wrap">
+            {bookDbResult ? (
+              <>
+                <Button
+                  onClick={() => {
+                    const json = JSON.stringify(bookDbResult, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `book-database-${bookDbResult.meta?.title?.replace(/\s+/g, '-') || 'export'}.json`;
+                    a.click();
+                  }}
+                  variant="outline"
+                  className="gap-2"
+                  data-testid="button-bookdb-download-json"
+                >
+                  <Download className="w-4 h-4" />
+                  Download JSON
+                </Button>
+                {bookDbSavedId && (
+                  <span className="text-xs text-green-600 flex items-center gap-1">
+                    ✓ Saved to library (#{bookDbSavedId})
+                  </span>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => { setBookDbResult(null); setBookDbProgress(null); }}
+                  data-testid="button-bookdb-new"
+                >
+                  New Analysis
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={handleRunBookToDatabase}
+                disabled={isRunningBookDb || (!bookDbText.trim() && !text.trim())}
+                className="flex-1 bg-gradient-to-r from-indigo-700 to-violet-700 text-white"
+                data-testid="button-bookdb-run"
+              >
+                {isRunningBookDb ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Analyzing…
+                  </>
+                ) : (
+                  <>
+                    <Database className="w-4 h-4 mr-2" />
+                    Build Database
+                  </>
+                )}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setShowBookDbDialog(false)}
+              data-testid="button-bookdb-close"
+            >
+              Close
+            </Button>
           </div>
         </ResizableDialogContent>
       </ResizableDialog>

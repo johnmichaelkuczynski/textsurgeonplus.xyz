@@ -1350,6 +1350,158 @@ Output the refined document now:`;
     }
   });
 
+  // ============ BOOK TO DATABASE ============
+  app.post("/api/book-to-database/stream", async (req, res) => {
+    const { text, provider, title, author, username } = req.body;
+
+    if (!text || typeof text !== "string" || text.trim().length < 100) {
+      return res.status(400).json({ error: "Text must be at least 100 characters" });
+    }
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+    res.flushHeaders();
+
+    let isComplete = false;
+    let heartbeatInterval: ReturnType<typeof setInterval> | null = null;
+
+    const cleanup = () => {
+      isComplete = true;
+      if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
+    };
+
+    const flushResponse = () => {
+      if (typeof (res as any).flush === 'function') (res as any).flush();
+    };
+
+    heartbeatInterval = setInterval(() => {
+      if (!isComplete) {
+        try { res.write(`data: ${JSON.stringify({ type: 'heartbeat' })}\n\n`); flushResponse(); } catch {}
+      }
+    }, 15000);
+
+    req.on('close', cleanup);
+    req.on('error', cleanup);
+
+    res.write(`data: ${JSON.stringify({ type: 'progress', stage: 'starting', message: 'Starting Book to Database analysis…' })}\n\n`);
+    flushResponse();
+
+    try {
+      const { runBookToDatabase } = await import("./services/bookToDatabase");
+      const result = await runBookToDatabase(
+        text,
+        provider || "anthropic",
+        title,
+        author,
+        (progress) => {
+          if (!isComplete) {
+            res.write(`data: ${JSON.stringify({ type: 'progress', ...progress })}\n\n`);
+            flushResponse();
+          }
+        }
+      );
+
+      // Save to history
+      if (username && typeof username === "string" && username.trim().length >= 2) {
+        try {
+          const cleanUsername = username.trim().toLowerCase();
+          let user = await storage.getUserByUsername(cleanUsername);
+          if (!user) user = await storage.createUser({ username: cleanUsername });
+          await storage.createAnalysisHistory({
+            userId: user.id,
+            analysisType: "book-to-database",
+            provider: provider || "anthropic",
+            inputPreview: text.substring(0, 200) + (text.length > 200 ? "..." : ""),
+            outputData: result
+          });
+        } catch (saveError) {
+          console.error("Failed to save book database to history:", saveError);
+        }
+      }
+
+      // Save to book_databases if authenticated
+      let savedId: number | undefined;
+      if (req.isAuthenticated() && req.user) {
+        try {
+          const saved = await storage.createBookDatabase({
+            userId: req.user.id,
+            title: title || result.meta.title || null,
+            author: author || result.meta.author || null,
+            wordCount: result.meta.wordCount,
+            provider: provider || "anthropic",
+            result: result as any,
+          });
+          savedId = saved.id;
+        } catch (dbErr) {
+          console.error("Failed to save book database:", dbErr);
+        }
+
+        // Deduct credits
+        try {
+          const { calculateCreditsForWords } = await import("./services/stripe");
+          const outputText = JSON.stringify(result);
+          const wordCount = outputText.split(/\s+/).length;
+          const creditsUsed = calculateCreditsForWords(provider || "anthropic", wordCount);
+          await storage.deductCredits(req.user.id, creditsUsed);
+          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
+          flushResponse();
+        } catch (creditError) {
+          console.error("Failed to deduct credits:", creditError);
+        }
+      }
+
+      cleanup();
+      res.write(`data: ${JSON.stringify({ type: 'complete', result, savedId })}\n\n`);
+      flushResponse();
+      res.end();
+    } catch (error: any) {
+      cleanup();
+      console.error("Book to database error:", error);
+      res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+      flushResponse();
+      res.end();
+    }
+  });
+
+  // GET saved book databases for the current user
+  app.get("/api/book-databases", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user) {
+      return res.json([]);
+    }
+    try {
+      const dbs = await storage.getBookDatabases(req.user.id);
+      res.json(dbs);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.get("/api/book-databases/:id", async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+    try {
+      const db = await storage.getBookDatabase(id);
+      if (!db) return res.status(404).json({ error: "Not found" });
+      res.json(db);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  app.delete("/api/book-databases/:id", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user) return res.status(401).json({ error: "Unauthorized" });
+    const id = parseInt(req.params.id);
+    if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
+    try {
+      const deleted = await storage.deleteBookDatabase(id);
+      res.json({ success: deleted });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post("/api/tts", async (req, res) => {
     try {
       const { text, format, mode, voice, speakers, instructions, username } = req.body || {};

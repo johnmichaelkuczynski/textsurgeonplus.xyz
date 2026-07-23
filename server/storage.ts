@@ -14,6 +14,8 @@ import {
   type PhilosophicalPosition,
   type InsertPhilosophicalPosition,
   type Visit,
+  type BookDatabase,
+  type InsertBookDatabase,
   users, 
   stylometricAuthors,
   analysisHistory,
@@ -21,7 +23,8 @@ import {
   corpusWorks,
   workSections,
   philosophicalPositions,
-  visits
+  visits,
+  bookDatabases,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc, ilike, or, sql, gte } from "drizzle-orm";
@@ -82,6 +85,12 @@ export interface IStorage {
   getLastVisit(userId: number): Promise<Visit | undefined>;
   getVisits(limit: number): Promise<Visit[]>;
   getVisitTimestampsSince(since: Date | null): Promise<Date[]>;
+
+  // Book databases
+  createBookDatabase(entry: InsertBookDatabase): Promise<BookDatabase>;
+  getBookDatabases(userId: number): Promise<BookDatabase[]>;
+  getBookDatabase(id: number): Promise<BookDatabase | undefined>;
+  deleteBookDatabase(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -398,6 +407,27 @@ export class DatabaseStorage implements IStorage {
       ? await db.select({ visitedAt: visits.visitedAt }).from(visits).where(gte(visits.visitedAt, since))
       : await db.select({ visitedAt: visits.visitedAt }).from(visits);
     return rows.map((r) => r.visitedAt);
+  }
+
+  async createBookDatabase(entry: InsertBookDatabase): Promise<BookDatabase> {
+    const [created] = await db.insert(bookDatabases).values(entry).returning();
+    return created;
+  }
+
+  async getBookDatabases(userId: number): Promise<BookDatabase[]> {
+    return await db.select().from(bookDatabases)
+      .where(eq(bookDatabases.userId, userId))
+      .orderBy(desc(bookDatabases.createdAt));
+  }
+
+  async getBookDatabase(id: number): Promise<BookDatabase | undefined> {
+    const [entry] = await db.select().from(bookDatabases).where(eq(bookDatabases.id, id));
+    return entry;
+  }
+
+  async deleteBookDatabase(id: number): Promise<boolean> {
+    const result = await db.delete(bookDatabases).where(eq(bookDatabases.id, id)).returning();
+    return result.length > 0;
   }
 }
 
