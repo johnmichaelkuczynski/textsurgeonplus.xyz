@@ -88,53 +88,79 @@ You are a rigorous philosophical analyst extracting ONLY genuine intellectual co
 AUTHOR: ${author}
 ${sectionLabel ? `SECTION: ${sectionLabel}` : ""}
 
+=== THE SINGLE MOST IMPORTANT DISTINCTION ===
+
+There are two completely different kinds of sentences:
+
+TYPE A — PROMISSORY / META-LEVEL: The author announces what they will argue, plan to show, aim to demonstrate, or intend to examine. These are NOT positions. They are bureaucratic scaffolding.
+
+TYPE B — DELIVERED / OBJECT-LEVEL: The author actually states their claim as true. This is what you extract.
+
+EXAMPLES:
+
+NOT a position (promissory):
+- "I will argue that X is true."
+- "I aim to show that Y is the case."
+- "I argue in this chapter that..."
+- "I conclude that Z." (used as a structural marker, not delivering Z itself)
+- "In section 3, I demonstrate that..."
+- "This thesis examines the question of..."
+- "I engage with the views of X, Y, and Z."
+- "I aim to show that transcendental empiricism is an attractive alternative."
+- "I argue that (1) Gaskin's critiques are faulty and (2) Gaskin's minimalist empiricism is dubious." [This is an announcement of what the text will prove — not the proof itself.]
+
+IS a position (delivered):
+- "Neurosis is the condition that results when a person dissociates from their own aggression."
+- "Tolerating ambiguity prevents the onset of neurosis."
+- "McDowell's linguistic idealism is internally inconsistent because..."
+
 === ABSOLUTE RULES ===
 
-A POSITION is a substantive claim the author is genuinely committing to as true.
-
 NEVER extract as a position:
-- Questions of any kind ("What's the explanation?", "But why posit…?")
-- Imperatives ("Consider…", "Let me explain…", "Note that…")
-- Transitional sentences ("In what follows…", "As I said…")
-- Pure examples or illustrations (describing what happens in an experiment or scenario)
-- Rhetorical restatements ("The answer is clear", "As we have seen…")
+- Promissory statements ("I will argue", "I aim to show", "I conclude that" as structural marker, "I plan to demonstrate", "I hope to establish")
+- Agenda-announcing sentences ("This paper examines...", "The thesis consists of...", "In what follows I...")
+- Survey sentences ("I engage with X, Y, and Z", "I consider objections from...")
+- Pure critique without positive alternative ("X is wrong", "X fails" — only if no replacement view is offered)
+- Questions of any kind
+- Imperatives or instructions
+- Transitional sentences
+- Pure examples or illustrations
 - Sentence fragments
-- Statements that merely describe what someone else said or believes (without endorsement)
+- Descriptions of what someone else believes (without author's endorsement)
 - Near-duplicates of another extracted claim
 
 A POSITION must:
-- Be a declarative claim in the author's committed voice
-- Express a genuine intellectual commitment
+- Be a declarative claim the author is asserting as TRUE right now in this text
+- Deliver actual intellectual content, not merely announce it
 - Be self-contained and intelligible without surrounding context
-- Pass this test: "Is the author asserting this as true, and would it surprise a reader to learn it is central to the author's view?"
+- Pass this test: "Is the author delivering this claim here, or promising to deliver it later?"
 
-CONFIDENCE CALIBRATION (mandatory):
-- 90-100: Crystal-clear thesis statement, central to the whole work, stated explicitly
-- 75-89: Well-supported, clearly endorsed, important claim
-- 60-74: Present but less foregrounded; supported claim
-- Below 60: Use sparingly; requires strong justification
-- Do NOT give 100 to more than 1-2 items
-- Do NOT give 80+ to weak or marginal material
+CONFIDENCE CALIBRATION:
+- 90-100: Crystal-clear thesis statement, central, stated explicitly AND the actual content is here
+- 75-89: Well-supported, clearly endorsed important claim
+- 60-74: Present but less foregrounded
+- Below 60: Use sparingly
+- Do NOT give 90+ to promissory statements even if they sound important
 
 TYPE:
-- core: Central doctrinal commitments; the author's main theses (use sparingly — 2-4 per short essay)
+- core: The author's main positive theses (use sparingly — 2-4 per short essay)
 - supporting: Claims that directly back a core position
 - doctrinal: Explicit theoretical principles used as axioms (use sparingly)
 
-TARGET COUNT: For a ~2000-word text, aim for 8-18 positions. For a full book, scale proportionally. Prefer fewer, sharper positions over many weak ones. When in doubt, exclude.
+TARGET COUNT: For a ~250-word abstract that mainly announces what will be argued: expect 1-4 genuine positions. For a ~250-word essay that actually delivers its arguments: expect 5-12 positions.
 
-QUOTES: Extract only verbatim passages of genuine intellectual density — where the author's argument is most concentrated. Aim for 8-20 for a short essay. Skip rhetorical, transitional, or merely illustrative passages. Each quote must be a real passage from the text, word for word.
+QUOTES: Verbatim passages of genuine intellectual density where the argument is actually present, not just announced. Do NOT mark promissory statements as high-signal quotes.
 
-ARGUMENTS: Formal premise-conclusion reconstructions only. Skip if the structure is unclear. Premises must be genuine reasons, not illustrations.
+ARGUMENTS: Formal premise-conclusion reconstructions only. Premises must be real reasons present in the text, not just announced.
 
 === TEXT TO ANALYZE ===
 ${text}
 
-Return JSON in exactly this shape (nothing else):
+Return JSON:
 {
   "positions": [
     {
-      "claim": "Clean, self-contained declarative sentence in author's voice. Rewrite raw fragments into proper sentences.",
+      "claim": "Clean declarative sentence in author's committed voice.",
       "type": "core|supporting|doctrinal",
       "section": "optional section name",
       "confidence": 85
@@ -144,7 +170,7 @@ Return JSON in exactly this shape (nothing else):
     {
       "text": "Verbatim passage from the text",
       "signalStrength": 8,
-      "whyHighSignal": "Brief reason this passage is high-value",
+      "whyHighSignal": "Brief reason this passage delivers intellectual content",
       "section": "optional"
     }
   ],
@@ -164,17 +190,29 @@ You are performing a strict quality-control pass on extracted intellectual posit
 AUTHOR: ${author}
 WORD COUNT OF SOURCE TEXT: ${wordCount}
 
-=== YOUR TASK ===
+=== YOUR MOST CRITICAL TASK: ELIMINATE PROMISSORY STATEMENTS ===
 
-You will receive raw extractions. Your job:
-1. REMOVE: any non-claims (questions, imperatives, examples, transitions, rhetorical filler, fragments)
-2. MERGE: near-duplicates into one clean statement (keep the best phrasing)
-3. REWRITE: any remaining messy claims into clean, self-contained declarative sentences
-4. RECALIBRATE: confidence scores — be strict. Most should be 70-90. Reserve 90+ for the clearest theses.
-5. RECLASSIFY: type if needed. There should be very few "core" items.
+The previous extraction step sometimes fails to catch these. You must catch them now.
 
-After cleaning, the positions list should contain ONLY genuine intellectual commitments.
-If in doubt, exclude.
+Promissory/meta statements that must be REMOVED — they are not intellectual positions:
+- Any sentence containing "I will argue", "I aim to show", "I plan to demonstrate", "I hope to establish", "I intend to show"
+- Any sentence containing "I argue that" when used as an announcement (e.g., "I argue that X is the case" = fine IF the claim is actually X; but "I argue in this paper that..." = remove)
+- "I conclude that..." used as a structural marker at the end of an abstract or section
+- "This thesis examines...", "This chapter investigates...", "In what follows..."
+- "I engage with X, Y, Z", "I consider objections from..."
+- Pure critique without positive alternative: "X's view is wrong/flawed/inadequate" — REMOVE unless a replacement view is explicitly given
+
+CRITICAL DISTINCTION:
+- "Neurosis results from dissociation from one's own aggression." → KEEP (delivers a claim)
+- "I argue that Gaskin's critiques are faulty." → REMOVE (announces that the text will argue this; the actual argument is elsewhere)
+- "Gaskin's critiques of McDowell are internally inconsistent for the following reasons: [reasons given]." → KEEP (delivers the claim)
+
+=== OTHER CLEANING TASKS ===
+1. REMOVE: questions, imperatives, examples, transitions, fragments
+2. MERGE: near-duplicates into one clean statement
+3. REWRITE: messy claims into clean, self-contained declarative sentences
+4. RECALIBRATE: confidence — promissory statements that slipped through should be removed, not just lowered
+5. RECLASSIFY: type if needed. Very few "core" items.
 
 RAW POSITIONS:
 ${JSON.stringify(rawPositions, null, 2)}
@@ -182,7 +220,7 @@ ${JSON.stringify(rawPositions, null, 2)}
 RAW QUOTES:
 ${JSON.stringify(rawQuotes, null, 2)}
 
-Now produce cleaned versions. Assign sequential IDs: p1, p2, ... and q1, q2, ...
+Note: If this text is primarily an abstract or introduction that announces what will be argued rather than delivering arguments, the cleaned list may be very short (1-5 items). That is correct. Do not pad it.
 
 Return JSON:
 {
@@ -195,32 +233,74 @@ Return JSON:
 }
 `;
 
-const SYNTHESIS_PROMPT = (positions: BookPosition[], quotes: BookQuote[], arguments_: BookArgument[], wordCount: number, author: string) => `
+const SYNTHESIS_PROMPT = (positions: BookPosition[], quotes: BookQuote[], arguments_: BookArgument[], wordCount: number, author: string, rawText: string) => `
 You are building the final synthesis for a Book Database.
 
 AUTHOR: ${author}
 WORD COUNT: ${wordCount}
-
-POSITIONS (${positions.length}):
+POSITIONS EXTRACTED (${positions.length}):
 ${positions.map(p => `[${p.id}] (${p.type}, ${p.confidence}%) ${p.claim}`).join("\n")}
 
 QUOTES (${quotes.length}):
-${quotes.map(q => `[${q.id}] "${q.text.substring(0, 100)}..." (signal: ${q.signalStrength})`).join("\n")}
+${quotes.map(q => `[${q.id}] "${q.text.substring(0, 120)}..." (signal: ${q.signalStrength})`).join("\n")}
 
-Tasks:
-1. Build 4-8 CONCEPT CLUSTERS that group thematically related positions and quotes. Use the exact IDs above. Descriptions must be specific, not generic.
-2. Compute INTELLIGENCE METRICS based on what you actually see:
-   - claimDensity: genuine positions per 1000 words (use position count ÷ wordCount × 1000)
-   - conceptualCompression: 0-100. How densely packed is real intellectual content? A very tight philosophical essay might score 70-85.
-   - redundancyScore: 0-100. Higher means more repetition/padding in the original text.
-   - fillerRatio: 0.0-1.0. Proportion of text that is exposition/rhetoric vs. genuine argument.
-   - overallScore: weighted score (40% claimDensity normalized, 30% conceptualCompression, 30% (100-redundancyScore)). A dense philosophical essay should score 70-85, popular science 40-60, pure narrative lower.
-   - qualitativeAssessment: Sharp, specific 2-3 sentence judgment. Name what the text does well and what it fails at. Be critical where warranted.
-3. STYLOMETRIC THUMBPRINT (light — no generic psychologizing):
-   - signaturePhrases: 5-10 distinctive phrases or constructions that appear in the actual text
-   - abstractionLevel: one of: "highly abstract", "moderately abstract", "mixed abstract/concrete", "primarily concrete"
-   - sentenceRhythmNotes: honest description of the actual rhythm (e.g., "long, clause-heavy sentences with frequent qualification")
-   - notableStylisticTraits: 3-6 real observations about this specific author's style
+FIRST 600 WORDS OF ACTUAL TEXT (for context-sensitive scoring):
+${rawText.split(/\s+/).slice(0, 600).join(" ")}
+
+=== INTELLIGENCE SCORING: CRITICAL INSTRUCTIONS ===
+
+You must distinguish between TWO fundamentally different text types:
+
+TEXT TYPE A — "Delivering" texts: The text itself contains the actual arguments, theses, and reasoning. Dense original argumentation. Few words, many genuine intellectual commitments.
+→ Example score range: 65-90
+
+TEXT TYPE B — "Announcing" texts: The text (often an abstract, introduction, or dissertation summary) describes what the work will argue, examines, or demonstrates. The actual arguments are elsewhere. High word count relative to actual claims delivered.
+→ Example score range: 30-55
+
+TEXT TYPE C — "Survey/Critique" texts: The text primarily maps and criticizes existing views without offering substantive positive alternatives of its own.
+→ Example score range: 40-60
+
+=== SCORING RUBRIC ===
+
+claimDensity: Genuine delivered intellectual commitments per 1000 words.
+- Count only positions that deliver actual content — not positions that merely announce what will be argued
+- An abstract that announces 7 theses to be proved elsewhere has effective claimDensity of 0-3, not 27
+- A tight essay that delivers 3 dense arguments in 250 words has claimDensity of 10-15
+- A full philosophy book with original content might score 4-10
+
+conceptualCompression: How much original intellectual yield is packed into the space.
+- 80-100: Extraordinary — nearly every sentence advances the argument; Wittgenstein-level compression
+- 65-80: High — tight philosophical essay with genuine original moves
+- 50-65: Moderate — some padding/repetition; clear argument but not maximally dense
+- 35-50: Low — significant proportion is scaffolding, survey, or meta-commentary
+- Below 35: Mostly filler, narrative, or structure-announcing
+
+redundancyScore: Proportion of text that repeats the same ideas in slightly different words (0 = no repetition, 100 = constant repetition).
+
+fillerRatio: Proportion of text that is NOT genuine intellectual argument — includes: promissory statements, transitions, examples, scaffolding, survey remarks, meta-commentary.
+- A text primarily composed of "I will argue...", "I aim to show..." sentences: fillerRatio 0.55-0.80
+- A tight philosophical essay delivering its actual arguments: fillerRatio 0.10-0.30
+- An academic abstract announcing 5 chapters: fillerRatio 0.60-0.80
+
+overallScore: Integer 0-100. Computed as follows:
+- Base: a tight, dense, DELIVERING essay with genuine original theses = 70-85
+- Adjust DOWN heavily for: primarily announcing/promissory language (-20 to -30), no positive contribution only critique (-10 to -15), abstract/intro genre (-15 to -25), high filler (-5 to -15)
+- Adjust UP for: extraordinary compression, genuine novel framework, rigorous formal argument present in the text
+
+CALIBRATION EXAMPLES FOR THIS SCORING SYSTEM:
+- Freud-level dense analytical paragraph (250 words, 3 real arguments delivered): score ~75-85, claimDensity ~12-14
+- Dissertation abstract (250 words, announces 5 things it will argue): score ~35-50, claimDensity ~1-3
+- Good academic journal article (5000 words, solid but padded): score ~55-70, claimDensity ~3-6
+
+qualitativeAssessment: Sharp, honest 2-3 sentence judgment. Explicitly identify whether this text DELIVERS arguments or merely ANNOUNCES them. Name what is genuinely strong and what fails. Be critical where warranted. This assessment should make clear the nature of the text to someone who hasn't read it.
+
+=== OTHER TASKS ===
+1. Build 3-6 CONCEPT CLUSTERS grouping related positions and quotes. Use exact IDs. Descriptions must be specific.
+2. STYLOMETRIC THUMBPRINT:
+   - signaturePhrases: 4-8 distinctive phrases/constructions from the actual text
+   - abstractionLevel: "highly abstract" | "moderately abstract" | "mixed abstract/concrete" | "primarily concrete"
+   - sentenceRhythmNotes: honest description of actual rhythm
+   - notableStylisticTraits: 3-5 real observations
 
 Return JSON:
 {
@@ -228,7 +308,7 @@ Return JSON:
     {
       "id": "c1",
       "label": "Short theme label",
-      "description": "Specific description of what this cluster covers",
+      "description": "Specific description",
       "relatedPositionIds": ["p1", "p2"],
       "relatedQuoteIds": ["q1"]
     }
@@ -257,11 +337,11 @@ AUTHOR: ${author}
 
 Rules:
 - Only extract arguments where there is a clear inferential structure: genuine premises that support a conclusion
-- Do NOT extract argument-shaped passages that are really just explanations or illustrations
-- Premises must be real reasons, not examples
+- Premises must be reasons actually given in this text — not just announced for later
+- If the text says "I will argue that X because Y and Z" but doesn't actually give Y and Z, do NOT extract this as an argument
 - Conclusion must follow from the premises
 - If an argument is weak or unclear, skip it
-- Aim for 2-6 clean arguments for a short essay
+- Aim for 1-4 clean arguments for a short essay; 0 is acceptable if none are present
 
 TEXT:
 ${text.substring(0, 8000)}
@@ -287,7 +367,7 @@ function splitIntoChunks(text: string, maxWords: number = 1500): string[] {
   while (start < words.length) {
     const end = Math.min(start + maxWords, words.length);
     chunks.push(words.slice(start, end).join(" "));
-    start = end - 100; // 100-word overlap
+    start = end - 100;
     if (start >= words.length - 50) break;
   }
   return chunks;
@@ -311,7 +391,6 @@ export async function runBookToDatabase(
   let allRawQuotes: any[] = [];
 
   if (wordCount <= 4000) {
-    // Short text: single extraction call
     try {
       const extracted = await callLLMWithJSON(effectiveProvider, EXTRACTION_PROMPT(text, effectiveAuthor));
       allRawPositions = extracted.positions || [];
@@ -320,7 +399,6 @@ export async function runBookToDatabase(
       console.error("[bookToDatabase] Extraction failed:", err);
     }
   } else {
-    // Long text: split into chunks and extract per chunk
     const chunks = splitIntoChunks(text, 2000);
     for (let i = 0; i < chunks.length; i++) {
       onProgress({ stage: "extracting", message: `Extracting chunk ${i + 1} of ${chunks.length}…`, current: i + 1, total: chunks.length });
@@ -334,7 +412,7 @@ export async function runBookToDatabase(
     }
   }
 
-  // Phase 2: Cleaning pass — deduplicate, filter, recalibrate
+  // Phase 2: Cleaning pass
   onProgress({ stage: "cleaning", message: "Filtering and cleaning extractions…", current: 2, total: 4 });
 
   let positions: BookPosition[] = [];
@@ -358,7 +436,7 @@ export async function runBookToDatabase(
       section: q.section || undefined,
     })).filter((q: BookQuote) => q.text.length > 10);
   } catch (err) {
-    console.error("[bookToDatabase] Cleaning pass failed, using raw with basic IDs:", err);
+    console.error("[bookToDatabase] Cleaning pass failed:", err);
     positions = allRawPositions.slice(0, 20).map((p: any, i: number) => ({
       id: `p${i + 1}`,
       claim: p.claim || "",
@@ -391,8 +469,8 @@ export async function runBookToDatabase(
     console.error("[bookToDatabase] Arguments extraction failed:", err);
   }
 
-  // Phase 4: Synthesis — clusters + intelligence + stylometrics
-  onProgress({ stage: "synthesis", message: "Building concept clusters and intelligence metrics…", current: 4, total: 4 });
+  // Phase 4: Synthesis
+  onProgress({ stage: "synthesis", message: "Scoring and synthesizing…", current: 4, total: 4 });
 
   let conceptClusters: ConceptCluster[] = [];
   let intelligence: BookIntelligence = {
@@ -411,7 +489,7 @@ export async function runBookToDatabase(
   };
 
   try {
-    const synthesis = await callLLMWithJSON(effectiveProvider, SYNTHESIS_PROMPT(positions, quotes, bookArguments, wordCount, effectiveAuthor));
+    const synthesis = await callLLMWithJSON(effectiveProvider, SYNTHESIS_PROMPT(positions, quotes, bookArguments, wordCount, effectiveAuthor, text));
 
     conceptClusters = (synthesis.conceptClusters || []).map((c: any, i: number) => ({
       id: c.id || `c${i + 1}`,
@@ -424,7 +502,7 @@ export async function runBookToDatabase(
     if (synthesis.intelligence) {
       const intel = synthesis.intelligence;
       intelligence = {
-        overallScore: typeof intel.overallScore === "number" ? Math.max(0, Math.min(100, intel.overallScore)) : 0,
+        overallScore: typeof intel.overallScore === "number" ? Math.max(0, Math.min(100, Math.round(intel.overallScore))) : 0,
         claimDensity: typeof intel.claimDensity === "number" ? Math.round(intel.claimDensity * 10) / 10 : 0,
         conceptualCompression: typeof intel.conceptualCompression === "number" ? Math.max(0, Math.min(100, intel.conceptualCompression)) : 0,
         redundancyScore: typeof intel.redundancyScore === "number" ? Math.max(0, Math.min(100, intel.redundancyScore)) : 50,
@@ -444,7 +522,6 @@ export async function runBookToDatabase(
     }
   } catch (err) {
     console.error("[bookToDatabase] Synthesis failed:", err);
-    // Fallback intelligence computation
     const claimDensity = wordCount > 0 ? Math.round((positions.length / wordCount) * 1000 * 10) / 10 : 0;
     intelligence = {
       overallScore: Math.min(100, Math.round(claimDensity * 8)),

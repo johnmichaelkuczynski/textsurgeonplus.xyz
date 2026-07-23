@@ -1,0 +1,188 @@
+{
+  "meta": {
+    "wordCount": 252,
+    "processedAt": "2026-07-23T10:15:00.015Z",
+    "provider": "openai"
+  },
+  "positions": [
+    {
+      "id": "p1",
+      "claim": "Transcendental empiricism is a philosophy that integrates elements of McDowell's minimal empiricism and Gaskin's minimalist empiricism to address an epistemological dilemma concerning mental content.",
+      "type": "core",
+      "section": "Introduction",
+      "confidence": 85
+    },
+    {
+      "id": "p2",
+      "claim": "Gaskin's critiques of McDowell's minimal empiricism are flawed, and his minimalist empiricism is dubious.",
+      "type": "supporting",
+      "section": "Gaskin's critique",
+      "confidence": 80
+    },
+    {
+      "id": "p3",
+      "claim": "McDowell's linguistic idealism is problematic, affecting the viability of minimal empiricism.",
+      "type": "supporting",
+      "section": "McDowell’s minimal empiricism",
+      "confidence": 75
+    },
+    {
+      "id": "p4",
+      "claim": "Dreyfus's critique, 'Myth of the Mental,' accurately identifies issues in McDowell's direct realism.",
+      "type": "supporting",
+      "section": "Dialogue with phenomenology",
+      "confidence": 80
+    },
+    {
+      "id": "p5",
+      "claim": "Minimal empiricism fails to resolve the dilemma of mental content.",
+      "type": "core",
+      "section": "Conclusion",
+      "confidence": 90
+    },
+    {
+      "id": "p6",
+      "claim": "Tyler Burge effectively challenges the doctrine of disjunctivism, essential for transcendental empiricism.",
+      "type": "supporting",
+      "section": "Disjunctivism",
+      "confidence": 75
+    },
+    {
+      "id": "p7",
+      "claim": "Transcendental empiricism is an appealing alternative to other philosophies concerning mental content.",
+      "type": "core",
+      "section": "Conclusion",
+      "confidence": 85
+    }
+  ],
+  "quotes": [
+    {
+      "id": "q2",
+      "text": "I argue that (1) Gaskin's critiques are faulty and that (2) Gaskin's minimalist empiricism is very dubious.",
+      "signalStrength": 9,
+      "whyHighSignal": "Direct statement of a critical position in the argument.",
+      "section": "Gaskin's critique"
+    },
+    {
+      "id": "q4",
+      "text": "I conclude that minimal empiricism does not dissolve the dilemma of mental content.",
+      "signalStrength": 9,
+      "whyHighSignal": "Direct and explicit statement of a major conclusion.",
+      "section": "Conclusion"
+    },
+    {
+      "id": "q1",
+      "text": "Transcendental empiricism is, among other things, a philosophy of mental content.",
+      "signalStrength": 8,
+      "whyHighSignal": "Defines the central focus of transcendental empiricism.",
+      "section": "Introduction"
+    },
+    {
+      "id": "q3",
+      "text": "The dialogue culminates with Dreyfus's accusation of the 'Myth of the Mental.'",
+      "signalStrength": 8,
+      "whyHighSignal": "Introduces a key critique impacting McDowell's philosophy.",
+      "section": "Dialogue with phenomenology"
+    },
+    {
+      "id": "q5",
+      "text": "Ultimately, however, I aim to show that transcendental empiricism is an attractive alternative to philosophies of mental content.",
+      "signalStrength": 8,
+      "whyHighSignal": "Indicates the broader philosophical significance aimed by the dissertation.",
+      "section": "Conclusion"
+    }
+  ],
+  "arguments": [
+    {
+      "id": "a1",
+      "premises": [
+        "Gaskin's critiques of McDowell's minimal empiricism are faulty.",
+        "Gaskin's minimalist empiricism is very dubious."
+      ],
+      "conclusion": "Gaskin's critique and modification of McDowell's minimal empiricism is not successful.",
+      "section": "Third"
+    },
+    {
+      "id": "a2",
+      "premises": [
+        "McDowell's version of linguistic idealism is problematic.",
+        "The accusation of the 'Myth of the Mental' by Dreyfus is correct."
+      ],
+      "conclusion": "McDowell's direct realism is problematic.",
+      "section": "Fourth"
+    },
+    {
+      "id": "a3",
+      "premises": [
+        "Tyler Burge successfully undermines the doctrine of disjunctivism.",
+        "Disjunctivism is crucial for transcendental empiricism."
+      ],
+      "conclusion": "The undermining of disjunctivism poses a problem for transcendental empiricism.",
+      "section": "Fifth"
+    }
+  ],
+  "conceptClusters": [
+    {
+      "id": "c1",
+      "label": "Transcendental Empiricism Overview",
+      "description": "Coverage of transcendental empiricism as a philosophy of mental content and its appeal over other approaches.",
+      "relatedPositionIds": [
+        "p1",
+        "p7"
+      ],
+      "relatedQuoteIds": [
+        "q1",
+        "q5"
+      ]
+    },
+    {
+      "id": "c2",
+      "label": "Critique of McDowell's Empiricism",
+      "description": "Critiques of McDowell's minimal empiricism and linguistic idealism, with emphasis on weaknesses identified in McDowell's approaches.",
+      "relatedPositionIds": [
+        "p2",
+        "p3",
+        "p4",
+        "p5"
+      ],
+      "relatedQuoteIds": [
+        "q2",
+        "q3",
+        "q4"
+      ]
+    },
+    {
+      "id": "c3",
+      "label": "Challenges to Disjunctivism",
+      "description": "Discussion on Tyler Burge's challenges to disjunctivism, which is essential for the viability of transcendental empiricism.",
+      "relatedPositionIds": [
+        "p6"
+      ],
+      "relatedQuoteIds": []
+    }
+  ],
+  "intelligence": {
+    "overallScore": 74,
+    "claimDensity": 27.8,
+    "conceptualCompression": 75,
+    "redundancyScore": 20,
+    "fillerRatio": 0.2,
+    "qualitativeAssessment": "The text effectively addresses complex philosophical arguments concerning mental content with a dense presentation of claims. However, the arguments can feel repetitious as they reiterate critiques without substantial progression, limiting deeper exploration."
+  },
+  "stylometricThumbprint": {
+    "signaturePhrases": [
+      "minimal empiricism",
+      "transcendental empiricism",
+      "epistemological dilemma",
+      "Myth of the Mental",
+      "linguistic idealism"
+    ],
+    "abstractionLevel": "highly abstract",
+    "sentenceRhythmNotes": "Complex sentences with several subordinate clauses, fostering detailed yet dense argumentation.",
+    "notableStylisticTraits": [
+      "Frequent use of technical philosophical terminology",
+      "Predominant reliance on critiques and counterarguments",
+      "Tendency toward lengthy, multi-part sentences"
+    ]
+  }
+}
