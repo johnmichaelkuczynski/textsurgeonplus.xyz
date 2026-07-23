@@ -8701,7 +8701,123 @@ Freedom is the ratio essendi of the moral law."
                   data-testid="button-bookdb-download-json"
                 >
                   <Download className="w-4 h-4" />
-                  Download JSON
+                  JSON
+                </Button>
+                <Button
+                  onClick={() => {
+                    const r = bookDbResult;
+                    const slug = (r.meta?.title || 'export').replace(/\s+/g, '-');
+                    const lines: string[] = [];
+                    const hr = (ch = '=', n = 60) => ch.repeat(n);
+
+                    lines.push(`BOOK DATABASE: ${r.meta?.title || 'Untitled'}`);
+                    if (r.meta?.author) lines.push(`Author: ${r.meta.author}`);
+                    lines.push(`Words: ${r.meta?.wordCount?.toLocaleString()} · Provider: ${r.meta?.provider?.toUpperCase()} · ${new Date(r.meta?.processedAt).toLocaleDateString()}`);
+                    lines.push('');
+
+                    // Intelligence
+                    lines.push(hr());
+                    lines.push('INTELLIGENCE');
+                    lines.push(hr());
+                    const intel = r.intelligence || {};
+                    lines.push(`Overall Score:         ${intel.overallScore ?? '—'} / 100`);
+                    lines.push(`Claim Density:         ${intel.claimDensity?.toFixed(1) ?? '—'} claims / 1000 words`);
+                    lines.push(`Conceptual Compression:${intel.conceptualCompression ?? '—'} / 100`);
+                    lines.push(`Redundancy Score:      ${intel.redundancyScore ?? '—'} / 100`);
+                    lines.push(`Filler Ratio:          ${intel.fillerRatio != null ? Math.round(intel.fillerRatio * 100) + '%' : '—'}`);
+                    if (intel.qualitativeAssessment) lines.push(`\nAssessment: ${intel.qualitativeAssessment}`);
+                    lines.push('');
+
+                    // Positions
+                    lines.push(hr());
+                    lines.push(`POSITIONS (${(r.positions || []).length})`);
+                    lines.push(hr());
+                    const core = (r.positions || []).filter((p: any) => p.type === 'core');
+                    const other = (r.positions || []).filter((p: any) => p.type !== 'core');
+                    if (core.length) {
+                      lines.push('\n— CORE THESES —');
+                      core.forEach((p: any) => {
+                        lines.push(`\n[${p.id}] ${p.claim}`);
+                        lines.push(`     confidence: ${p.confidence}%${p.section ? ' · ' + p.section : ''}`);
+                      });
+                    }
+                    if (other.length) {
+                      lines.push('\n— SUPPORTING & DOCTRINAL —');
+                      other.forEach((p: any) => {
+                        lines.push(`\n[${p.id}] (${p.type}) ${p.claim}`);
+                        lines.push(`     confidence: ${p.confidence}%${p.section ? ' · ' + p.section : ''}`);
+                      });
+                    }
+                    lines.push('');
+
+                    // Quotes
+                    lines.push(hr());
+                    lines.push(`QUOTES (${(r.quotes || []).length})`);
+                    lines.push(hr());
+                    (r.quotes || []).sort((a: any, b: any) => b.signalStrength - a.signalStrength).forEach((q: any) => {
+                      lines.push(`\n[${q.id}] signal: ${typeof q.signalStrength === 'number' ? q.signalStrength.toFixed(1) : q.signalStrength}/10`);
+                      lines.push(`"${q.text}"`);
+                      if (q.whyHighSignal) lines.push(`↑ ${q.whyHighSignal}`);
+                    });
+                    lines.push('');
+
+                    // Arguments
+                    if ((r.arguments || []).length) {
+                      lines.push(hr());
+                      lines.push(`ARGUMENTS (${r.arguments.length})`);
+                      lines.push(hr());
+                      r.arguments.forEach((a: any) => {
+                        lines.push(`\n[${a.id}]${a.section ? ' ' + a.section : ''}`);
+                        lines.push('Premises:');
+                        (a.premises || []).forEach((pr: string, i: number) => lines.push(`  ${i + 1}. ${pr}`));
+                        lines.push(`∴ ${a.conclusion}`);
+                      });
+                      lines.push('');
+                    }
+
+                    // Clusters
+                    if ((r.conceptClusters || []).length) {
+                      lines.push(hr());
+                      lines.push(`CONCEPT CLUSTERS (${r.conceptClusters.length})`);
+                      lines.push(hr());
+                      r.conceptClusters.forEach((c: any) => {
+                        lines.push(`\n[${c.id}] ${c.label}`);
+                        if (c.description) lines.push(`  ${c.description}`);
+                        const pids = (c.relatedPositionIds || c.relatedPositions || []).join(', ');
+                        const qids = (c.relatedQuoteIds || c.relatedQuotes || []).join(', ');
+                        if (pids) lines.push(`  Positions: ${pids}`);
+                        if (qids) lines.push(`  Quotes: ${qids}`);
+                      });
+                      lines.push('');
+                    }
+
+                    // Stylometrics
+                    const st = r.stylometricThumbprint;
+                    if (st) {
+                      lines.push(hr());
+                      lines.push('STYLOMETRIC THUMBPRINT');
+                      lines.push(hr());
+                      if (st.abstractionLevel) lines.push(`Abstraction Level: ${st.abstractionLevel}`);
+                      if (st.sentenceRhythmNotes) lines.push(`Sentence Rhythm: ${st.sentenceRhythmNotes}`);
+                      if (st.signaturePhrases?.length) lines.push(`Signature Phrases: ${st.signaturePhrases.map((p: string) => `"${p}"`).join(' · ')}`);
+                      if (st.notableStylisticTraits?.length) {
+                        lines.push('Notable Traits:');
+                        st.notableStylisticTraits.forEach((t: string) => lines.push(`  · ${t}`));
+                      }
+                    }
+
+                    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `book-database-${slug}.txt`;
+                    a.click();
+                  }}
+                  variant="outline"
+                  className="gap-2"
+                  data-testid="button-bookdb-download-txt"
+                >
+                  <Download className="w-4 h-4" />
+                  TXT
                 </Button>
                 {bookDbSavedId && (
                   <span className="text-xs text-green-600 flex items-center gap-1 font-medium">✓ Saved to library (#{bookDbSavedId})</span>
