@@ -132,7 +132,7 @@ function GoogleHeaderLoginButton() {
   );
 }
 
-type LLM = "grok" | "openai" | "anthropic" | "perplexity" | "deepseek";
+type LLM = "openai" | "anthropic";
 
 interface Chunk {
   id: number;
@@ -310,7 +310,7 @@ export default function Home() {
   const [authLoaded, setAuthLoaded] = useState(false);
   const [showLoginGate, setShowLoginGate] = useState(false);
   const [text, setText] = useState("");
-  const [selectedLLM, setSelectedLLM] = useState<LLM>("deepseek");
+  const [selectedLLM, setSelectedLLM] = useState<LLM>("openai");
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -4069,11 +4069,8 @@ ${parsed.analyzer}`);
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="grok">Zhi 1</SelectItem>
-                  <SelectItem value="openai">Zhi 2</SelectItem>
-                  <SelectItem value="anthropic">Zhi 3</SelectItem>
-                  <SelectItem value="perplexity">Zhi 4</SelectItem>
-                  <SelectItem value="deepseek">Zhi 5</SelectItem>
+                  <SelectItem value="openai">OpenAI</SelectItem>
+                  <SelectItem value="anthropic">Anthropic</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -8450,8 +8447,6 @@ Freedom is the ratio essendi of the moral law."
                   <SelectContent>
                     <SelectItem value="openai">OpenAI (GPT-4o)</SelectItem>
                     <SelectItem value="anthropic">Claude (Anthropic)</SelectItem>
-                    <SelectItem value="deepseek">DeepSeek</SelectItem>
-                    <SelectItem value="grok">Grok (xAI)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

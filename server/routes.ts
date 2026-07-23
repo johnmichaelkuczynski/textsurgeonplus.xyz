@@ -972,7 +972,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('X-Accel-Buffering', 'no');
 
     try {
-      const selectedProvider = provider || "grok";
+      const selectedProvider = provider || 'openai';
       const resolutionLevel = typeof resolution === 'number' ? resolution : 0;
       const recognizeContent = recognizeContentSections === true;
 
@@ -1441,7 +1441,7 @@ Output the refined document now:`;
       const rawFeatures = computeRawFeatures(text);
       const prompt = buildSingleTextPrompt(authorName, sourceTitle || '', text, rawFeatures);
       
-      const llmResponse = await callLLM(provider || 'grok', prompt);
+      const llmResponse = await callLLM(provider || 'openai', prompt);
       
       let llmResult;
       try {
@@ -1506,7 +1506,7 @@ Output the refined document now:`;
           await storage.createAnalysisHistory({
             userId: user.id,
             analysisType: "stylometrics",
-            provider: provider || "grok",
+            provider: provider || 'openai',
             inputPreview: inputPreview,
             outputData: responseData.data
           });
@@ -1559,7 +1559,7 @@ Output the refined document now:`;
 
       const prompt = buildSingleTextPrompt(authorName, sourceTitle || '', text, rawFeatures);
       
-      const llmResponse = await callLLM(provider || 'grok', prompt);
+      const llmResponse = await callLLM(provider || 'openai', prompt);
       
       for (let i = 0; i < llmResponse.length; i += 100) {
         const chunk = llmResponse.slice(i, i + 100);
@@ -1630,7 +1630,7 @@ Output the refined document now:`;
         try {
           const { calculateCreditsForWords } = await import("./services/stripe");
           const outputWordCount = fullReport.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "grok", outputWordCount);
+          const creditsUsed = calculateCreditsForWords(provider || 'openai', outputWordCount);
           await storage.deductCredits(req.user.id, creditsUsed);
           res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
         } catch (creditError) {
@@ -1675,7 +1675,7 @@ Output the refined document now:`;
         { authorName: textB.authorName, text: textB.text, rawFeatures: rawFeaturesB }
       );
 
-      const llmResponse = await callLLM(provider || 'grok', prompt);
+      const llmResponse = await callLLM(provider || 'openai', prompt);
       
       let llmResult;
       try {
@@ -1743,7 +1743,7 @@ Output the refined document now:`;
           await storage.createAnalysisHistory({
             userId: user.id,
             analysisType: "stylometrics_compare",
-            provider: provider || "grok",
+            provider: provider || 'openai',
             inputPreview: inputPreview,
             outputData: responseData.data
           });
@@ -1831,7 +1831,7 @@ Output the refined document now:`;
         result = await compareStylometricsHolistic(
           text,
           textB,
-          provider || 'grok',
+          provider || 'openai',
           authorName,
           authorNameB || 'Unknown B',
           (progress) => {
@@ -1861,7 +1861,7 @@ Output the refined document now:`;
             await storage.createAnalysisHistory({
               userId: user.id,
               analysisType: "stylometrics_holistic_compare",
-              provider: provider || "grok",
+              provider: provider || 'openai',
               inputPreview: `Holistic: ${authorName} vs ${authorNameB}`,
               outputData: result
             });
@@ -1872,7 +1872,7 @@ Output the refined document now:`;
       } else {
         result = await analyzeStylometricsHolistic(
           text,
-          provider || 'grok',
+          provider || 'openai',
           authorName,
           (progress) => {
             if (!aborted) {
@@ -1901,7 +1901,7 @@ Output the refined document now:`;
             await storage.createAnalysisHistory({
               userId: user.id,
               analysisType: "stylometrics_holistic",
-              provider: provider || "grok",
+              provider: provider || 'openai',
               inputPreview: `Holistic: ${authorName} - ${text.substring(0, 150)}...`,
               outputData: result
             });
@@ -1917,7 +1917,7 @@ Output the refined document now:`;
           const { calculateCreditsForWords } = await import("./services/stripe");
           const outputText = JSON.stringify(result);
           const outputWordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "grok", outputWordCount);
+          const creditsUsed = calculateCreditsForWords(provider || 'openai', outputWordCount);
           await storage.deductCredits(req.user.id, creditsUsed);
           res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
         } catch (creditError) {

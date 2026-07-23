@@ -508,123 +508,10 @@ async function callAnthropic(text: string, apiKey: string, functionType: string)
   return parseJSON(content);
 }
 
-async function callGrok(text: string, apiKey: string, functionType: string): Promise<AnalysisResult> {
-  if (!apiKey || apiKey.trim() === '') {
-    throw new Error("GROK_API_KEY is empty or not configured. Please add it in Replit Secrets.");
-  }
-  
-  const minQuotes = calculateMinQuotes(text);
-  const prompt = getSystemPrompt(functionType, minQuotes);
-
-  console.log(`[Grok] Making API call with key starting: ${apiKey.substring(0, 8)}...`);
-  
-  const response = await fetch("https://api.x.ai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "grok-3-latest",
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: text }
-      ],
-      max_tokens: 16384,
-      temperature: 0,
-      response_format: { type: "json_object" }
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    if (errorText.includes('<!DOCTYPE') || errorText.includes('<html')) {
-      throw new Error(`Grok API returned HTML error page (status ${response.status}). The API key may be invalid or the service is down.`);
-    }
-    throw new Error(`Grok API Error: ${response.status} - ${errorText}`);
-  }
-
-  const responseText = await response.text();
-  if (responseText.includes('<!DOCTYPE') || responseText.includes('<html')) {
-    throw new Error(`Grok API returned HTML instead of JSON. The API key may be invalid.`);
-  }
-  
-  const data = JSON.parse(responseText);
-  const content = data.choices[0].message.content;
-  return parseJSON(content);
-}
-
-async function callPerplexity(text: string, apiKey: string, functionType: string): Promise<AnalysisResult> {
-  const minQuotes = calculateMinQuotes(text);
-  const prompt = getSystemPrompt(functionType, minQuotes);
-
-  const response = await fetch("https://api.perplexity.ai/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "llama-3.1-sonar-large-128k-online",
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: text }
-      ],
-      max_tokens: 16384,
-      temperature: 0
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Perplexity API Error: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
-  const content = data.choices[0].message.content;
-  return parseJSON(content);
-}
-
-async function callDeepSeek(text: string, apiKey: string, functionType: string): Promise<AnalysisResult> {
-  const minQuotes = calculateMinQuotes(text);
-  const prompt = getSystemPrompt(functionType, minQuotes);
-
-  const response = await fetch("https://api.deepseek.com/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "deepseek-chat",
-      messages: [
-        { role: "system", content: prompt },
-        { role: "user", content: text }
-      ],
-      max_tokens: 16384,
-      temperature: 0,
-      response_format: { type: "json_object" }
-    })
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`DeepSeek API Error: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
-  const content = data.choices[0].message.content;
-  return parseJSON(content);
-}
-
 export async function analyzeText(text: string, provider: string, functionType: string): Promise<AnalysisResult> {
-  // Get API keys from environment variables (Replit Secrets)
   const apiKeys = {
     openai: process.env.OPENAI_API_KEY || "",
     anthropic: process.env.ANTHROPIC_API_KEY || "",
-    grok: process.env.GROK_API_KEY || "",
-    perplexity: process.env.PERPLEXITY_API_KEY || "",
-    deepseek: process.env.DEEPSEEK_API_KEY || "",
   };
 
   switch (provider) {
@@ -636,31 +523,15 @@ export async function analyzeText(text: string, provider: string, functionType: 
       if (!apiKeys.anthropic) throw new Error("ANTHROPIC_API_KEY not configured. Add it as an environment variable.");
       return callAnthropic(text, apiKeys.anthropic, functionType);
     
-    case "grok":
-      if (!apiKeys.grok) throw new Error("GROK_API_KEY not configured. Add it as an environment variable.");
-      return callGrok(text, apiKeys.grok, functionType);
-    
-    case "perplexity":
-      if (!apiKeys.perplexity) throw new Error("PERPLEXITY_API_KEY not configured. Add it as an environment variable.");
-      return callPerplexity(text, apiKeys.perplexity, functionType);
-    
-    case "deepseek":
-      if (!apiKeys.deepseek) throw new Error("DEEPSEEK_API_KEY not configured. Add it as an environment variable.");
-      return callDeepSeek(text, apiKeys.deepseek, functionType);
-    
     default:
       throw new Error(`Unknown provider: ${provider}`);
   }
 }
 
 export async function analyzeTextStreaming(text: string, provider: string, functionType: string, onChunk: (chunk: string) => void): Promise<void> {
-  // Get API keys from environment variables (Replit Secrets)
   const apiKeys = {
     openai: process.env.OPENAI_API_KEY || "",
     anthropic: process.env.ANTHROPIC_API_KEY || "",
-    grok: process.env.GROK_API_KEY || "",
-    perplexity: process.env.PERPLEXITY_API_KEY || "",
-    deepseek: process.env.DEEPSEEK_API_KEY || "",
   };
 
   switch (provider) {
@@ -668,19 +539,15 @@ export async function analyzeTextStreaming(text: string, provider: string, funct
       if (!apiKeys.openai) throw new Error("OPENAI_API_KEY not configured. Add it as an environment variable.");
       return callOpenAIStreaming(text, apiKeys.openai, functionType, onChunk);
     
-    case "anthropic":
-    case "grok":
-    case "perplexity":
-    case "deepseek":
-      // Fallback to non-streaming for providers without streaming support yet
+    case "anthropic": {
       const result = await analyzeText(text, provider, functionType);
       const fullText = JSON.stringify(result, null, 2);
-      // Simulate streaming by chunking the response
       for (let i = 0; i < fullText.length; i += 50) {
         onChunk(fullText.slice(i, i + 50));
         await new Promise(resolve => setTimeout(resolve, 10));
       }
       break;
+    }
     
     default:
       throw new Error(`Unknown provider: ${provider}`);
@@ -691,74 +558,34 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
   const apiKeys = {
     openai: process.env.OPENAI_API_KEY || "",
     anthropic: process.env.ANTHROPIC_API_KEY || "",
-    grok: process.env.GROK_API_KEY || "",
-    perplexity: process.env.PERPLEXITY_API_KEY || "",
-    deepseek: process.env.DEEPSEEK_API_KEY || "",
-  };
-
-  const makeRequest = async (url: string, apiKey: string, model: string, maxTokens: number = 16384) => {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "user", content: prompt }
-        ],
-        max_tokens: maxTokens,
-      })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API Error: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
   };
 
   switch (provider) {
     case "openai":
       if (!apiKeys.openai) throw new Error("OPENAI_API_KEY not configured");
-      return makeRequest("https://api.openai.com/v1/chat/completions", apiKeys.openai, "gpt-4o");
+      {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKeys.openai}` },
+          body: JSON.stringify({ model: "gpt-4o", messages: [{ role: "user", content: prompt }], max_tokens: 16384 })
+        });
+        if (!response.ok) { const e = await response.text(); throw new Error(`OpenAI API Error: ${response.status} - ${e}`); }
+        const data = await response.json();
+        return data.choices[0].message.content;
+      }
     
     case "anthropic":
       if (!apiKeys.anthropic) throw new Error("ANTHROPIC_API_KEY not configured");
-      const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": apiKeys.anthropic,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 16384,
-          messages: [{ role: "user", content: prompt }]
-        })
-      });
-      if (!anthropicResponse.ok) {
-        const err = await anthropicResponse.text();
-        throw new Error(`Anthropic API Error: ${err}`);
+      {
+        const response = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "x-api-key": apiKeys.anthropic, "anthropic-version": "2023-06-01" },
+          body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 16384, messages: [{ role: "user", content: prompt }] })
+        });
+        if (!response.ok) { const e = await response.text(); throw new Error(`Anthropic API Error: ${e}`); }
+        const data = await response.json();
+        return data.content[0].text;
       }
-      const anthropicData = await anthropicResponse.json();
-      return anthropicData.content[0].text;
-    
-    case "grok":
-      if (!apiKeys.grok) throw new Error("GROK_API_KEY not configured");
-      return makeRequest("https://api.x.ai/v1/chat/completions", apiKeys.grok, "grok-3-latest");
-    
-    case "perplexity":
-      if (!apiKeys.perplexity) throw new Error("PERPLEXITY_API_KEY not configured");
-      return makeRequest("https://api.perplexity.ai/chat/completions", apiKeys.perplexity, "sonar-pro");
-    
-    case "deepseek":
-      if (!apiKeys.deepseek) throw new Error("DEEPSEEK_API_KEY not configured");
-      return makeRequest("https://api.deepseek.com/chat/completions", apiKeys.deepseek, "deepseek-chat", 8192);
     
     default:
       throw new Error(`Unknown provider: ${provider}`);

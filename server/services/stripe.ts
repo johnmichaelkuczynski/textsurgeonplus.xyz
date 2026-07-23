@@ -18,11 +18,8 @@ function getStripe(): Stripe {
 export const CREDITS_PER_PURCHASE = 1000;
 
 export const CREDIT_COSTS_PER_WORD: Record<string, number> = {
-  'deepseek': 1000 / 500000,
   'openai': 1000 / 150000,
-  'grok': 1000 / 100000,
   'anthropic': 1000 / 75000,
-  'perplexity': 1000 / 75000,
 };
 
 export function calculateCreditsForWords(provider: string, wordCount: number): number {
