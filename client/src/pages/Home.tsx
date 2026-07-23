@@ -3997,7 +3997,7 @@ ${parsed.analyzer}`);
     );
   }
 
-  if (!username) {
+  if (!username && !import.meta.env.DEV) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex flex-col items-center justify-center p-6">
         <div className="bg-white rounded-2xl shadow-2xl p-12 max-w-md w-full flex flex-col items-center gap-8 border border-slate-100">
