@@ -4714,6 +4714,9 @@ ${parsed.analyzer}`);
                     onClick={() => {
                       if (text.trim()) setBookDbText(text);
                       setShowBookDbDialog(true);
+                      if (text.trim() || bookDbText.trim()) {
+                        handleRunBookToDatabase();
+                      }
                     }}
                     disabled={isRunningBookDb}
                     className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-indigo-700 to-violet-700 text-white hover:shadow-lg transition-all hover:scale-105"
