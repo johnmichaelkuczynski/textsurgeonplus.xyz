@@ -3,7 +3,7 @@ import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, Users, Clock, CalendarDays, CalendarRange, ShieldAlert, CalendarCheck } from "lucide-react";
+import { ArrowLeft, Users, Clock, CalendarDays, CalendarRange, CalendarCheck } from "lucide-react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -31,15 +31,8 @@ type AdminVisitsResponse = {
     lastYear: SeriesPoint[];
     allTime: SeriesPoint[];
   };
-  visits: { id: number; email: string | null; visitedAt: string }[];
+  visits: { id: number; visitedAt: string }[];
 };
-
-type AuthUserResponse = {
-  authenticated: boolean;
-  user: { id: number; username: string; email: string | null; displayName: string | null } | null;
-};
-
-const ADMIN_EMAIL = "johnmichaelkuczynski@gmail.com";
 
 function StatCard({ title, value, icon: Icon, color }: { title: string; value: number; icon: any; color: string }) {
   return (
@@ -52,7 +45,7 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: n
         <div className="text-3xl font-bold" data-testid={`text-stat-${title.toLowerCase().replace(/\s+/g, "-")}`}>
           {value.toLocaleString()}
         </div>
-        <p className="text-xs text-muted-foreground mt-1">Google logins</p>
+        <p className="text-xs text-muted-foreground mt-1">Anonymous visits</p>
       </CardContent>
     </Card>
   );
@@ -82,43 +75,9 @@ function VisitChart({ title, data }: { title: string; data: SeriesPoint[] }) {
 }
 
 export default function Administrative() {
-  const { data: auth, isLoading: authLoading } = useQuery<AuthUserResponse>({
-    queryKey: ["/api/auth/user"],
-  });
-
-  const isAdmin = auth?.authenticated && auth.user?.email?.toLowerCase() === ADMIN_EMAIL;
-
   const { data, isLoading } = useQuery<AdminVisitsResponse>({
     queryKey: ["/api/admin/visits"],
-    enabled: !!isAdmin,
   });
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background p-10">
-        <Skeleton className="h-10 w-64 mb-6" />
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-32" />)}
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-10">
-        <ShieldAlert className="w-16 h-16 text-destructive" />
-        <h1 className="text-2xl font-bold">Access Denied</h1>
-        <p className="text-muted-foreground">This page is restricted to the site administrator.</p>
-        <Link href="/">
-          <Button variant="outline" data-testid="button-back-home">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -163,18 +122,17 @@ export default function Administrative() {
             <section>
               <Card className="shadow-md">
                 <CardHeader>
-                  <CardTitle className="text-lg font-semibold">Login History (by Gmail)</CardTitle>
+                  <CardTitle className="text-lg font-semibold">Recent Anonymous Visits</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {data.visits.length === 0 ? (
-                    <p className="text-muted-foreground py-6 text-center">No logins recorded yet. Each Google sign-in is logged here.</p>
+                    <p className="text-muted-foreground py-6 text-center">No anonymous visits recorded yet.</p>
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b text-left text-muted-foreground">
                             <th className="py-2 pr-4 font-semibold">#</th>
-                            <th className="py-2 pr-4 font-semibold">Gmail</th>
                             <th className="py-2 font-semibold">When</th>
                           </tr>
                         </thead>
@@ -182,7 +140,6 @@ export default function Administrative() {
                           {data.visits.map((v, i) => (
                             <tr key={v.id} className="border-b last:border-0 hover:bg-muted/50" data-testid={`row-visit-${v.id}`}>
                               <td className="py-2 pr-4 text-muted-foreground">{i + 1}</td>
-                              <td className="py-2 pr-4 font-medium" data-testid={`text-visit-email-${v.id}`}>{v.email || "(no email)"}</td>
                               <td className="py-2" data-testid={`text-visit-time-${v.id}`}>
                                 {new Date(v.visitedAt).toLocaleString("en-US", {
                                   year: "numeric",

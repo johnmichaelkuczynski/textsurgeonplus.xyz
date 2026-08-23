@@ -226,7 +226,7 @@ export const bookDatabases = pgTable("book_databases", {
   wordCount: integer("word_count"),
   provider: varchar("provider", { length: 50 }),
   inputPreview: text("input_preview"),
-  data: jsonb("data").notNull(),
+  data: jsonb("result").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -239,7 +239,7 @@ export type InsertBookDatabase = z.infer<typeof insertBookDatabaseSchema>;
 export type BookDatabaseRow = typeof bookDatabases.$inferSelect;
 
 // ============ VISIT TRACKING ============
-// Records each Google (Clerk) sign-in visit for the admin dashboard
+// Records anonymous page visits for the visitor analytics dashboard.
 
 export const visits = pgTable("visits", {
   id: serial("id").primaryKey(),

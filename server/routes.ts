@@ -3,7 +3,6 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
 import { parseFile } from "./services/fileParser";
-import { setupAuth } from "./auth";
 import { generateAudio, TTS_VOICES } from "./services/ttsService";
 import { 
   computeRawFeatures, 
@@ -22,34 +21,94 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup sessions (no login system; app is fully open)
-  setupAuth(app);
-
-  // Identity enforcement: the acting username is ALWAYS derived from the
-  // server session, never trusted from the client. With no login system,
-  // requests carry no username, so per-user data endpoints are inert.
-  app.use("/api", (req, _res, next) => {
-    const authed =
-      typeof req.isAuthenticated === "function" && req.isAuthenticated() && !!req.user;
-    if (authed) {
-      if (req.body && typeof req.body === "object" && !Array.isArray(req.body)) {
-        req.body.username = req.user!.username;
-      }
-      if (req.query && typeof req.query === "object" && "username" in req.query) {
-        (req.query as Record<string, unknown>).username = req.user!.username;
-      }
-    } else {
-      if (req.body && typeof req.body === "object" && !Array.isArray(req.body)) {
-        delete req.body.username;
-      }
-      if (req.query && typeof req.query === "object") {
-        delete (req.query as Record<string, unknown>).username;
-      }
-    }
-    next();
-  });
-  
   const { analyzeText, analyzeTextStreaming, callLLM } = await import("./llm");
+
+  const getOrCreateVisitorUser = async (value: unknown) => {
+    if (typeof value !== "string") return null;
+    const username = value.trim().toLowerCase();
+    if (username.length < 3 || username.length > 128) return null;
+
+    const existing = await storage.getUserByUsername(username);
+    if (existing) return existing;
+
+    try {
+      return await storage.createUser({ username });
+    } catch {
+      return await storage.getUserByUsername(username);
+    }
+  };
+
+  app.post("/api/visits", async (_req, res) => {
+    try {
+      await storage.recordVisit(null, null);
+      res.status(201).json({ recorded: true });
+    } catch (error) {
+      console.error("Visitor tracking error:", error);
+      res.status(500).json({ error: "Failed to record visit" });
+    }
+  });
+
+  app.get("/api/admin/visits", async (_req, res) => {
+    try {
+      const now = Date.now();
+      const HOUR = 60 * 60 * 1000;
+      const DAY = 24 * HOUR;
+      const [visitList, allTimestamps] = await Promise.all([
+        storage.getVisits(500),
+        storage.getVisitTimestampsSince(null),
+      ]);
+      const times = allTimestamps.map((time) => new Date(time).getTime());
+      const buildSeries = (
+        start: number,
+        bucketMs: number,
+        buckets: number,
+        label: (date: Date) => string,
+      ) => {
+        const counts = new Array(buckets).fill(0);
+        for (const time of times) {
+          if (time < start) continue;
+          const index = Math.min(Math.floor((time - start) / bucketMs), buckets - 1);
+          counts[index]++;
+        }
+        return counts.map((count, index) => ({
+          label: label(new Date(start + index * bucketMs)),
+          count,
+        }));
+      };
+      const earliest = times.length ? Math.min(...times) : now;
+      const allTimeSpan = Math.max(now - earliest, DAY);
+      const allTimeBuckets = Math.min(24, Math.max(6, Math.ceil(allTimeSpan / (30 * DAY))));
+
+      res.json({
+        stats: {
+          allTime: times.length,
+          last24Hours: times.filter((time) => time >= now - DAY).length,
+          lastWeek: times.filter((time) => time >= now - 7 * DAY).length,
+          lastMonth: times.filter((time) => time >= now - 30 * DAY).length,
+          lastYear: times.filter((time) => time >= now - 365 * DAY).length,
+        },
+        series: {
+          last24Hours: buildSeries(now - DAY, HOUR, 24, (date) =>
+            date.toLocaleTimeString("en-US", { hour: "numeric", hour12: true })),
+          lastWeek: buildSeries(now - 7 * DAY, DAY, 7, (date) =>
+            date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })),
+          lastMonth: buildSeries(now - 30 * DAY, DAY, 30, (date) =>
+            date.toLocaleDateString("en-US", { month: "short", day: "numeric" })),
+          lastYear: buildSeries(now - 365 * DAY, 365 / 12 * DAY, 12, (date) =>
+            date.toLocaleDateString("en-US", { month: "short", year: "2-digit" })),
+          allTime: buildSeries(earliest, allTimeSpan / allTimeBuckets, allTimeBuckets, (date) =>
+            date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" })),
+        },
+        visits: visitList.map((visit) => ({
+          id: visit.id,
+          visitedAt: visit.visitedAt,
+        })),
+      });
+    } catch (error) {
+      console.error("Visitor analytics error:", error);
+      res.status(500).json({ error: "Failed to load visitor data" });
+    }
+  });
 
   app.post("/api/parse-file", upload.single('file'), async (req, res) => {
     try {
@@ -92,31 +151,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check credits for logged-in users
-      let userId: number | null = null;
-      if (req.isAuthenticated() && req.user) {
-        userId = req.user.id;
-        const userCredits = await storage.getUserCredits(userId);
-        if (userCredits <= 0) {
-          return res.status(403).json({ 
-            error: "Insufficient credits. Please purchase more credits to continue.",
-            needsCredits: true
-          });
-        }
-      }
-
       const result = await analyzeText(text, provider, functionType);
       
-      // Deduct credits based on output word count
-      if (userId) {
-        const { calculateCreditsForWords } = await import("./services/stripe");
-        const outputText = JSON.stringify(result);
-        const wordCount = outputText.split(/\s+/).length;
-        const creditsUsed = calculateCreditsForWords(provider, wordCount);
-        await storage.deductCredits(userId, creditsUsed);
-      }
-      
-      // Save to history if user is logged in
+      // Save to this anonymous visitor's history.
       if (username && typeof username === "string" && username.trim().length >= 2) {
         try {
           const cleanUsername = username.trim().toLowerCase();
@@ -170,19 +207,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check credits for logged-in users
-      let userId: number | null = null;
-      if (req.isAuthenticated() && req.user) {
-        userId = req.user.id;
-        const userCredits = await storage.getUserCredits(userId);
-        if (userCredits <= 0) {
-          return res.status(403).json({ 
-            error: "Insufficient credits. Please purchase more credits to continue.",
-            needsCredits: true
-          });
-        }
-      }
-
       res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -195,7 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
       });
 
-      // Save to history if user is logged in
+      // Save to this anonymous visitor's history.
       if (username && typeof username === "string" && username.trim().length >= 2) {
         try {
           const cleanUsername = username.trim().toLowerCase();
@@ -232,19 +256,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (saveError) {
           console.error("Failed to save streaming result to history:", saveError);
-        }
-      }
-
-      // Deduct credits
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const wordCount = fullContent.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider, wordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ creditsUsed })}\n\n`);
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
         }
       }
 
@@ -405,20 +416,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Deduct credits
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const outputText = JSON.stringify(result);
-          const wordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "openai", wordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
-        }
-      }
-
       cleanup();
       res.write(`data: ${JSON.stringify({ type: 'complete', result })}\n\n`);
       flushResponse();
@@ -499,20 +496,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (saveError) {
           console.error("Failed to save quotes to history:", saveError);
-        }
-      }
-
-      // Deduct credits
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const outputText = JSON.stringify(result);
-          const wordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "openai", wordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
         }
       }
 
@@ -611,19 +594,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Deduct credits
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const outputText = JSON.stringify(result);
-          const wordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "openai", wordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
-        }
-      }
-
       cleanup();
       res.write(`data: ${JSON.stringify({ type: 'complete', result: { ...result, markdown } })}\n\n`);
       res.end();
@@ -723,19 +693,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Deduct credits
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const outputText = JSON.stringify(result);
-          const wordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "openai", wordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
-        }
-      }
-
       cleanup();
       res.write(`data: ${JSON.stringify({ type: 'complete', result })}\n\n`);
       res.end();
@@ -1358,17 +1315,6 @@ Output the refined document now:`;
         return res.status(400).json({ error: "Text is required" });
       }
 
-      let ttsUserId: number | null = null;
-      if (req.isAuthenticated && req.isAuthenticated() && req.user) {
-        ttsUserId = req.user.id;
-        const userCredits = await storage.getUserCredits(ttsUserId);
-        if (userCredits <= 0) {
-          return res.status(403).json({
-            error: "Insufficient credits. Please purchase more credits to continue.",
-            needsCredits: true,
-          });
-        }
-      }
       if (text.length > 50000) {
         return res.status(400).json({ error: "Text is too long (max 50,000 characters). Split it into parts." });
       }
@@ -1394,18 +1340,6 @@ Output the refined document now:`;
         speakers,
         instructions: typeof instructions === "string" ? instructions : "",
       });
-
-      // Deduct credits based on input word count
-      if (ttsUserId) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const wordCount = text.trim().split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords("openai", wordCount);
-          await storage.deductCredits(ttsUserId, creditsUsed);
-        } catch (creditError) {
-          console.error("Failed to deduct TTS credits:", creditError);
-        }
-      }
 
       res.set({
         "Content-Type": result.mime,
@@ -1492,7 +1426,7 @@ Output the refined document now:`;
         }
       };
 
-      // Auto-save to history if user is logged in
+      // Auto-save to this anonymous visitor's history.
       if (username && typeof username === "string" && username.trim().length >= 2) {
         try {
           const cleanUsername = username.trim().toLowerCase();
@@ -1625,19 +1559,6 @@ Output the refined document now:`;
         }
       })}\n\n`);
 
-      // Deduct credits
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const outputWordCount = fullReport.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "grok", outputWordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
-        }
-      }
-
       res.end();
     } catch (error: any) {
       console.error("Stylometrics streaming error:", error);
@@ -1729,7 +1650,7 @@ Output the refined document now:`;
         data: llmResult
       };
 
-      // Auto-save to history if user is logged in
+      // Auto-save to this anonymous visitor's history.
       if (username && typeof username === "string" && username.trim().length >= 2) {
         try {
           const cleanUsername = username.trim().toLowerCase();
@@ -1911,20 +1832,6 @@ Output the refined document now:`;
         }
       }
 
-      // Deduct credits
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const outputText = JSON.stringify(result);
-          const outputWordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider || "grok", outputWordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
-        }
-      }
-
       res.write(`data: ${JSON.stringify({ type: 'done' })}\n\n`);
       cleanup();
       res.end();
@@ -1945,7 +1852,7 @@ Output the refined document now:`;
       const { username, authorName, sourceTitle, data, fullReport } = req.body;
 
       if (!username || typeof username !== "string" || username.trim().length < 2) {
-        return res.status(401).json({ error: "Login required to save profiles" });
+        return res.status(400).json({ error: "Visitor ID required to save profiles" });
       }
 
       if (!authorName || typeof authorName !== "string" || authorName.trim().length === 0) {
@@ -2160,12 +2067,12 @@ Output the refined document now:`;
       const { username } = req.query;
       
       if (!username || typeof username !== "string") {
-        return res.status(401).json({ error: "Login required" });
+        return res.status(400).json({ error: "Visitor ID required" });
       }
       
       const user = await storage.getUserByUsername(username.trim().toLowerCase());
       if (!user) {
-        return res.status(401).json({ error: "User not found" });
+        return res.status(404).json({ error: "Visitor not found" });
       }
       
       const item = await storage.getAnalysisHistoryItem(parseInt(id));
@@ -2194,12 +2101,12 @@ Output the refined document now:`;
       const { username } = req.query;
       
       if (!username || typeof username !== "string") {
-        return res.status(401).json({ error: "Login required" });
+        return res.status(400).json({ error: "Visitor ID required" });
       }
       
       const user = await storage.getUserByUsername(username.trim().toLowerCase());
       if (!user) {
-        return res.status(401).json({ error: "User not found" });
+        return res.status(404).json({ error: "Visitor not found" });
       }
       
       const item = await storage.getAnalysisHistoryItem(parseInt(id));
@@ -2563,20 +2470,6 @@ Respond with valid JSON only:
       }
 
       res.write(`data: ${JSON.stringify({ type: 'result', result })}\n\n`);
-
-      // Deduct credits based on output
-      if (req.isAuthenticated() && req.user) {
-        try {
-          const { calculateCreditsForWords } = await import("./services/stripe");
-          const outputText = JSON.stringify(result);
-          const wordCount = outputText.split(/\s+/).length;
-          const creditsUsed = calculateCreditsForWords(provider, wordCount);
-          await storage.deductCredits(req.user.id, creditsUsed);
-          res.write(`data: ${JSON.stringify({ type: 'credits', creditsUsed })}\n\n`);
-        } catch (creditError) {
-          console.error("Failed to deduct credits:", creditError);
-        }
-      }
 
       if (username && typeof username === "string" && username.trim().length >= 2) {
         try {
@@ -2967,23 +2860,19 @@ Otherwise return JSON array:
   });
 
   // ============ STRIPE PAYMENT ROUTES ============
-  const { createCheckoutSession, handleWebhookEvent, CREDITS_PER_PURCHASE, calculateCreditsForWords } = await import("./services/stripe");
+  const { createCheckoutSession, handleWebhookEvent } = await import("./services/stripe");
 
   app.get("/api/credits", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user) {
-      return res.status(401).json({ error: "Must be logged in" });
-    }
-    const credits = await storage.getUserCredits(req.user.id);
-    res.json({ credits });
+    const user = await getOrCreateVisitorUser(req.query.username);
+    if (!user) return res.status(400).json({ error: "Visitor ID required" });
+    res.json({ credits: await storage.getUserCredits(user.id) });
   });
 
   app.post("/api/checkout", async (req, res) => {
-    if (!req.isAuthenticated() || !req.user) {
-      return res.status(401).json({ error: "Must be logged in to purchase credits" });
-    }
-
     try {
-      const session = await createCheckoutSession(req.user.id, req.user.email || null);
+      const user = await getOrCreateVisitorUser(req.body?.username);
+      if (!user) return res.status(400).json({ error: "Visitor ID required" });
+      const session = await createCheckoutSession(user.id, null);
       res.json({ url: session.url });
     } catch (error: any) {
       console.error("Checkout error:", error);
@@ -3293,10 +3182,10 @@ Otherwise return JSON array:
   });
 
   app.get("/api/book-databases", async (req, res) => {
-    const userId = (req as any).user?.id;
-    if (!userId) return res.json([]);
     try {
-      const rows = await storage.getBookDatabases(userId);
+      const user = await getOrCreateVisitorUser(req.query.username);
+      if (!user) return res.status(400).json({ error: "Visitor ID required" });
+      const rows = await storage.getBookDatabases(user.id);
       res.json(rows);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -3304,12 +3193,13 @@ Otherwise return JSON array:
   });
 
   app.post("/api/book-databases/save", async (req, res) => {
-    const userId = (req as any).user?.id;
-    const { title, author, wordCount, provider, inputPreview, data } = req.body;
+    const { username, title, author, wordCount, provider, inputPreview, data } = req.body;
     if (!data) return res.status(400).json({ error: "data is required" });
     try {
+      const user = await getOrCreateVisitorUser(username);
+      if (!user) return res.status(400).json({ error: "Visitor ID required" });
       const row = await storage.saveBookDatabase({
-        userId: userId || null,
+        userId: user.id,
         title: title || null,
         author: author || null,
         wordCount: wordCount || null,
@@ -3327,6 +3217,11 @@ Otherwise return JSON array:
     const id = parseInt(req.params.id);
     if (isNaN(id)) return res.status(400).json({ error: "Invalid id" });
     try {
+      const user = await getOrCreateVisitorUser(req.query.username);
+      if (!user) return res.status(400).json({ error: "Visitor ID required" });
+      const row = await storage.getBookDatabase(id);
+      if (!row) return res.status(404).json({ error: "Book database not found" });
+      if (row.userId !== user.id) return res.status(403).json({ error: "Access denied" });
       await storage.deleteBookDatabase(id);
       res.json({ ok: true });
     } catch (err: any) {

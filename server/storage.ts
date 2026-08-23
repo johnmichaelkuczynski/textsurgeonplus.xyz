@@ -33,11 +33,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserById(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  getUserByGoogleId(googleId: string): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  createUserWithGoogle(user: { username: string; googleId: string; email: string | null; displayName: string | null }): Promise<User>;
-  updateUserGoogle(id: number, data: { googleId?: string; displayName?: string | null }): Promise<User>;
   addCredits(userId: number, amount: number): Promise<User>;
   deductCredits(userId: number, amount: number): Promise<User>;
   getUserCredits(userId: number): Promise<number>;
@@ -81,7 +77,7 @@ export interface IStorage {
   deletePhilosophicalPosition(id: number): Promise<boolean>;
 
   // Visit tracking
-  recordVisit(userId: number, email: string | null): Promise<void>;
+  recordVisit(userId: number | null, email: string | null): Promise<void>;
   getLastVisit(userId: number): Promise<Visit | undefined>;
   getVisits(limit: number): Promise<Visit[]>;
   getVisitTimestampsSince(since: Date | null): Promise<Date[]>;
@@ -111,34 +107,6 @@ export class DatabaseStorage implements IStorage {
 
   async getUserById(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
-  }
-
-  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
-    return user;
-  }
-
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
-  }
-
-  async createUserWithGoogle(userData: { username: string; googleId: string; email: string | null; displayName: string | null }): Promise<User> {
-    const [user] = await db.insert(users).values({
-      username: userData.username,
-      googleId: userData.googleId,
-      email: userData.email,
-      displayName: userData.displayName,
-    }).returning();
-    return user;
-  }
-
-  async updateUserGoogle(id: number, data: { googleId?: string; displayName?: string | null }): Promise<User> {
-    const [user] = await db.update(users)
-      .set(data)
-      .where(eq(users.id, id))
-      .returning();
     return user;
   }
 
@@ -384,7 +352,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Visit tracking
-  async recordVisit(userId: number, email: string | null): Promise<void> {
+  async recordVisit(userId: number | null, email: string | null): Promise<void> {
     await db.insert(visits).values({ userId, email });
   }
 

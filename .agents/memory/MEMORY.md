@@ -1,1 +1,0 @@
-- [Auth policy](auth-setup-quirks.md) — Google login reinstated but OPTIONAL; app fully open anonymously, callback `/auth/google/callback` (no /api), stale vault secrets can shadow new keys.
