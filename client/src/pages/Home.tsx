@@ -2720,7 +2720,8 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
       });
 
       if (!response.ok) {
-        throw new Error('Failed to start quote extraction');
+        const errorBody = await response.json().catch(() => null);
+        throw new Error(errorBody?.error || 'Failed to start quote extraction');
       }
 
       const reader = response.body?.getReader();

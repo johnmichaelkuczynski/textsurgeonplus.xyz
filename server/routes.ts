@@ -438,9 +438,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ error: "Missing or invalid 'text' field" });
     }
 
-    if (!author || typeof author !== "string" || author.trim().length < 2) {
-      return res.status(400).json({ error: "Author name is required" });
-    }
+    const cleanAuthor = typeof author === "string" ? author.trim() : "";
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -455,7 +453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const { quotesCoherent } = await import("./services/coherent/quotesCoherent");
         const coherentResult = await quotesCoherent(
           text,
-          { author: author.trim(), depth },
+          { author: cleanAuthor, depth },
           provider || "openai",
           (progress) => {
             res.write(`data: ${JSON.stringify({ type: 'progress', ...progress })}\n\n`);
@@ -470,7 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result = await extractQuotesHolistic(
           text, 
           provider || "openai",
-          author.trim(),
+          cleanAuthor,
           (progress) => {
             res.write(`data: ${JSON.stringify({ type: 'progress', ...progress })}\n\n`);
           },
