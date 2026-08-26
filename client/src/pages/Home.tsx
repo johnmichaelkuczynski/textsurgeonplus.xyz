@@ -4028,15 +4028,25 @@ ${parsed.analyzer}`);
               <Stethoscope className="w-6 h-6" />
             </div>
             <h1 className="font-bold text-2xl tracking-tight text-foreground">TEXT SURGEON</h1>
-            <a 
-              href="mailto:zhi@zhisystems.org" 
-              className="ml-4 text-sm text-primary hover:text-primary/80 hover:underline flex items-center gap-1"
-              data-testid="link-contact"
+            <a
+              href="https://zhisystems.ai/"
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => {
-                window.location.href = "mailto:zhi@zhisystems.org";
-              }}
+              aria-label="Visit ZHI Systems"
+              title="Visit ZHI Systems"
+              className="ml-1 shrink-0 rounded-md border border-gray-300 bg-white p-0.5 shadow-sm transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              data-testid="link-zhi-systems"
+            >
+              <img
+                src="/zhi-logo.png"
+                alt="ZHI Systems"
+                className="h-8 w-8 rounded object-contain"
+              />
+            </a>
+            <a
+              href="mailto:johnmichaelkuczynski@gmail.com"
+              className="ml-4 text-sm text-primary hover:text-primary/80 hover:underline flex items-center gap-1"
+              data-testid="link-contact"
             >
               <Mail className="w-4 h-4" />
               Contact Us
