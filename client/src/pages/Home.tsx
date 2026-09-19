@@ -296,7 +296,7 @@ export default function Home() {
   const [gptZeroResult, setGptZeroResult] = useState<GPTZeroDetection | null>(null);
   const [gptZeroError, setGptZeroError] = useState("");
   const gptZeroRequestIdRef = useRef(0);
-  const [selectedLLM, setSelectedLLM] = useState<LLM>("deepseek");
+  const [selectedLLM, setSelectedLLM] = useState<LLM>("perplexity");
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
