@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { createHash } from "crypto";
 import { storage } from "./storage";
 import multer from "multer";
 import { parseFile } from "./services/fileParser";
@@ -20,7 +21,24 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
 });
 
+const GPTZERO_VISITOR_WINDOW_MS = 15 * 60 * 1000;
+const GPTZERO_VISITOR_LIMIT = 60;
+const GPTZERO_IP_LIMIT = 120;
+const GPTZERO_GLOBAL_WINDOW_MS = 60 * 60 * 1000;
+const GPTZERO_GLOBAL_LIMIT = 300;
+const GPTZERO_CACHE_TTL_MS = 15 * 60 * 1000;
+const GPTZERO_MAX_TRACKED_CLIENTS = 1_000;
+const GPTZERO_MAX_CACHE_ENTRIES = 500;
+const gptZeroVisitorUsage = new Map<string, { count: number; resetAt: number }>();
+const gptZeroIpUsage = new Map<string, { count: number; resetAt: number }>();
+let gptZeroGlobalUsage = { count: 0, resetAt: Date.now() + GPTZERO_GLOBAL_WINDOW_MS };
+const gptZeroCache = new Map<string, { expiresAt: number; result: Record<string, unknown> }>();
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Replit forwards requests through one trusted proxy hop. This makes req.ip
+  // the server-derived client address rather than a caller-controlled header.
+  app.set("trust proxy", 1);
+
   const { analyzeText, analyzeTextStreaming, callLLM } = await import("./llm");
 
   const getOrCreateVisitorUser = async (value: unknown) => {
@@ -53,8 +71,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const trimmedText = rawText.trim();
+    if (trimmedText.length < 50) {
+      return res.status(400).json({
+        error: "Enter at least 50 characters for GPTZero detection",
+      });
+    }
+
     const document = trimmedText.slice(0, 50_000);
     const truncated = trimmedText.length > document.length;
+    const documentHash = createHash("sha256").update(document).digest("hex");
+    const now = Date.now();
+    gptZeroCache.forEach((entry, key) => {
+      if (entry.expiresAt <= now) gptZeroCache.delete(key);
+    });
+    gptZeroVisitorUsage.forEach((entry, key) => {
+      if (entry.resetAt <= now) gptZeroVisitorUsage.delete(key);
+    });
+    gptZeroIpUsage.forEach((entry, key) => {
+      if (entry.resetAt <= now) gptZeroIpUsage.delete(key);
+    });
+
+    const cached = gptZeroCache.get(documentHash);
+    if (cached && cached.expiresAt > now) {
+      return res.json({ ...cached.result, cached: true });
+    }
+
+    const visitorId =
+      typeof req.body?.visitorId === "string" &&
+      /^[a-z0-9-]{3,128}$/i.test(req.body.visitorId)
+        ? req.body.visitorId.toLowerCase()
+        : "anonymous";
+    const clientIp = req.ip || req.socket.remoteAddress || "unknown";
+
+    if (gptZeroGlobalUsage.resetAt <= now) {
+      gptZeroGlobalUsage = {
+        count: 0,
+        resetAt: now + GPTZERO_GLOBAL_WINDOW_MS,
+      };
+    }
+    if (gptZeroGlobalUsage.count >= GPTZERO_GLOBAL_LIMIT) {
+      return res.status(429).json({
+        error: "GPTZero's hourly application limit has been reached. Try again later.",
+        code: "GPTZERO_GLOBAL_LIMIT",
+      });
+    }
+
+    let ipUsage = gptZeroIpUsage.get(clientIp);
+    if (!ipUsage || ipUsage.resetAt <= now) {
+      ipUsage = {
+        count: 0,
+        resetAt: now + GPTZERO_VISITOR_WINDOW_MS,
+      };
+      gptZeroIpUsage.set(clientIp, ipUsage);
+    }
+    if (ipUsage.count >= GPTZERO_IP_LIMIT) {
+      return res.status(429).json({
+        error: "Too many GPTZero scans were requested from this network. Wait a few minutes and try again.",
+        code: "GPTZERO_IP_LIMIT",
+      });
+    }
+
+    let visitorUsage = gptZeroVisitorUsage.get(visitorId);
+    if (!visitorUsage || visitorUsage.resetAt <= now) {
+      visitorUsage = {
+        count: 0,
+        resetAt: now + GPTZERO_VISITOR_WINDOW_MS,
+      };
+      gptZeroVisitorUsage.set(visitorId, visitorUsage);
+    }
+    if (visitorUsage.count >= GPTZERO_VISITOR_LIMIT) {
+      return res.status(429).json({
+        error: "Too many GPTZero scans were requested. Wait a few minutes and try again.",
+        code: "GPTZERO_VISITOR_LIMIT",
+      });
+    }
+
+    visitorUsage.count++;
+    ipUsage.count++;
+    gptZeroGlobalUsage.count++;
+
+    while (gptZeroVisitorUsage.size > GPTZERO_MAX_TRACKED_CLIENTS) {
+      const oldestKey = gptZeroVisitorUsage.keys().next().value;
+      if (oldestKey === undefined) break;
+      gptZeroVisitorUsage.delete(oldestKey);
+    }
+    while (gptZeroIpUsage.size > GPTZERO_MAX_TRACKED_CLIENTS) {
+      const oldestKey = gptZeroIpUsage.keys().next().value;
+      if (oldestKey === undefined) break;
+      gptZeroIpUsage.delete(oldestKey);
+    }
+
+    const upstreamController = new AbortController();
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      upstreamController.abort();
+    }, 20_000);
+    const abortUpstream = () => {
+      if (!res.writableEnded) upstreamController.abort();
+    };
+    req.once("aborted", abortUpstream);
+    res.once("close", abortUpstream);
 
     try {
       const response = await fetch("https://api.gptzero.me/v2/predict/text", {
@@ -68,6 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           document,
           multilingual: false,
         }),
+        signal: upstreamController.signal,
       });
 
       const responseText = await response.text();
@@ -97,30 +215,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const predictedClass =
-        result.predicted_class || result.document_classification || "unknown";
+      const rawPredictedClass =
+        result.predicted_class || result.document_classification;
+      const rawDocumentClassification =
+        result.document_classification || rawPredictedClass;
+      const isValidClassification = (value: unknown): value is string =>
+        typeof value === "string" &&
+        /^[a-z0-9_-]{1,64}$/i.test(value);
+      const predictedClass = isValidClassification(rawPredictedClass)
+        ? rawPredictedClass
+        : null;
+      const documentClassification = isValidClassification(
+        rawDocumentClassification,
+      )
+        ? rawDocumentClassification
+        : null;
+      if (
+        !predictedClass ||
+        !documentClassification ||
+        (result.confidence_category != null &&
+          !["high", "medium", "low"].includes(result.confidence_category))
+      ) {
+        return res.status(502).json({
+          error: "GPTZero returned an invalid classification result",
+          code: "GPTZERO_INVALID_RESULT",
+        });
+      }
 
-      res.json({
+      const normalizedResult = {
         provider: "GPTZero",
         predictedClass,
-        documentClassification:
-          result.document_classification || predictedClass,
+        documentClassification,
         classProbabilities: result.class_probabilities || null,
         confidenceCategory: result.confidence_category || null,
-        resultMessage: result.result_message || null,
-        resultSubMessage: result.result_sub_message || null,
+        resultMessage:
+          typeof result.result_message === "string"
+            ? result.result_message
+            : null,
+        resultSubMessage:
+          typeof result.result_sub_message === "string"
+            ? result.result_sub_message
+            : null,
         modelVersion:
           payload.neatVersion || payload.version || result.version || null,
         documentId: result.document_id || null,
         scannedCharacters: document.length,
         truncated,
+      };
+      gptZeroCache.set(documentHash, {
+        expiresAt: Date.now() + GPTZERO_CACHE_TTL_MS,
+        result: normalizedResult,
       });
+      while (gptZeroCache.size > GPTZERO_MAX_CACHE_ENTRIES) {
+        const oldestKey = gptZeroCache.keys().next().value;
+        if (oldestKey === undefined) break;
+        gptZeroCache.delete(oldestKey);
+      }
+      res.json({ ...normalizedResult, cached: false });
     } catch (error: any) {
+      if (upstreamController.signal.aborted) {
+        if (!res.writableEnded && !res.headersSent) {
+          return res.status(timedOut ? 504 : 499).json({
+            error: timedOut
+              ? "GPTZero detection timed out"
+              : "GPTZero detection was canceled",
+            code: timedOut ? "GPTZERO_TIMEOUT" : "GPTZERO_CANCELED",
+          });
+        }
+        return;
+      }
       console.error("GPTZero detection error:", error);
       res.status(502).json({
         error: error?.message || "GPTZero detection failed",
         code: "GPTZERO_UNAVAILABLE",
       });
+    } finally {
+      clearTimeout(timeout);
+      req.off("aborted", abortUpstream);
+      res.off("close", abortUpstream);
     }
   });
 

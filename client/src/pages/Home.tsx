@@ -100,6 +100,7 @@ type GPTZeroDetection = {
   documentId: string | null;
   scannedCharacters: number;
   truncated: boolean;
+  cached?: boolean;
 };
 
 function getOrCreateVisitorId(): string {
@@ -294,6 +295,7 @@ export default function Home() {
   const [gptZeroStatus, setGptZeroStatus] = useState<"idle" | "waiting" | "scanning" | "complete" | "error">("idle");
   const [gptZeroResult, setGptZeroResult] = useState<GPTZeroDetection | null>(null);
   const [gptZeroError, setGptZeroError] = useState("");
+  const gptZeroRequestIdRef = useRef(0);
   const [selectedLLM, setSelectedLLM] = useState<LLM>("deepseek");
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
@@ -569,6 +571,7 @@ export default function Home() {
   }, [username]);
 
   useEffect(() => {
+    const requestId = ++gptZeroRequestIdRef.current;
     const documentText = text.trim();
 
     if (!documentText) {
@@ -596,7 +599,7 @@ export default function Home() {
         const response = await fetch("/api/gptzero/detect", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: documentText }),
+          body: JSON.stringify({ text: documentText, visitorId: username }),
           signal: controller.signal,
         });
         const payload = await response.json().catch(() => null);
@@ -605,10 +608,12 @@ export default function Home() {
           throw new Error(payload?.error || "GPTZero detection failed");
         }
 
+        if (requestId !== gptZeroRequestIdRef.current) return;
         setGptZeroResult(payload);
         setGptZeroStatus("complete");
       } catch (error: any) {
         if (error?.name === "AbortError") return;
+        if (requestId !== gptZeroRequestIdRef.current) return;
         setGptZeroResult(null);
         setGptZeroError(error?.message || "GPTZero detection failed");
         setGptZeroStatus("error");
@@ -619,7 +624,7 @@ export default function Home() {
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [text]);
+  }, [text, username]);
   
   // Update chunks when text changes, preserving processed state
   useEffect(() => {
@@ -4224,7 +4229,7 @@ ${parsed.analyzer}`);
             >
               <Textarea 
                 placeholder="Enter text, paste content, or drag files here to begin analysis..." 
-                className={`flex-1 resize-none border-none focus-visible:ring-0 p-6 text-xl leading-relaxed font-serif bg-transparent placeholder:text-gray-400 ${isDragging ? 'pointer-events-none' : ''}`}
+                className={`min-h-[65vh] md:min-h-[70vh] flex-none resize-y border-none focus-visible:ring-0 p-6 text-xl leading-relaxed font-serif bg-transparent placeholder:text-gray-400 ${isDragging ? 'pointer-events-none' : ''}`}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 data-testid="input-text"
