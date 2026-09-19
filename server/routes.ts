@@ -38,6 +38,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
+  app.post("/api/gptzero/detect", async (req, res) => {
+    const apiKey = process.env.GPTZERO_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({
+        error: "GPTZero detection is not configured yet",
+        code: "GPTZERO_NOT_CONFIGURED",
+      });
+    }
+
+    const rawText = req.body?.text;
+    if (typeof rawText !== "string" || !rawText.trim()) {
+      return res.status(400).json({ error: "Text is required for GPTZero detection" });
+    }
+
+    const trimmedText = rawText.trim();
+    const document = trimmedText.slice(0, 50_000);
+    const truncated = trimmedText.length > document.length;
+
+    try {
+      const response = await fetch("https://api.gptzero.me/v2/predict/text", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+        },
+        body: JSON.stringify({
+          document,
+          multilingual: false,
+        }),
+      });
+
+      const responseText = await response.text();
+      let payload: any = null;
+      try {
+        payload = responseText ? JSON.parse(responseText) : null;
+      } catch {
+        payload = null;
+      }
+
+      if (!response.ok) {
+        console.error("GPTZero API error:", response.status, responseText.slice(0, 500));
+        return res.status(response.status === 429 ? 429 : 502).json({
+          error:
+            payload?.error ||
+            payload?.message ||
+            `GPTZero request failed with status ${response.status}`,
+          code: "GPTZERO_REQUEST_FAILED",
+        });
+      }
+
+      const result = payload?.documents?.[0];
+      if (!result) {
+        return res.status(502).json({
+          error: "GPTZero returned no document result",
+          code: "GPTZERO_EMPTY_RESULT",
+        });
+      }
+
+      const predictedClass =
+        result.predicted_class || result.document_classification || "unknown";
+
+      res.json({
+        provider: "GPTZero",
+        predictedClass,
+        documentClassification:
+          result.document_classification || predictedClass,
+        classProbabilities: result.class_probabilities || null,
+        confidenceCategory: result.confidence_category || null,
+        resultMessage: result.result_message || null,
+        resultSubMessage: result.result_sub_message || null,
+        modelVersion:
+          payload.neatVersion || payload.version || result.version || null,
+        documentId: result.document_id || null,
+        scannedCharacters: document.length,
+        truncated,
+      });
+    } catch (error: any) {
+      console.error("GPTZero detection error:", error);
+      res.status(502).json({
+        error: error?.message || "GPTZero detection failed",
+        code: "GPTZERO_UNAVAILABLE",
+      });
+    }
+  });
+
   app.post("/api/visits", async (_req, res) => {
     try {
       await storage.recordVisit(null, null);

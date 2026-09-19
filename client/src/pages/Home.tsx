@@ -42,7 +42,9 @@ import {
   Lock,
   CreditCard,
   Volume2,
-  Plus
+  Plus,
+  ShieldCheck,
+  AlertCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -85,6 +87,20 @@ import {
 import { analyzeText, analyzeTextStreaming, AnalysisResult, measureIntelligence, compareIntelligence, IntelligenceResult, IntelligenceCompareResult } from "@/lib/llm";
 
 const VISITOR_ID_KEY = "text-surgeon-visitor-id";
+
+type GPTZeroDetection = {
+  provider: "GPTZero";
+  predictedClass: string;
+  documentClassification: string;
+  classProbabilities: Record<string, number> | null;
+  confidenceCategory: string | null;
+  resultMessage: string | null;
+  resultSubMessage: string | null;
+  modelVersion: string | null;
+  documentId: string | null;
+  scannedCharacters: number;
+  truncated: boolean;
+};
 
 function getOrCreateVisitorId(): string {
   const existing = window.localStorage.getItem(VISITOR_ID_KEY);
@@ -275,6 +291,9 @@ function buildAccumulatedDisplay(
 
 export default function Home() {
   const [text, setText] = useState("");
+  const [gptZeroStatus, setGptZeroStatus] = useState<"idle" | "waiting" | "scanning" | "complete" | "error">("idle");
+  const [gptZeroResult, setGptZeroResult] = useState<GPTZeroDetection | null>(null);
+  const [gptZeroError, setGptZeroError] = useState("");
   const [selectedLLM, setSelectedLLM] = useState<LLM>("deepseek");
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
@@ -548,6 +567,59 @@ export default function Home() {
       loadHistory(historyTypeFilter);
     }
   }, [username]);
+
+  useEffect(() => {
+    const documentText = text.trim();
+
+    if (!documentText) {
+      setGptZeroStatus("idle");
+      setGptZeroResult(null);
+      setGptZeroError("");
+      return;
+    }
+
+    if (documentText.length < 50) {
+      setGptZeroStatus("waiting");
+      setGptZeroResult(null);
+      setGptZeroError("");
+      return;
+    }
+
+    const controller = new AbortController();
+    setGptZeroStatus("waiting");
+    setGptZeroError("");
+
+    const timeout = window.setTimeout(async () => {
+      setGptZeroStatus("scanning");
+
+      try {
+        const response = await fetch("/api/gptzero/detect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: documentText }),
+          signal: controller.signal,
+        });
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(payload?.error || "GPTZero detection failed");
+        }
+
+        setGptZeroResult(payload);
+        setGptZeroStatus("complete");
+      } catch (error: any) {
+        if (error?.name === "AbortError") return;
+        setGptZeroResult(null);
+        setGptZeroError(error?.message || "GPTZero detection failed");
+        setGptZeroStatus("error");
+      }
+    }, 1200);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [text]);
   
   // Update chunks when text changes, preserving processed state
   useEffect(() => {
@@ -4189,6 +4261,70 @@ ${parsed.analyzer}`);
                     </Badge>
                   )}
                 </div>
+
+                {gptZeroStatus !== "idle" && (
+                  <div
+                    className={`rounded-lg border-2 px-4 py-3 ${
+                      gptZeroStatus === "error"
+                        ? "border-red-300 bg-red-50"
+                        : gptZeroStatus === "complete"
+                          ? "border-emerald-300 bg-emerald-50"
+                          : "border-blue-200 bg-blue-50"
+                    }`}
+                    data-testid="gptzero-detection-status"
+                  >
+                    <div className="flex items-center gap-2">
+                      {gptZeroStatus === "scanning" ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-blue-700" />
+                      ) : gptZeroStatus === "error" ? (
+                        <AlertCircle className="h-4 w-4 text-red-700" />
+                      ) : (
+                        <ShieldCheck className={`h-4 w-4 ${gptZeroStatus === "complete" ? "text-emerald-700" : "text-blue-700"}`} />
+                      )}
+                      <span className="text-sm font-bold">GPTZero AI Detection</span>
+                      {gptZeroStatus === "waiting" && (
+                        <span className="text-xs text-blue-700">
+                          {text.trim().length < 50 ? "Waiting for more text" : "Scheduled automatically"}
+                        </span>
+                      )}
+                      {gptZeroStatus === "scanning" && (
+                        <span className="text-xs text-blue-700">Scanning automatically…</span>
+                      )}
+                    </div>
+
+                    {gptZeroStatus === "complete" && gptZeroResult && (
+                      <div className="mt-2 text-sm text-emerald-950" data-testid="gptzero-detection-result">
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                          <span className="font-semibold">
+                            Classification: {gptZeroResult.documentClassification.replaceAll("_", " ")}
+                          </span>
+                          {gptZeroResult.confidenceCategory && (
+                            <span>
+                              Confidence: {gptZeroResult.confidenceCategory}
+                            </span>
+                          )}
+                        </div>
+                        {gptZeroResult.resultMessage && (
+                          <p className="mt-1">{gptZeroResult.resultMessage}</p>
+                        )}
+                        {gptZeroResult.resultSubMessage && (
+                          <p className="mt-1 text-xs text-emerald-800">{gptZeroResult.resultSubMessage}</p>
+                        )}
+                        {gptZeroResult.truncated && (
+                          <p className="mt-1 text-xs text-amber-700">
+                            GPTZero scanned the first 50,000 characters, its current per-request limit.
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {gptZeroStatus === "error" && (
+                      <p className="mt-2 text-sm text-red-800" data-testid="gptzero-detection-error">
+                        {gptZeroError}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {outline && (
                   <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-lg border-2 border-slate-300 shadow-md overflow-hidden">
