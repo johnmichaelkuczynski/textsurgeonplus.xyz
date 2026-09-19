@@ -2145,6 +2145,13 @@ export default function Home() {
     }
   };
 
+  const openTractatusTree = () => {
+    setShowTractatusTree(true);
+    if (tractatusTreeColumns.length === 0 && !isGeneratingTree) {
+      void handleGenerateTractatusTree();
+    }
+  };
+
   const handleGenerateSummary = async () => {
     const wordCount = text.split(/\s+/).filter(Boolean).length;
     if (wordCount < 50) {
@@ -4724,11 +4731,8 @@ ${parsed.analyzer}`);
                     TRACTATUS
                   </Button>
                   <Button 
-                    onClick={() => {
-                      setShowTractatusTree(true);
-                      setTimeout(() => handleGenerateTractatusTree(), 100);
-                    }}
-                    disabled={isProcessing || isGeneratingTree || !text}
+                    onClick={openTractatusTree}
+                    disabled={isProcessing || !text}
                     className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-yellow-600 to-amber-600 text-white hover:shadow-lg transition-all hover:scale-105"
                     data-testid="button-tractatus-tree"
                   >
@@ -7496,7 +7500,9 @@ Freedom is the ratio essendi of the moral law."
               ) : (
                 <>
                   <GitBranch className="w-4 h-4 mr-2" />
-                  Generate Tractatus Tree
+                  {tractatusTreeColumns.length > 0
+                    ? "Generate New Tractatus Tree"
+                    : "Generate Tractatus Tree"}
                 </>
               )}
             </Button>
