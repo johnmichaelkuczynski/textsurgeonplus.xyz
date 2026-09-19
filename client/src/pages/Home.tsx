@@ -87,6 +87,8 @@ import {
 import { analyzeText, analyzeTextStreaming, AnalysisResult, measureIntelligence, compareIntelligence, IntelligenceResult, IntelligenceCompareResult } from "@/lib/llm";
 
 const VISITOR_ID_KEY = "text-surgeon-visitor-id";
+const REWRITE_STYLE_SAMPLE_MAX_CHARS = 12_000;
+const REWRITE_STYLE_FILE_MAX_BYTES = 2 * 1024 * 1024;
 
 type GPTZeroDetection = {
   provider: "GPTZero";
@@ -501,6 +503,11 @@ export default function Home() {
   const [rewriteInstructions, setRewriteInstructions] = useState(
     "Precisely restructure and summarize the provided text into a concise, faithful prose document of approximately 8000 words. Preserve all key arguments, definitions, examples, critiques, and logical flow exactly as in the original. Do not add, expand, speculate, or omit any substantive content. Maintain rigorous academic tone and pure prose format."
   );
+  const [rewriteStyleSample, setRewriteStyleSample] = useState("");
+  const [rewriteStyleSampleName, setRewriteStyleSampleName] = useState("");
+  const [isLoadingRewriteStyle, setIsLoadingRewriteStyle] = useState(false);
+  const [isDraggingRewriteStyle, setIsDraggingRewriteStyle] = useState(false);
+  const rewriteStyleFileRef = useRef<HTMLInputElement>(null);
   const [showRewriteOutlineFirst, setShowRewriteOutlineFirst] = useState(true);
   const [rewrittenDocument, setRewrittenDocument] = useState("");
   const [rewriteRefineInstructions, setRewriteRefineInstructions] = useState("");
@@ -3063,6 +3070,75 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     URL.revokeObjectURL(url);
   };
 
+  const loadRewriteStyleSample = async (file: File) => {
+    const extension = file.name.toLowerCase().split(".").pop() || "";
+    const supportedExtensions = ["txt", "md", "pdf", "docx"];
+    if (!supportedExtensions.includes(extension)) {
+      toast({
+        title: "Unsupported style sample",
+        description: "Upload a PDF, DOCX, text, or Markdown document.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (file.size > REWRITE_STYLE_FILE_MAX_BYTES) {
+      toast({
+        title: "Style sample is too large",
+        description: "Style-sample files are limited to 2 MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoadingRewriteStyle(true);
+    try {
+      let content = "";
+      let wasServerTruncated = false;
+      if (["pdf", "docx"].includes(extension)) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await fetch("/api/parse-style-sample", {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          throw new Error(payload?.error || "Could not parse the style sample");
+        }
+        content = payload?.text || "";
+        wasServerTruncated = Boolean(payload?.truncated);
+      } else {
+        content = await file.text();
+      }
+
+      if (!content.trim()) {
+        throw new Error("The style sample did not contain readable text");
+      }
+
+      const wasTruncated =
+        wasServerTruncated || content.length > REWRITE_STYLE_SAMPLE_MAX_CHARS;
+      const boundedContent = content.slice(0, REWRITE_STYLE_SAMPLE_MAX_CHARS);
+      setRewriteStyleSample(boundedContent);
+      setRewriteStyleSampleName(file.name);
+      toast({
+        title: "Style sample loaded",
+        description: wasTruncated
+          ? `${file.name} was limited to the first ${REWRITE_STYLE_SAMPLE_MAX_CHARS.toLocaleString()} characters for safe style analysis.`
+          : `${file.name} — ${boundedContent.split(/\s+/).filter(Boolean).length.toLocaleString()} words`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Style sample failed",
+        description: error?.message || "Could not read the style sample",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingRewriteStyle(false);
+      if (rewriteStyleFileRef.current) rewriteStyleFileRef.current.value = "";
+    }
+  };
+
   const handleFullDocumentRewrite = async () => {
     if (!text.trim()) {
       toast({
@@ -3114,6 +3190,8 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
           text,
           outline: outlineResult,
           instructions: rewriteInstructions,
+          styleSample: rewriteStyleSample.trim() || undefined,
+          provider: selectedLLM,
           username
         })
       });
@@ -8445,6 +8523,110 @@ Freedom is the ratio essendi of the moral law."
               <p className="text-xs text-muted-foreground">
                 Customize the rewrite behavior. Include target word count, style preferences, or specific restructuring goals.
               </p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <Label htmlFor="rewrite-style-sample" className="text-sm font-medium">
+                    Style Sample <span className="font-normal text-muted-foreground">(Optional)</span>
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Type, paste, drop, or upload a document whose writing style the rewrite should follow. Files may be up to 2 MB.
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    ref={rewriteStyleFileRef}
+                    type="file"
+                    accept=".txt,.md,.pdf,.docx"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) void loadRewriteStyleSample(file);
+                    }}
+                    data-testid="input-rewrite-style-file"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => rewriteStyleFileRef.current?.click()}
+                    disabled={isLoadingRewriteStyle || isRewriting}
+                    data-testid="button-upload-rewrite-style"
+                  >
+                    {isLoadingRewriteStyle ? (
+                      <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4 mr-1" />
+                    )}
+                    Upload
+                  </Button>
+                  {rewriteStyleSample && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setRewriteStyleSample("");
+                        setRewriteStyleSampleName("");
+                      }}
+                      disabled={isRewriting}
+                      data-testid="button-remove-rewrite-style"
+                    >
+                      <Trash2 className="w-4 h-4 mr-1" />
+                      Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <div
+                className={`relative rounded-lg border-2 border-dashed transition-colors ${
+                  isDraggingRewriteStyle
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-300 bg-white"
+                }`}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsDraggingRewriteStyle(true);
+                }}
+                onDragLeave={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsDraggingRewriteStyle(false);
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsDraggingRewriteStyle(false);
+                  const file = event.dataTransfer.files?.[0];
+                  if (file) void loadRewriteStyleSample(file);
+                }}
+                data-testid="dropzone-rewrite-style"
+              >
+                <Textarea
+                  id="rewrite-style-sample"
+                  value={rewriteStyleSample}
+                  onChange={(event) => {
+                    setRewriteStyleSample(event.target.value);
+                    if (rewriteStyleSampleName) setRewriteStyleSampleName("");
+                  }}
+                  className="min-h-[180px] resize-y border-0 focus-visible:ring-0 font-serif"
+                  placeholder="Paste or type a style sample here, or drag and drop a document..."
+                  maxLength={REWRITE_STYLE_SAMPLE_MAX_CHARS}
+                  disabled={isLoadingRewriteStyle || isRewriting}
+                  data-testid="textarea-rewrite-style-sample"
+                />
+              </div>
+              {rewriteStyleSample && (
+                <p className="text-xs text-blue-700" data-testid="rewrite-style-sample-status">
+                  {rewriteStyleSampleName ? `${rewriteStyleSampleName} — ` : ""}
+                  {rewriteStyleSample.split(/\s+/).filter(Boolean).length.toLocaleString()} words loaded as the style reference
+                  {" · "}
+                  {rewriteStyleSample.length.toLocaleString()}/{REWRITE_STYLE_SAMPLE_MAX_CHARS.toLocaleString()} characters.
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
