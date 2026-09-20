@@ -8,6 +8,7 @@ import {
   Loader2,
   ShieldCheck,
   Sparkles,
+  Stethoscope,
   SlidersHorizontal,
   Upload,
   WandSparkles,
@@ -396,11 +397,18 @@ export default function HumanizerWorkshop() {
               </p>
             </div>
           </div>
-          <Link href="/">
-            <Button variant="outline" className="gap-2">
-              <ArrowLeft className="h-4 w-4" /> Text Surgeon
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/humanizer-workshop/diagnostics">
+              <Button variant="outline" className="gap-2">
+                <Stethoscope className="h-4 w-4" /> Diagnostics
+              </Button>
+            </Link>
+            <Link href="/">
+              <Button variant="outline" className="gap-2">
+                <ArrowLeft className="h-4 w-4" /> Text Surgeon
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 

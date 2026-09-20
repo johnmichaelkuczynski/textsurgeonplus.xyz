@@ -9,6 +9,7 @@ import PaymentSuccess from "@/pages/PaymentSuccess";
 import PositionsManager from "@/pages/PositionsManager";
 import Administrative from "@/pages/Administrative";
 import HumanizerWorkshop from "@/pages/HumanizerWorkshop";
+import HumanizerDiagnostics from "@/pages/HumanizerDiagnostics";
 
 function Router() {
   return (
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/administrative" component={Administrative} />
       <Route path="/positions" component={PositionsManager} />
       <Route path="/humanizer-workshop" component={HumanizerWorkshop} />
+      <Route path="/humanizer-workshop/diagnostics" component={HumanizerDiagnostics} />
       <Route path="/payment/success" component={PaymentSuccess} />
       <Route path="/payment/cancel" component={Home} />
       <Route component={NotFound} />
