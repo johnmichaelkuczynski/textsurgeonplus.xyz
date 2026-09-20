@@ -620,6 +620,7 @@ async function callDeepSeek(text: string, apiKey: string, functionType: string):
 export async function analyzeText(text: string, provider: string, functionType: string): Promise<AnalysisResult> {
   // Get API keys from environment variables (Replit Secrets)
   const apiKeys = {
+    gemini: process.env.GEMINI_API_KEY || "",
     openai: process.env.OPENAI_API_KEY || "",
     anthropic: process.env.ANTHROPIC_API_KEY || "",
     grok: process.env.GROK_API_KEY || "",
@@ -628,6 +629,37 @@ export async function analyzeText(text: string, provider: string, functionType: 
   };
 
   switch (provider) {
+    case "gemini": {
+      if (!apiKeys.gemini) throw new Error("GEMINI_API_KEY not configured");
+      const geminiResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(apiKeys.gemini)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: { maxOutputTokens: 16_384 },
+          }),
+        },
+      );
+      if (!geminiResponse.ok) {
+        const errorText = await geminiResponse.text();
+        throw new Error(`Gemini API Error: ${geminiResponse.status} - ${errorText}`);
+      }
+      const geminiData = await geminiResponse.json();
+      const generatedText = Array.isArray(geminiData?.candidates?.[0]?.content?.parts)
+        ? geminiData.candidates[0].content.parts
+            .filter((part: any) => typeof part?.text === "string")
+            .map((part: any) => part.text)
+            .join("\n")
+            .trim()
+        : "";
+      if (!generatedText) {
+        throw new Error("Gemini returned no text content");
+      }
+      return generatedText;
+    }
+
     case "openai":
       if (!apiKeys.openai) throw new Error("OPENAI_API_KEY not configured. Add it as an environment variable.");
       return callOpenAI(text, apiKeys.openai, functionType);

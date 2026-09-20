@@ -3708,7 +3708,23 @@ Return only the response.`;
   });
 
   app.post("/api/humanizer/generate-ai-input", async (req, res) => {
-    const { topic, lengthMode = "words", wordCount = 500 } = req.body;
+    const {
+      topic,
+      provider = "gemini",
+      lengthMode = "words",
+      wordCount = 500,
+    } = req.body;
+    const allowedProviders = new Set([
+      "gemini",
+      "openai",
+      "anthropic",
+      "grok",
+      "perplexity",
+      "deepseek",
+    ]);
+    if (typeof provider !== "string" || !allowedProviders.has(provider)) {
+      return res.status(400).json({ error: "Unsupported AI provider" });
+    }
     if (typeof topic === "string" && topic.length > 1_000) {
       return res.status(413).json({ error: "The subject is limited to 1,000 characters" });
     }
@@ -3743,12 +3759,13 @@ STYLE REQUIREMENTS:
 - Return only the generated prose without a preface, label, analysis, or word-count note.`;
 
     try {
-      const text = await callLLM("anthropic", prompt);
+      const text = await callLLM(provider, prompt);
       if (typeof text !== "string" || !text.trim()) {
         throw new Error("The AI provider returned no usable prose");
       }
       res.json({
         text: text.trim(),
+        provider,
         requestedLength: isSingleSentence ? "one sentence" : `${boundedWordCount} words`,
       });
     } catch (error: any) {

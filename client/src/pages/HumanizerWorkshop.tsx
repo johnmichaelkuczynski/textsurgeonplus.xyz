@@ -37,6 +37,14 @@ const AUTHORS = [
   "Veblen", "Weyl", "Whewell", "William James",
 ] as const;
 
+type WorkshopProvider =
+  | "gemini"
+  | "openai"
+  | "anthropic"
+  | "grok"
+  | "perplexity"
+  | "deepseek";
+
 type GptZeroState =
   | { status: "waiting" }
   | { status: "scanning" }
@@ -342,6 +350,7 @@ export default function HumanizerWorkshop() {
   const [styleInstructions, setStyleInstructions] = useState("");
   const [contentSample, setContentSample] = useState("");
   const [contentInstructions, setContentInstructions] = useState("");
+  const [aiProseProvider, setAiProseProvider] = useState<WorkshopProvider>("gemini");
   const [aiProseLengthMode, setAiProseLengthMode] = useState<"sentence" | "words">("words");
   const [aiProseWordCount, setAiProseWordCount] = useState(500);
   const [isGeneratingAiProse, setIsGeneratingAiProse] = useState(false);
@@ -355,6 +364,7 @@ export default function HumanizerWorkshop() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
+          provider: aiProseProvider,
           lengthMode: aiProseLengthMode,
           wordCount: Math.max(1, Math.min(2_000, aiProseWordCount)),
         }),
@@ -411,7 +421,23 @@ export default function HumanizerWorkshop() {
                   Generate deliberately obvious AI prose
                 </span>
               </div>
-              <div className="grid gap-2 xl:grid-cols-[minmax(150px,1fr)_110px_110px]">
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(120px,1fr)_minmax(150px,1.2fr)_90px_110px]">
+                <Select
+                  value={aiProseProvider}
+                  onValueChange={(value) => setAiProseProvider(value as WorkshopProvider)}
+                >
+                  <SelectTrigger aria-label="AI provider" data-testid="select-ai-prose-provider">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gemini">Gemini</SelectItem>
+                    <SelectItem value="openai">OpenAI</SelectItem>
+                    <SelectItem value="anthropic">Anthropic</SelectItem>
+                    <SelectItem value="grok">Grok</SelectItem>
+                    <SelectItem value="perplexity">Perplexity</SelectItem>
+                    <SelectItem value="deepseek">DeepSeek</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Select
                   value={aiProseLengthMode}
                   onValueChange={(value) => setAiProseLengthMode(value as "sentence" | "words")}
@@ -455,7 +481,8 @@ export default function HumanizerWorkshop() {
               </div>
               <p className="text-xs text-blue-800">
                 Creates intentionally formulaic AI-written material on a randomly selected subject.
-                Custom lengths may range from 1 to 2,000 words.
+                Gemini is selected by default. Custom lengths may range from 1 to 2,000 words.
+                GPTZero evaluates generated text automatically.
               </p>
             </div>
             <Textarea
