@@ -3707,6 +3707,54 @@ Return only the response.`;
     }
   });
 
+  app.post("/api/humanizer/generate-ai-input", async (req, res) => {
+    const { topic, lengthMode = "words", wordCount = 500 } = req.body;
+    if (typeof topic !== "string" || !topic.trim()) {
+      return res.status(400).json({ error: "A subject or assignment is required" });
+    }
+    if (topic.length > 1_000) {
+      return res.status(413).json({ error: "The subject is limited to 1,000 characters" });
+    }
+
+    const isSingleSentence = lengthMode === "sentence";
+    const boundedWordCount = Math.max(
+      1,
+      Math.min(2_000, Number.isFinite(Number(wordCount)) ? Math.round(Number(wordCount)) : 500),
+    );
+    const lengthInstruction = isSingleSentence
+      ? "Write exactly one complete sentence."
+      : `Write approximately ${boundedWordCount} words and do not exceed 2,000 words.`;
+
+    const prompt = `Generate deliberately obvious, stereotypically AI-written prose for a controlled writing experiment.
+
+SUBJECT OR ASSIGNMENT:
+${topic.trim()}
+
+LENGTH:
+${lengthInstruction}
+
+STYLE REQUIREMENTS:
+- Sound unmistakably machine-generated: polished, generic, orderly, comprehensive, and impersonal.
+- Use predictable transitions, balanced phrasing, explicit signposting, and conventional explanatory language.
+- Prefer smooth abstraction and broad statements over personal experience or idiosyncratic detail.
+- Do not imitate a named living writer.
+- Do not attempt to evade AI detection or make the prose appear human-written.
+- Return only the generated prose without a preface, label, analysis, or word-count note.`;
+
+    try {
+      const text = await callLLM("anthropic", prompt);
+      res.json({
+        text: text.trim(),
+        requestedLength: isSingleSentence ? "one sentence" : `${boundedWordCount} words`,
+      });
+    } catch (error: any) {
+      console.error("Humanizer AI-input generation error:", error);
+      res.status(502).json({
+        error: error?.message || "AI prose generation failed",
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
