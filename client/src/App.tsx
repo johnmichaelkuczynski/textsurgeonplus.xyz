@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import PositionsManager from "@/pages/PositionsManager";
 import Administrative from "@/pages/Administrative";
+import HumanizerWorkshop from "@/pages/HumanizerWorkshop";
 
 function Router() {
   return (
@@ -15,6 +16,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/administrative" component={Administrative} />
       <Route path="/positions" component={PositionsManager} />
+      <Route path="/humanizer-workshop" component={HumanizerWorkshop} />
       <Route path="/payment/success" component={PaymentSuccess} />
       <Route path="/payment/cancel" component={Home} />
       <Route component={NotFound} />

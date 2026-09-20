@@ -4336,6 +4336,14 @@ ${parsed.analyzer}`);
             
             <div className="flex items-center gap-2">
               <a
+                href="/humanizer-workshop"
+                className="flex items-center gap-1 rounded-md border border-cyan-300 bg-cyan-50 px-3 py-1.5 text-sm font-semibold text-cyan-800 hover:bg-cyan-100 hover:text-cyan-950"
+                data-testid="link-humanizer-workshop"
+              >
+                <Sparkles className="h-4 w-4" />
+                Humanizer Workshop
+              </a>
+              <a
                 href="/administrative"
                 className="text-sm text-indigo-700 hover:text-indigo-900 hover:underline flex items-center gap-1 bg-indigo-50 px-3 py-1.5 rounded-md border border-indigo-200 font-semibold"
                 data-testid="link-administrative"
