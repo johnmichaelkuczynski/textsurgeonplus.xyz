@@ -746,7 +746,16 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
         throw new Error(`Anthropic API Error: ${err}`);
       }
       const anthropicData = await anthropicResponse.json();
-      return anthropicData.content[0].text;
+      const textBlocks = Array.isArray(anthropicData?.content)
+        ? anthropicData.content.filter(
+            (block: any) => block?.type === "text" && typeof block.text === "string",
+          )
+        : [];
+      const generatedText = textBlocks.map((block: any) => block.text).join("\n").trim();
+      if (!generatedText) {
+        throw new Error("Anthropic returned no text content");
+      }
+      return generatedText;
     
     case "grok":
       if (!apiKeys.grok) throw new Error("GROK_API_KEY not configured");

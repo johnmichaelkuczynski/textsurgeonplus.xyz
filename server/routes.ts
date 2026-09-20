@@ -3709,12 +3709,13 @@ Return only the response.`;
 
   app.post("/api/humanizer/generate-ai-input", async (req, res) => {
     const { topic, lengthMode = "words", wordCount = 500 } = req.body;
-    if (typeof topic !== "string" || !topic.trim()) {
-      return res.status(400).json({ error: "A subject or assignment is required" });
-    }
-    if (topic.length > 1_000) {
+    if (typeof topic === "string" && topic.length > 1_000) {
       return res.status(413).json({ error: "The subject is limited to 1,000 characters" });
     }
+    const subjectInstruction =
+      typeof topic === "string" && topic.trim()
+        ? topic.trim()
+        : "Choose a random, ordinary nonfiction subject yourself. Vary the subject between requests.";
 
     const isSingleSentence = lengthMode === "sentence";
     const boundedWordCount = Math.max(
@@ -3728,7 +3729,7 @@ Return only the response.`;
     const prompt = `Generate deliberately obvious, stereotypically AI-written prose for a controlled writing experiment.
 
 SUBJECT OR ASSIGNMENT:
-${topic.trim()}
+${subjectInstruction}
 
 LENGTH:
 ${lengthInstruction}
@@ -3743,6 +3744,9 @@ STYLE REQUIREMENTS:
 
     try {
       const text = await callLLM("anthropic", prompt);
+      if (typeof text !== "string" || !text.trim()) {
+        throw new Error("The AI provider returned no usable prose");
+      }
       res.json({
         text: text.trim(),
         requestedLength: isSingleSentence ? "one sentence" : `${boundedWordCount} words`,

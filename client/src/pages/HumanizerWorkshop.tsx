@@ -342,13 +342,12 @@ export default function HumanizerWorkshop() {
   const [styleInstructions, setStyleInstructions] = useState("");
   const [contentSample, setContentSample] = useState("");
   const [contentInstructions, setContentInstructions] = useState("");
-  const [aiProseTopic, setAiProseTopic] = useState("");
   const [aiProseLengthMode, setAiProseLengthMode] = useState<"sentence" | "words">("words");
   const [aiProseWordCount, setAiProseWordCount] = useState(500);
   const [isGeneratingAiProse, setIsGeneratingAiProse] = useState(false);
 
   const generateObviousAiProse = async () => {
-    if (!aiProseTopic.trim() || isGeneratingAiProse) return;
+    if (isGeneratingAiProse) return;
     setIsGeneratingAiProse(true);
     try {
       const response = await fetch("/api/humanizer/generate-ai-input", {
@@ -356,7 +355,6 @@ export default function HumanizerWorkshop() {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          topic: aiProseTopic.trim(),
           lengthMode: aiProseLengthMode,
           wordCount: Math.max(1, Math.min(2_000, aiProseWordCount)),
         }),
@@ -413,18 +411,7 @@ export default function HumanizerWorkshop() {
                   Generate deliberately obvious AI prose
                 </span>
               </div>
-              <div className="grid gap-2 xl:grid-cols-[minmax(150px,1fr)_150px_90px_110px]">
-                <input
-                  value={aiProseTopic}
-                  onChange={(event) => setAiProseTopic(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter") void generateObviousAiProse();
-                  }}
-                  placeholder="Enter the subject or assignment…"
-                  className="h-10 rounded-md border border-blue-300 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-                  maxLength={1_000}
-                  data-testid="input-ai-prose-topic"
-                />
+              <div className="grid gap-2 xl:grid-cols-[minmax(150px,1fr)_110px_110px]">
                 <Select
                   value={aiProseLengthMode}
                   onValueChange={(value) => setAiProseLengthMode(value as "sentence" | "words")}
@@ -454,7 +441,7 @@ export default function HumanizerWorkshop() {
                 <Button
                   type="button"
                   onClick={() => void generateObviousAiProse()}
-                  disabled={!aiProseTopic.trim() || isGeneratingAiProse}
+                  disabled={isGeneratingAiProse}
                   className="h-10 min-w-[110px] bg-blue-700 px-3 text-white hover:bg-blue-800"
                   data-testid="button-generate-obvious-ai-prose"
                 >
@@ -467,7 +454,7 @@ export default function HumanizerWorkshop() {
                 </Button>
               </div>
               <p className="text-xs text-blue-800">
-                Creates intentionally formulaic AI-written material for controlled humanization experiments.
+                Creates intentionally formulaic AI-written material on a randomly selected subject.
                 Custom lengths may range from 1 to 2,000 words.
               </p>
             </div>
