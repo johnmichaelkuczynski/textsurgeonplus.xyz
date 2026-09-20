@@ -337,7 +337,7 @@ function SampleBox({
 export default function HumanizerWorkshop() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
-  const [customInstructions, setCustomInstructions] = useState("");
+  const [customInstructions, setCustomInstructions] = useState("Rewrite in style of sample");
   const [styleSample, setStyleSample] = useState("");
   const [styleInstructions, setStyleInstructions] = useState("");
   const [contentSample, setContentSample] = useState("");
