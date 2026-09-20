@@ -44,7 +44,9 @@ import {
   Volume2,
   Plus,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Send,
+  MessageCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -119,6 +121,23 @@ function getOrCreateVisitorId(): string {
 }
 
 type LLM = "grok" | "openai" | "anthropic" | "perplexity" | "deepseek";
+
+const HISTORICAL_THINKERS = [
+  "Adam Smith", "Adler", "Aesop", "Allen", "Aristotle", "Bacon", "Bergler",
+  "Bergson", "Berkeley", "Confucius", "Darwin", "Descartes", "Dewey",
+  "Dworkin", "Emma Goldman", "Engels", "Freud", "Galileo", "Gardner",
+  "Hegel", "Hobbes", "Hume", "Jung", "Kant", "Kernberg", "Kuczynski",
+  "La Rochefoucauld", "Laplace", "Le Bon", "Leibniz", "Locke", "Luther",
+  "Machiavelli", "Maimonides", "Marden", "Marx", "Mill", "Newton",
+  "Nietzsche", "Peirce", "Plato", "Poincaré", "Popper", "Rousseau",
+  "Russell", "Sartre", "Schopenhauer", "Spencer", "Stekel", "Tocqueville",
+  "Veblen", "Weyl", "Whewell", "William James"
+] as const;
+
+type ThinkerChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
 
 interface Chunk {
   id: number;
@@ -299,6 +318,13 @@ export default function Home() {
   const [gptZeroError, setGptZeroError] = useState("");
   const gptZeroRequestIdRef = useRef(0);
   const [selectedLLM, setSelectedLLM] = useState<LLM>("perplexity");
+  const [selectedThinker, setSelectedThinker] = useState("");
+  const [showThinkerChat, setShowThinkerChat] = useState(false);
+  const [thinkerChatLength, setThinkerChatLength] = useState("normal");
+  const [thinkerChatBullets, setThinkerChatBullets] = useState(false);
+  const [thinkerChatInput, setThinkerChatInput] = useState("");
+  const [thinkerChatMessages, setThinkerChatMessages] = useState<ThinkerChatMessage[]>([]);
+  const [isThinkerChatResponding, setIsThinkerChatResponding] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -4181,6 +4207,73 @@ ${parsed.analyzer}`);
     else setIsDraggingIntelB(false);
   };
 
+  const sendThinkerChatMessage = async () => {
+    const message = thinkerChatInput.trim();
+    if (!message || !selectedThinker || isThinkerChatResponding) return;
+
+    const nextMessages: ThinkerChatMessage[] = [
+      ...thinkerChatMessages,
+      { role: "user", content: message },
+    ];
+    setThinkerChatMessages(nextMessages);
+    setThinkerChatInput("");
+    setIsThinkerChatResponding(true);
+
+    try {
+      const response = await fetch("/api/thinker-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          thinker: selectedThinker,
+          message,
+          history: thinkerChatMessages.slice(-12),
+          length: thinkerChatLength,
+          bullets: thinkerChatBullets,
+          provider: selectedLLM,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(payload?.error || "The thinker could not respond");
+      }
+      setThinkerChatMessages((current) => [
+        ...current,
+        { role: "assistant", content: payload.response },
+      ]);
+    } catch (error: any) {
+      setThinkerChatMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: `Unable to respond: ${error?.message || "Unknown error"}`,
+        },
+      ]);
+    } finally {
+      setIsThinkerChatResponding(false);
+    }
+  };
+
+  const downloadThinkerChat = () => {
+    if (!selectedThinker || thinkerChatMessages.length === 0) return;
+    const transcript = [
+      `Conversation with ${selectedThinker}`,
+      "",
+      ...thinkerChatMessages.flatMap((message) => [
+        `${message.role === "user" ? "You" : selectedThinker}:`,
+        message.content,
+        "",
+      ]),
+    ].join("\n");
+    const blob = new Blob([transcript], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${selectedThinker.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-conversation.txt`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary selection:text-white">
       <header className="border-b-4 border-primary sticky top-0 z-50 bg-white shadow-lg">
@@ -4261,6 +4354,33 @@ ${parsed.analyzer}`);
               </Button>
             </div>
           </div>
+        </div>
+        <div className="flex min-h-12 items-center justify-end gap-4 border-t border-violet-200 bg-gradient-to-l from-violet-100 via-violet-50 to-white px-10 py-2">
+          <span className="max-w-[520px] text-right text-xs font-bold uppercase leading-snug tracking-wide text-violet-900">
+            Need an idea? Talk to some of history&apos;s most creative minds in their own words.
+          </span>
+          <Select
+            value={selectedThinker}
+            onValueChange={(value) => {
+              setSelectedThinker(value);
+              setThinkerChatMessages([]);
+              setShowThinkerChat(true);
+            }}
+          >
+            <SelectTrigger
+              className="h-9 w-[260px] border-violet-400 bg-white font-semibold text-violet-950 shadow-sm"
+              data-testid="select-historical-thinker"
+            >
+              <SelectValue placeholder="Choose a thinker…" />
+            </SelectTrigger>
+            <SelectContent className="max-h-80">
+              {HISTORICAL_THINKERS.map((thinker) => (
+                <SelectItem key={thinker} value={thinker}>
+                  {thinker}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </header>
 
@@ -9482,6 +9602,126 @@ Freedom is the ratio essendi of the moral law."
                 </div>
               </>
             )}
+          </div>
+        </ResizableDialogContent>
+      </ResizableDialog>
+
+      <ResizableDialog open={showThinkerChat} onOpenChange={setShowThinkerChat} modal={false}>
+        <ResizableDialogContent
+          defaultWidth={620}
+          defaultHeight={680}
+          minWidth={380}
+          minHeight={320}
+          minimizable
+          showOverlay={false}
+          className="border-2 border-violet-300"
+          data-testid="dialog-thinker-chat"
+        >
+          <div className="flex h-full min-h-0 flex-col gap-4">
+            <ResizableDialogHeader className="border-b border-violet-200 pb-3">
+              <ResizableDialogTitle className="flex items-center gap-2 text-violet-950">
+                <MessageCircle className="h-5 w-5 text-violet-600" />
+                Talk with {selectedThinker || "a historical thinker"}
+              </ResizableDialogTitle>
+              <ResizableDialogDescription>
+                Historically grounded AI conversation. Direct quotations are identified as quotations rather than invented.
+              </ResizableDialogDescription>
+            </ResizableDialogHeader>
+
+            <div className="flex flex-wrap items-end gap-3 rounded-lg border border-violet-200 bg-violet-50 p-3">
+              <div className="min-w-[210px] flex-1 space-y-1">
+                <Label>Response length</Label>
+                <Select value={thinkerChatLength} onValueChange={setThinkerChatLength}>
+                  <SelectTrigger data-testid="select-thinker-response-length">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="super-concise">Super concise — one sentence</SelectItem>
+                    <SelectItem value="concise">Concise — three sentences</SelectItem>
+                    <SelectItem value="normal">Normal — one paragraph</SelectItem>
+                    <SelectItem value="long">Long — three paragraphs</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <label className="flex h-10 items-center gap-2 rounded-md border bg-white px-3 text-sm font-medium">
+                <Checkbox
+                  checked={thinkerChatBullets}
+                  onCheckedChange={(checked) => setThinkerChatBullets(checked === true)}
+                  data-testid="checkbox-thinker-bullets"
+                />
+                Bullet points
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={downloadThinkerChat}
+                disabled={thinkerChatMessages.length === 0}
+                data-testid="button-download-thinker-chat"
+              >
+                <Download className="mr-1 h-4 w-4" />
+                TXT
+              </Button>
+            </div>
+
+            <ScrollArea className="min-h-0 flex-1 rounded-lg border bg-slate-50 p-4">
+              <div className="space-y-4 pr-3">
+                {thinkerChatMessages.length === 0 && (
+                  <div className="py-12 text-center text-sm text-muted-foreground">
+                    Ask {selectedThinker || "the selected thinker"} a question to begin.
+                  </div>
+                )}
+                {thinkerChatMessages.map((message, index) => (
+                  <div
+                    key={`${message.role}-${index}`}
+                    className={`rounded-xl p-3 ${
+                      message.role === "user"
+                        ? "ml-10 bg-violet-600 text-white"
+                        : "mr-10 border border-slate-200 bg-white text-slate-900"
+                    }`}
+                  >
+                    <p className="mb-1 text-xs font-bold uppercase opacity-70">
+                      {message.role === "user" ? "You" : selectedThinker}
+                    </p>
+                    <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                      {message.content}
+                    </div>
+                  </div>
+                ))}
+                {isThinkerChatResponding && (
+                  <div className="mr-10 flex items-center gap-2 rounded-xl border bg-white p-3 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {selectedThinker} is responding…
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+
+            <div className="flex items-end gap-2">
+              <Textarea
+                value={thinkerChatInput}
+                onChange={(event) => setThinkerChatInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void sendThinkerChatMessage();
+                  }
+                }}
+                placeholder={`Ask ${selectedThinker || "a thinker"} something…`}
+                className="min-h-[76px] flex-1"
+                maxLength={4_000}
+                data-testid="textarea-thinker-chat"
+              />
+              <Button
+                type="button"
+                onClick={() => void sendThinkerChatMessage()}
+                disabled={!thinkerChatInput.trim() || isThinkerChatResponding}
+                className="h-11 bg-violet-700 text-white hover:bg-violet-800"
+                data-testid="button-send-thinker-chat"
+              >
+                <Send className="mr-1 h-4 w-4" />
+                Send
+              </Button>
+            </div>
           </div>
         </ResizableDialogContent>
       </ResizableDialog>

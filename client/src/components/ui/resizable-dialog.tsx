@@ -1,6 +1,6 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
-import { X, GripHorizontal } from "lucide-react"
+import { X, GripHorizontal, Minus, Maximize2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 const ResizableDialog = DialogPrimitive.Root
@@ -30,6 +30,8 @@ interface ResizableDialogContentProps extends React.ComponentPropsWithoutRef<typ
   minHeight?: number
   maxWidth?: number
   maxHeight?: number
+  minimizable?: boolean
+  showOverlay?: boolean
 }
 
 const ResizableDialogContent = React.forwardRef<
@@ -44,12 +46,15 @@ const ResizableDialogContent = React.forwardRef<
   minHeight = 300,
   maxWidth = window.innerWidth - 40,
   maxHeight = window.innerHeight - 40,
+  minimizable = false,
+  showOverlay = true,
   ...props 
 }, ref) => {
   const [position, setPosition] = React.useState({ x: 0, y: 0 })
   const [size, setSize] = React.useState({ width: defaultWidth, height: defaultHeight })
   const [isDragging, setIsDragging] = React.useState(false)
   const [isResizing, setIsResizing] = React.useState(false)
+  const [isMinimized, setIsMinimized] = React.useState(false)
   const [dragStart, setDragStart] = React.useState({ x: 0, y: 0 })
   const [resizeStart, setResizeStart] = React.useState({ x: 0, y: 0, width: 0, height: 0 })
   const contentRef = React.useRef<HTMLDivElement>(null)
@@ -108,14 +113,14 @@ const ResizableDialogContent = React.forwardRef<
 
   return (
     <ResizableDialogPortal>
-      <ResizableDialogOverlay />
+      {showOverlay && <ResizableDialogOverlay />}
       <DialogPrimitive.Content
         ref={ref}
         style={{
           left: position.x,
           top: position.y,
           width: size.width,
-          height: size.height,
+          height: isMinimized ? 42 : size.height,
         }}
         className={cn(
           "fixed z-50 flex flex-col border bg-background shadow-lg sm:rounded-lg overflow-hidden",
@@ -133,21 +138,39 @@ const ResizableDialogContent = React.forwardRef<
             <GripHorizontal className="h-4 w-4" />
             <span className="text-xs">Drag to move</span>
           </div>
-          <DialogPrimitive.Close className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
+          <div className="flex items-center gap-1">
+            {minimizable && (
+              <button
+                type="button"
+                onMouseDown={(event) => event.stopPropagation()}
+                onClick={() => setIsMinimized((value) => !value)}
+                className="rounded-sm p-1 opacity-70 transition-opacity hover:bg-muted hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring"
+                aria-label={isMinimized ? "Restore window" : "Minimize window"}
+              >
+                {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minus className="h-4 w-4" />}
+              </button>
+            )}
+            <DialogPrimitive.Close className="rounded-sm p-1 opacity-70 ring-offset-background transition-opacity hover:bg-muted hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          </div>
         </div>
-        <div className="flex-1 overflow-auto p-6">
-          {children}
-        </div>
-        <div
-          onMouseDown={handleResizeMouseDown}
-          className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
-          style={{
-            background: 'linear-gradient(135deg, transparent 50%, hsl(var(--muted-foreground) / 0.3) 50%)'
-          }}
-        />
+        {!isMinimized && (
+          <>
+            <div className="flex-1 overflow-auto p-6">
+              {children}
+            </div>
+            <div
+              onMouseDown={handleResizeMouseDown}
+              className="absolute bottom-0 right-0 w-5 h-5 cursor-se-resize"
+              style={{
+                background: 'linear-gradient(135deg, transparent 50%, hsl(var(--muted-foreground) / 0.45) 50%)'
+              }}
+              aria-label="Resize window"
+            />
+          </>
+        )}
       </DialogPrimitive.Content>
     </ResizableDialogPortal>
   )

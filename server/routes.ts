@@ -3633,6 +3633,80 @@ Otherwise return JSON array:
     }
   });
 
+  app.post("/api/thinker-chat", async (req, res) => {
+    const {
+      thinker,
+      message,
+      history = [],
+      length = "normal",
+      bullets = false,
+      provider = "perplexity",
+    } = req.body;
+
+    if (typeof thinker !== "string" || !thinker.trim()) {
+      return res.status(400).json({ error: "A thinker must be selected" });
+    }
+    if (typeof message !== "string" || !message.trim()) {
+      return res.status(400).json({ error: "A message is required" });
+    }
+    if (message.length > 4_000) {
+      return res.status(413).json({ error: "Messages are limited to 4,000 characters" });
+    }
+
+    const lengthRules: Record<string, string> = {
+      "super-concise": "Respond in exactly one sentence.",
+      concise: "Respond in exactly three sentences.",
+      normal: "Respond in one substantive paragraph.",
+      long: "Respond in exactly three substantive paragraphs.",
+    };
+    const lengthRule = lengthRules[length] || lengthRules.normal;
+    const safeHistory = Array.isArray(history)
+      ? history
+          .slice(-12)
+          .filter((item: any) =>
+            item &&
+            (item.role === "user" || item.role === "assistant") &&
+            typeof item.content === "string"
+          )
+          .map((item: any) => ({
+            role: item.role,
+            content: item.content.slice(0, 2_000),
+          }))
+      : [];
+
+    const prompt = `Conduct a historically grounded conversation in the intellectual voice of ${thinker}.
+
+ACCURACY RULES:
+- Represent ${thinker}'s documented ideas, vocabulary, reasoning habits, and positions faithfully.
+- Never fabricate a quotation, book title, source, biographical event, or factual claim.
+- Use quotation marks only for wording you are confident is an authentic quotation; identify its source when known.
+- When exact wording or attribution is uncertain, paraphrase openly instead of pretending to quote.
+- If the user asks about a topic outside ${thinker}'s documented work, explain the nearest relevant position and clearly mark any inference.
+- Do not claim to literally be ${thinker}; this is an educational reconstruction.
+
+FORMAT:
+${lengthRule}
+${bullets ? "Present the response as concise bullet points while respecting the requested length as closely as possible." : "Use prose, not bullet points."}
+
+RECENT CONVERSATION:
+${JSON.stringify(safeHistory)}
+
+USER MESSAGE:
+${message.trim()}
+
+Return only the response.`;
+
+    try {
+      const response = await callLLM(provider, prompt);
+      res.json({ response: response.trim(), thinker: thinker.trim() });
+    } catch (error: any) {
+      console.error("Thinker chat error:", error);
+      res.status(502).json({
+        error: error?.message || "The thinker response could not be generated",
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
