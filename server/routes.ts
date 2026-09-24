@@ -3759,13 +3759,36 @@ STYLE REQUIREMENTS:
 - Return only the generated prose without a preface, label, analysis, or word-count note.`;
 
     try {
-      const text = await callLLM(provider, prompt);
+      let text: string;
+      let usedProvider = provider;
+      let fallbackReason: string | undefined;
+      if (provider === "gemini") {
+        try {
+          text = await callLLM("gemini", prompt);
+        } catch (firstError: any) {
+          if (firstError?.providerStatus !== 503) throw firstError;
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          try {
+            text = await callLLM("gemini", prompt);
+          } catch (retryError: any) {
+            if (retryError?.providerStatus !== 503) throw retryError;
+            // Keep the workshop usable during temporary Gemini capacity outages.
+            text = await callLLM("anthropic", prompt);
+            usedProvider = "anthropic";
+            fallbackReason = "Gemini was temporarily unavailable (HTTP 503). Anthropic generated this text instead.";
+          }
+        }
+      } else {
+        text = await callLLM(provider, prompt);
+      }
       if (typeof text !== "string" || !text.trim()) {
         throw new Error("The AI provider returned no usable prose");
       }
       res.json({
         text: text.trim(),
-        provider,
+        provider: usedProvider,
+        requestedProvider: provider,
+        fallbackReason,
         requestedLength: isSingleSentence ? "one sentence" : `${boundedWordCount} words`,
       });
     } catch (error: any) {

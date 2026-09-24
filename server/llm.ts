@@ -738,7 +738,19 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
       );
       if (!geminiResponse.ok) {
         const errorText = await geminiResponse.text();
-        throw new Error(`Gemini API Error: ${geminiResponse.status} - ${errorText}`);
+        const detail = (() => {
+          try {
+            const parsed = JSON.parse(errorText);
+            return typeof parsed?.error?.message === "string"
+              ? parsed.error.message
+              : "Request failed";
+          } catch {
+            return "Request failed";
+          }
+        })();
+        throw Object.assign(new Error(`Gemini API Error: ${geminiResponse.status} - ${detail}`), {
+          providerStatus: geminiResponse.status,
+        });
       }
       const geminiData = await geminiResponse.json();
       const generatedText = Array.isArray(geminiData?.candidates?.[0]?.content?.parts)

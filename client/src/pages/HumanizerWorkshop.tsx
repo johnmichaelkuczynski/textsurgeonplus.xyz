@@ -355,10 +355,14 @@ export default function HumanizerWorkshop() {
   const [aiProseLengthMode, setAiProseLengthMode] = useState<"sentence" | "words">("words");
   const [aiProseWordCount, setAiProseWordCount] = useState(500);
   const [isGeneratingAiProse, setIsGeneratingAiProse] = useState(false);
+  const [generationMessage, setGenerationMessage] = useState("");
+  const [generationError, setGenerationError] = useState("");
 
   const generateObviousAiProse = async () => {
     if (isGeneratingAiProse) return;
     setIsGeneratingAiProse(true);
+    setGenerationError("");
+    setGenerationMessage("");
     try {
       const response = await fetch("/api/humanizer/generate-ai-input", {
         method: "POST",
@@ -374,9 +378,16 @@ export default function HumanizerWorkshop() {
       if (!response.ok) {
         throw new Error(payload?.error || "AI prose generation failed");
       }
-      setInputText(payload.text || "");
+      if (typeof payload?.text !== "string" || !payload.text.trim()) {
+        throw new Error("The provider returned no generated prose.");
+      }
+      setInputText(payload.text);
+      setGenerationMessage(
+        payload.fallbackReason ||
+          `Generated with ${String(payload.provider || aiProseProvider)}.`,
+      );
     } catch (error: any) {
-      setInputText(`Generation failed: ${error?.message || "Unknown error"}`);
+      setGenerationError(error?.message || "Generation failed. Please try again.");
     } finally {
       setIsGeneratingAiProse(false);
     }
@@ -492,6 +503,14 @@ export default function HumanizerWorkshop() {
                 Gemini is selected by default. Custom lengths may range from 1 to 2,000 words.
                 GPTZero evaluates generated text automatically.
               </p>
+              {generationMessage ? (
+                <p role="status" className="text-xs font-semibold text-blue-900">{generationMessage}</p>
+              ) : null}
+              {generationError ? (
+                <p role="alert" className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-800">
+                  Generation failed: {generationError}
+                </p>
+              ) : null}
             </div>
             <Textarea
               value={inputText}
