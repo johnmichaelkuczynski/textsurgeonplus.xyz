@@ -98,7 +98,7 @@ function deduplicateQuotes(quotes: ExtractedQuote[]): ExtractedQuote[] {
     const normalized = q.quote.toLowerCase().trim().replace(/\s+/g, ' ').substring(0, 100);
     
     let isDuplicate = false;
-    for (const seenQuote of seen) {
+    for (const seenQuote of Array.from(seen)) {
       if (seenQuote.includes(normalized) || normalized.includes(seenQuote)) {
         isDuplicate = true;
         break;

@@ -6,400 +6,818 @@
       <h1>Humanizer diagnostic — ten rewrite prompts</h1>
       <p>Box A: supplied document-overhaul text. Box D: supplied natural-law style sample.
       Each request asked for approximately 600 words. A pass requires 480–720 words and at least
-      two central Box A terms; inspect each full result for substantive fidelity.</p>
-      <p>1/10 passed after checking both length and content leakage from Box D. The initial automated check counted prompts 2 and 3 as passing based only on length and Box A keywords; closer inspection found natural-law content not present in Box A.</p>
+       two central Box A terms and no detected style-sample subject terms; automated checks cannot prove substantive fidelity, so inspect each full result and all correction drafts.</p>
+      <p>8/10 passed.</p>
       
-      <section><h2>Prompt 1: FAIL: length 956 words</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, breaking the text into short sections, each under a terse header like &quot;Natural law defined&quot; or &quot;Legal status ≠ moral authority.&quot;</p>
-      <pre># Natural law and the problem of induction defined
+      <section><h2>Prompt 1: FAIL: Length check failed: 735 words, expected approximately 600 (480–720 accepted).</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, breaking the text into short sections, each under a terse header like &quot;Natural law defined&quot; or &quot;Legal status ≠ moral authority.&quot;</p>
+       <p><strong>Applied style instruction:</strong> Rewrite in style of sample, breaking the text into short sections, each under a terse header based on the document-processing source, such as &quot;[Document-processing concept] defined&quot; or &quot;[Requirement A] ≠ [Requirement B].&quot;</p>
+       <h3>Final output (735 words)</h3><pre># Coherence Functionality: A Prerequisite
 
-Given causal connections between co-occupants of a manifold, how does it follow that past causal patterns resemble future ones? How are inference-to-best-explanation practices ever principled?
+The fundamental challenge of processing large documents presupposes that the application has absorbed and integrated the methodologies articulated in the uploaded coherence documents. These mechanisms depend on two distinct but interrelated technologies: (a) preliminary outlining procedures that establish structural maps of extended texts, and (b) the Tractatus Tree architecture that enables hierarchical representation of logical content. Given that these methodologies constitute the foundational infrastructure, it follows that all subsequent functionality must be constructed upon their successful implementation.
 
-The space-time manifold&#39;s integrity depends on its causal connections&#39; integrity. A universe of causally independent rogue events isn&#39;t a universe at all. Events causally independent of each other don&#39;t co-occupy a single manifold.
+# Text Segmentation ≠ Text Atomization
 
-# Hume&#39;s presupposition exposed
+When the user uploads a text of arbitrary length, the application must perform an initial decomposition operation that partitions the document into segments sufficiently small that existing processing capabilities can operate without degradation. This segmentation procedure, however, must preserve metadata regarding sequential relationships and hierarchical structure such that subsequent recomposition operations remain possible.
 
-Hume&#39;s attack on induction presupposes that physical laws can be suspended. This assumes laws are separable from the space-time manifold—that they don&#39;t constitute it.
+# Local Operations Defined
 
-That assumption is erroneous. Laws aren&#39;t independent. If gas-pressure were inversely proportional to temperature rather than directly proportional, every mechanical law would require modification or abandonment.
+For any given segment produced through decomposition, the application must preserve full functional capability: (1) podcast generation, (2) outline synthesis, (3) test creation, and (4) other transformative functions. Additionally, a novel function must be introduced—the capacity to generate a Tractatus Tree representation that captures the logical-hierarchical structure of that segment&#39;s propositional content.
 
-# Interdependence among natural laws
+# Multi-Segment Processing: Special Procedures Required
 
-If light-speed were framework-relative, mass-energy conversion would no longer follow the same laws governing actual conversions. Framework-variant light-velocity would eliminate principled position-determination and thereby velocity-determination and expansion-rate determination.
+Supposing that the user selects a region spanning multiple segments, the application cannot simply apply segment-level operations independently and concatenate results. Such an approach would reproduce precisely the incoherence problem these architectural modifications aim to resolve. Instead, the application must invoke the special procedures described in the coherence methodology documents: it must first generate a coherent summary that functions as a navigational map of the selected region.
 
-Consider law-change at time t*. Two consequences follow.
+# Tractatus Tree Synthesis Protocol
 
-First: relative position, velocity, mass, temperature, and every physics-relevant parameter are ascertained through procedures presupposing certain operative laws.
+The application must additionally generate a Tractatus Tree representation for the entire selected region, a process that may require generating multiple segment-level trees and subsequently synthesizing them through operations that (a) omit details irrelevant to higher-order logical structure, and (b) preserve key propositional nodes essential to argument continuity. This synthesis procedure will very likely presuppose that the coherence-mapping function has already executed.
 
-Second: those parameter-values themselves—not merely our ability to determine them—are defined by operative physical laws.
+# Function Reconfiguration: Achieving Document-Level Coherence
 
-# Consequences of nomic change
+All existing operations—podcast generation, test creation, outline synthesis, literature review production, and rewrites (particularly important)—must be reconfigured to align with this hierarchical processing architecture. Presently, if the user requests podcast generation for a ninety-page selection, the output lacks coherence because the generator must treat those pages as multiple independent passages. With the modified functionality operational, however, the generator will possess access to the coherence map and synthesized Tractatus Tree, thereby enabling it to treat the selection as the unified semantic entity it actually constitutes. Most crucially, when a lawyer uploads an 800-page document and queries the application, the answers must reflect understanding of the document as a whole, not as multiple independent fragments.
 
-If laws changed at t*, the post-t* universe&#39;s (U2&#39;s) positions, masses, velocities, temperatures would be discontinuous from their pre-t* (U1) values. The post-t* state wouldn&#39;t causally follow from the pre-t* state. This means law-change at t* would obliterate the space-time manifold in which those laws operated.
+# Order-Hierarchy Processing Schema
 
-Different laws, different spatiotemporal manifold. Different spatiotemporal manifold, different universe.
+The processing architecture must implement a hierarchical strategy indexed by document magnitude. When texts fall below the coherence threshold (Order 0), neither Tractatus Trees nor special coherence measures prove necessary. When magnitude increases by one order (Order 1), exactly one Tractatus Tree and one structural map suffice. For Order 2 documents, coherence emerges through generating and synthesizing Order 1 maps and trees. Order 3 requires synthesizing Order 2 representations. Generally: Order N+1 processing requires synthesizing Order N maps and trees.
 
-The manifold isn&#39;t an empty vessel housing different laws; it&#39;s defined by laws governing its occupants.
+# Large Document Processing: Practical Considerations
 
-# Objects as force-constituted entities
+When the user uploads extensive documents, document-level operations will require substantial processing time. The application should therefore: (1) inform users immediately after upload that such operations are time-intensive and suggest focusing on smaller sections unless extended processing time is acceptable; (2) provide users the ability to abort ongoing processes easily; (3) deliver periodic and frequent progress reports during extended operations; (4) deposit output in relatively small increments so users can verify the application remains productive.
 
-Objects—rocks, trees, stars, stable dynamically-unified event-patterns—are interacting-parts systems. Laws governing such systems would cease at t. The same holds for laws defining electrons. Different laws mean different forces; different forces mean different objects.
+Most importantly, the application should enable synthesis of local operations into document-level operations. If the user processes an 800-page text in 50-page segments, the application should synthesize these local outputs into a comprehensive document-level product.
 
-What&#39;s true of objects applies to all persistence-instances and all causation-instances. Nomic changes at t mean nothing pre-t could cause anything post-t. No U1 occupant would exist in U2. No event-series beginning before t would survive t. The series wouldn&#39;t be severed; its continued existence would become incoherent.
+# Interface and Query Functionality
 
-This means U2 wouldn&#39;t follow U1. For U2 to follow U1 requires some pre-t event causing some post-t event, which is impossible. U1 and U2 wouldn&#39;t constitute a single space-time manifold. Law-change at t equals manifold-cessation at t.
+The processing window must be resizable, minimizable, movable, and unobtrusive. Additionally, using this coherence functionality, the application must implement an intelligent &quot;Query&quot; function capable of following commands such as &quot;find all examples in this document of violations of the Clayton Act.&quot; Users must then be able to operate on query outputs: if the application identifies 74 violations, the user can request ranking from most to least egregious or identification of significance within particular jurisdictions.</pre>
+       <details><summary>Draft 1: 644 words · anthropic · Subject check failed: The input mentions &quot;800 words&quot; but the rewrite changes this to processing 800-page documents without this being stated in the original.</summary><pre># Coherence Functionality: A Prerequisite
 
-# Uniformity Principle justified
+The fundamental challenge of large document processing presupposes that the application has absorbed and integrated the methodologies articulated in the uploaded coherence documents, which describe (through various implementations) the mechanisms by which reading and generating large coherent documents becomes tractable. These mechanisms depend primarily on two distinct but interrelated technologies: (a) preliminary outlining procedures that establish structural maps of extended texts, and (b) the Tractatus Tree architecture that enables hierarchical representation of logical content. Given that these methodologies constitute the foundational infrastructure, it follows that all subsequent functionality must be constructed upon their successful implementation.
 
-Therefore, if physical laws exist, then until time ends, inductive practices have legitimate basis. Many inductive inferences don&#39;t concern the future but concern unknown present or past facts. Inferring that some object remains solid now doesn&#39;t concern the future. Inferring that an asteroid struck Earth millennia ago doesn&#39;t concern the future. Provided physical laws exist, many inductive inferences are unqualifiedly legitimate.
+# Text Segmentation ≠ Text Atomization
 
-# Determinism defined
+When the user uploads a text of arbitrary length, the application must perform an initial decomposition operation that partitions the document into segments sufficiently small that existing processing capabilities can operate upon them without degradation. This segmentation procedure, however, must not reduce the document to a mere collection of independent fragments; rather, the decomposition must preserve metadata regarding sequential relationships and hierarchical structure such that subsequent recomposition operations remain possible.
 
-Determinism: the doctrine that the world&#39;s state at any time fixes its state at all later times.
+# Local Operations Defined
 
-Indeterminism: determinism&#39;s negation. Equivalently, the doctrine that some time t exists such that for some later t*, the world&#39;s state at t fails to determine the world&#39;s state in every respect at t*.
+For any given segment produced through the aforementioned decomposition (bearing in mind that such segments represent tractable units rather than semantically independent texts), the application must preserve full functional capability across all existing operations. These operations include (but are not necessarily exhausted by): (1) podcast generation, (2) outline synthesis, (3) test creation, and (4) other transformative functions that currently operate on text units below the coherence threshold. Additionally, a novel function must be introduced for each segment: the capacity to generate a Tractatus Tree representation that captures the logical-hierarchical structure of that segment&#39;s propositional content.
 
-The world is deterministic to the extent it&#39;s law-governed. Supposing the universe&#39;s t-state determines its t*-state, that&#39;s because laws L₁...Lₙ exist such that given the t-state, exactly one t*-state is possible.
+# Multi-Segment Processing: Special Procedures Required
 
-# Determinism ≠ complete predictability
+Supposing arguendo that the user selects a region spanning multiple segments (for instance, a page range requiring ten discrete chunks for processing), the application cannot simply apply segment-level operations independently and concatenate results. Such an approach would reproduce precisely the incoherence problem these architectural modifications aim to resolve. Instead, the application must invoke the special procedures described in the coherence methodology documents: it must first generate a coherent summary that functions as a navigational map of the selected region, executing whatever operations those foundational documents specify as necessary for treating extended text as unified discourse rather than as serialized fragments.
 
-The world is deterministic to the extent it&#39;s predictable, but it&#39;s not predictable to the extent it&#39;s deterministic.
+# Tractatus Tree Synthesis Protocol
 
-If no deterministic mechanisms link present to future, the future is open—many futures are possible, predictions impossible.
+The application must additionally generate a Tractatus Tree representation for the entire selected region, a process that may require generating multiple segment-level Tractatus Trees and subsequently synthesizing them through operations that (a) omit details irrelevant to higher-order logical structure, and (b) preserve key propositional nodes essential to argument continuity. This synthesis procedure will very likely presuppose that the coherence-mapping function has already executed, since the structural map provides the framework within which synthesis decisions become tractable.
 
-But supposing the world is deterministic, complete predictability doesn&#39;t follow. Setting aside human fallibility, two reasons explain why.
+# Function Reconfiguration: Achieving Document-Level Coherence
 
-# First limitation: interference effects
+All existing operations—podcast generation, test creation, outline synthesis, literature review production—must be reconfigured to align with this hierarchical processing architecture. The contrast is instructive: presently, if the user requests podcast generation for a ninety-page selection, the output lacks coherence because the podcast generator must treat those ninety pages as multiple independent passages. With the modified functionality operational, however, the generator will possess access to the coherence map and synthesized Tractatus Tree, thereby enabling it to treat the selection as the unified semantic entity it actually constitutes.
 
-Learning about the world requires interacting with it. Asking someone about paranoia may induce paranoia. Studying cave-bats requires entering the cave, disrupting them, and using light, further disrupting them.
+# Order-Hierarchy Processing Schema
 
-Can&#39;t precautions sidestep this? Perhaps knowing when bats sleep and the cave&#39;s layout permits quiet observation. Perhaps establishing empathic rapport permits asking about paranoia without inducing it.
+The processing architecture must implement a hierarchical strategy indexed by document magnitude. When texts fall below the coherence threshold (Order 0), neither Tractatus Trees nor special coherence measures prove necessary. When magnitude increases by one order (Order 1), exactly one Tractatus Tree and one structural map suffice. For Order 2 documents, coherence emerges indirectly: not through direct traversal but through generating and synthesizing Order 1 maps and trees. Order 3 requires synthesizing Order 2 representations. Generally: Order N+1 processing requires synthesizing Order N maps and trees.</pre></details>
+<details><summary>Draft 2: 875 words · anthropic · Length check failed: 875 words, expected approximately 600 (480–720 accepted).</summary><pre># Coherence Functionality: A Prerequisite
 
-That such precautions are necessary shows that what&#39;s learnable at any given time is circumscribed; that if X is unknowable at t, it may become knowable at later t*. But complete predictability requires that for any t, predicting the universe&#39;s state at any later t* is possible at t.
+The fundamental challenge of processing large documents presupposes that the application has absorbed and integrated the methodologies articulated in the uploaded coherence documents, which describe (through various implementations) the mechanisms by which reading and generating large coherent documents becomes tractable. These mechanisms depend primarily on two distinct but interrelated technologies: (a) preliminary outlining procedures that establish structural maps of extended texts, and (b) the Tractatus Tree architecture that enables hierarchical representation of logical content. Given that these methodologies constitute the foundational infrastructure, it follows that all subsequent functionality must be constructed upon their successful implementation.
 
-# Laplace&#39;s thesis refuted
+# Text Segmentation ≠ Text Atomization
 
-Laplace&#39;s thesis claims infinite intelligence could predict everything.
+When the user uploads a text of arbitrary length, the application must perform an initial decomposition operation that partitions the document into segments sufficiently small that existing processing capabilities can operate upon them without degradation. This segmentation procedure, however, must not reduce the document to a mere collection of independent fragments; rather, the decomposition must preserve metadata regarding sequential relationships and hierarchical structure such that subsequent recomposition operations remain possible.
 
-Prediction requires both intelligence and knowledge. No conceivable being can acquire complete knowledge of the universe&#39;s state at any point.
+# Local Operations Defined
 
-Sense-perception requires information-bearing causal processes linking object to perceiver. Hearing someone talk depends on vocal-chord movements creating structure-encoding airwaves inducing structure-similar eardrum disturbances. Learning about the subatomic world requires irradiating it. But light consists of photons whose masses are comparable to particles the microphysicist studies. Flooding the microphysical world with light utterly changes it. Using a flamethrower to study rodents reveals something through charred remains but not everything. For microparticles, we&#39;re not so fortunate.
+For any given segment produced through the aforementioned decomposition, the application must preserve full functional capability across all existing operations. These operations include: (1) podcast generation, (2) outline synthesis, (3) test creation, and (4) other transformative functions that currently operate on tractable text units. Additionally, a novel function must be introduced for each segment: the capacity to generate a Tractatus Tree representation that captures the logical-hierarchical structure of that segment&#39;s propositional content.
 
-Even if sufficiently fine-grained causal processes existed to learn about microstructures current processes can&#39;t reveal, learning about the microworld would remain impossible. How would we learn about those processes? By hypothesis, the most fine-grained processes at our disposal would be those very processes. But using them to study themselves would disrupt them.
+# Multi-Segment Processing: Special Procedures Required
 
-# Second limitation: unpredictable knowledge-growth
+Supposing that the user selects a region spanning multiple segments (for instance, a page range requiring ten discrete chunks for processing), the application cannot simply apply segment-level operations independently and concatenate results. Such an approach would reproduce precisely the incoherence problem these architectural modifications aim to resolve. Instead, the application must invoke the special procedures described in the coherence methodology documents: it must first generate a coherent summary that functions as a navigational map of the selected region, executing whatever operations those foundational documents specify as necessary for treating extended text as unified discourse rather than as serialized fragments.
 
-No creature can predict what it will know. Suppose you know now at t that during twenty years you&#39;ll learn truths t₁...tₙ and no others. Then you already know t₁...tₙ, so they aren&#39;t what you&#39;ll learn. Replacing t₁...tₙ with any other truth-list yields the same result. Therefore knowing now what you&#39;ll know later is impossible. Since knowledge affects action and thus affects the world, no creature can know exactly what it will do or how that will affect the world.</pre></section>
+# Tractatus Tree Synthesis Protocol
 
-      <section><h2>Prompt 2: FAIL: imported natural-law content absent from Box A (558 words)</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, opening with a formal definition of natural law and then a one-line definition of its denial.</p>
-      <pre>Natural law: The doctrine that there exist enduring, universal, and necessary principles governing physical entities, such that the structural integrity of a spatiotemporal manifold depends upon the integrity of those governing principles.
-Denial of natural law: The doctrine that physical occurrences are fundamentally autonomous, rogue events unconstrained by persistent nomic relations.
+The application must additionally generate a Tractatus Tree representation for the entire selected region, a process that may require generating multiple segment-level Tractatus Trees and subsequently synthesizing them through operations that (a) omit details irrelevant to higher-order logical structure, and (b) preserve key propositional nodes essential to argument continuity. This synthesis procedure will very likely presuppose that the coherence-mapping function has already executed, since the structural map provides the framework within which synthesis decisions become tractable.
 
-Just as a physical manifold cannot exist as a mere collection of rogue events, a large text cannot be understood or processed coherently if treated as an arbitrary assemblage of isolated passages. The planned software overhaul establishes true document-level coherence by reading, absorbing, and operationalizing preliminary outlining methods and Tractatus tree technology. When a document is uploaded, the application divides it into small, manageable segments suitable for local processing. Every independent chunk supports baseline functions—such as generating podcasts, outlines, tests, and literature reviews—while simultaneously generating a localized Tractatus tree.
+# Function Reconfiguration: Achieving Document-Level Coherence
 
-When processing larger selections spanning multiple chunks—such as a ten-chunk passage or a ninety-page selection—the application executes a specialized coherence protocol. First, following established outlining procedures, it generates a global summary map to serve as a structural guide. Second, it synthesizes the localized Tractatus trees across the selected region, systematically omitting extraneous detail while preserving essential logical nodes. All standard operations—including podcasts, outlines, tests, and literature reviews—are reconfigured to align with this unified framework. Consequently, a podcast generated from a ninety-page selection treats the material as a single, structurally unified entity rather than an unconnected sequence of short, independent passages.
+All existing operations—podcast generation, test creation, outline synthesis, literature review production, and rewrites (particularly important)—must be reconfigured to align with this hierarchical processing architecture. Presently, if the user requests podcast generation for a ninety-page selection, the output lacks coherence because the generator must treat those ninety pages as multiple independent passages. With the modified functionality operational, however, the generator will possess access to the coherence map and synthesized Tractatus Tree, thereby enabling it to treat the selection as the unified semantic entity it actually constitutes. Most crucially, the user&#39;s ability to ask document-level questions about whole documents must embody these coherence functionalities; when a lawyer uploads an 800-page document and queries the application, the answers must reflect understanding of the document as a whole, not as multiple independent fragments.
 
-The application manages structural scale through formal, recursive orders of complexity:
-(i) Order 0: Short texts requiring no explicit Tractatus trees or special coherence-related measures;
-(ii) Order 1: Texts an order of magnitude larger, requiring a single summary map and Tractatus tree;
-(iii) Order 2: Texts whose rewrites and coherent analyses are achieved indirectly by synthesizing Order 1 maps and trees; and
-(iv) Order N+1: Complex texts processed recursively by synthesizing Order N maps and trees.
+# Order-Hierarchy Processing Schema
 
-When massive inputs are introduced—such as an eight-hundred-page document—document-level operations require significant processing time. Plain text (TXT) files process far more easily than PDFs owing to size constraints, a distinction communicated directly to the user. Upon ingesting such large documents, the application notifies the user that document-level processing takes time, suggesting that they focus on a smaller swath of text unless they wish to wait. To prevent system crashes or user frustration, the application provides an easily accessible abort mechanism. During processing, it provides frequent progress updates and deposits output in small chunks so the user can verify progress.
+The processing architecture must implement a hierarchical strategy indexed by document magnitude. When texts fall below the coherence threshold (Order 0), neither Tractatus Trees nor special coherence measures prove necessary. When magnitude increases by one order (Order 1), exactly one Tractatus Tree and one structural map suffice. For Order 2 documents, coherence emerges indirectly: not through direct traversal but through generating and synthesizing Order 1 maps and trees. Order 3 requires synthesizing Order 2 representations. Generally: Order N+1 processing requires synthesizing Order N maps and trees.
 
-Crucially, local operations are designed to combine into book-level outputs. If an eight-hundred-page book is processed in fifty-page sets, the application synthesizes these localized analyses into comprehensive whole-document summaries, tests, outlines, podcasts, and rewrites. This global coherence governs document-level query capabilities. For example, when a lawyer uploads an eight-hundred-page SEC document and queries the application, the system&#39;s responses reflect a structural understanding of the text as a coherent whole rather than thirty-nine independent documents.
+# Large Document Processing: Practical Considerations
 
-Finally, this coherence functionality powers a new Query function capable of executing intelligent searches across the text, such as locating all instances of Clayton Act violations. Users can subsequently perform operations upon query outputs—for example, listing violations from most egregious to least egregious, or identifying their specific legal significance in Delaware. The entire working window where these operations occur can be resized, minimized, moved, and rendered unobtrusive at will.</pre></section>
+When the user uploads extensive documents (for example, 800 pages), document-level operations will require substantial processing time. The application should therefore: (1) inform users immediately after upload that such operations are time-intensive and suggest focusing on smaller sections unless extended processing time is acceptable; (2) provide users the ability to abort ongoing processes easily; (3) deliver periodic and frequent progress reports during extended operations; (4) deposit output in relatively small increments so users can verify the application remains productive.
 
-      <section><h2>Prompt 3: FAIL: imported natural-law content absent from Box A (537 words)</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, using &quot;Supposing arguendo&quot; and &quot;for argument&#39;s sake&quot; to introduce the slavery example.</p>
-      <pre>Architectural Restructuring of Document-Level Coherence and Recursive Synthesis
+Most importantly, the application should enable synthesis of local operations into document-level operations. If the user uploads an 800-page text and processes it in 50-page segments (generating summaries, outlines, tests, podcasts, or rewrites for each segment), the application should synthesize these local outputs into a comprehensive document-level product.
 
-The proposed system overhaul concerns the formal architecture required to ingest, interpret, and generate large, contextually unified textual documents. The operational framework presupposes two core methodologies established in foundational system documentation: preliminary structural outlining and recursive Tractatus-tree generation. Upon the upload of an arbitrary text, the primary processing pipeline decomposes the document into discrete, bounded segments small enough to be accommodated by baseline operational functions. Each isolated segment undergoes standard analytical transformations—including podcast generation, outline synthesis, test construction, and literature review—while additionally generating a localized Tractatus tree specific to that chunk.
+# Interface and Query Functionality
 
-When an operational selection encompasses multiple contiguous segments—for instance, a text span comprising ten chunks—the application executes a specialized coherence routine. First, it implements the primary coherence protocol to construct a structurally unified summary map. Second, it generates an integrated Tractatus tree across the selected domain by synthesizing constituent chunk trees, eliminating redundant or non-essential detail while preserving essential thematic claims. Standard functional outputs (such as podcasts, outlines, or tests derived from a ninety-page selection) are reconfigured to operate directly upon this global structural map, ensuring that the target text is analyzed as a singular, continuous manifold rather than a set of disjointed passages.
+The processing window must be resizable, minimizable, movable, and unobtrusive. Additionally, using this coherence functionality, the application must implement an intelligent &quot;Query&quot; function capable of following commands such as &quot;find all examples in this document of violations of the Clayton Act.&quot; Users must then be able to operate on query outputs: if the application identifies 74 violations, the user can request ranking from most to least egregious or identification of significance within particular jurisdictions.</pre></details>
+<details><summary>Draft 3: 735 words · anthropic · Length check failed: 735 words, expected approximately 600 (480–720 accepted).</summary><pre># Coherence Functionality: A Prerequisite
 
-Systemic operations are formally categorized according to recursive orders of document magnitude:
+The fundamental challenge of processing large documents presupposes that the application has absorbed and integrated the methodologies articulated in the uploaded coherence documents. These mechanisms depend on two distinct but interrelated technologies: (a) preliminary outlining procedures that establish structural maps of extended texts, and (b) the Tractatus Tree architecture that enables hierarchical representation of logical content. Given that these methodologies constitute the foundational infrastructure, it follows that all subsequent functionality must be constructed upon their successful implementation.
 
-(i) Order 0 texts (very short passages) require neither Tractatus trees nor macro-coherence mapping.
+# Text Segmentation ≠ Text Atomization
 
-(ii) Order 1 texts (an order of magnitude larger) necessitate a single Tractatus tree and a singular structural outline map.
+When the user uploads a text of arbitrary length, the application must perform an initial decomposition operation that partitions the document into segments sufficiently small that existing processing capabilities can operate without degradation. This segmentation procedure, however, must preserve metadata regarding sequential relationships and hierarchical structure such that subsequent recomposition operations remain possible.
 
-(iii) Order 2 texts achieve higher-order rewrites and structural coherence indirectly through the recursive synthesis of Order 1 maps and trees.
+# Local Operations Defined
 
-(iv) Order $N+1$ texts achieve coherence through the systematic synthesis of Order $N$ structural maps and trees.
+For any given segment produced through decomposition, the application must preserve full functional capability: (1) podcast generation, (2) outline synthesis, (3) test creation, and (4) other transformative functions. Additionally, a novel function must be introduced—the capacity to generate a Tractatus Tree representation that captures the logical-hierarchical structure of that segment&#39;s propositional content.
 
-Executing document-level operations on voluminous texts—such as an eight-hundred-page volume—introduces significant latency. To manage performance, the system incorporates five interface protocols: issuing warnings regarding processing durations while recommending narrower document focus; providing a user-accessible abort mechanism; displaying frequent status updates; depositing streaming output in small, verifiable increments; and enabling bottom-up aggregation whereby localized operations (e.g., summaries of fifty-page increments) are synthesized into global, book-level summaries, tests, outlines, podcasts, and rewrites. Unformatted text files (.txt) are preferred over formatted documents (.pdf) due to computational efficiency.
+# Multi-Segment Processing: Special Procedures Required
 
-Document-level interrogations—such as a legal practitioner querying an eight-hundred-page SEC filing—must synthesize the holistic context of the document rather than treating its contents as independent sub-documents. Additionally, the interface window managing these execution routines must be resizable, minimizable, movable, and unobtrusive.
+Supposing that the user selects a region spanning multiple segments, the application cannot simply apply segment-level operations independently and concatenate results. Such an approach would reproduce precisely the incoherence problem these architectural modifications aim to resolve. Instead, the application must invoke the special procedures described in the coherence methodology documents: it must first generate a coherent summary that functions as a navigational map of the selected region.
 
-Finally, the application introduces a specialized &quot;Query&quot; function for intelligent conceptual extraction across the entire text continuum. Supposing arguendo that a user executes a semantic search over a vast legal or historical document to identify instances of anti-slavery law violations or unfree labor practices, the system parses the document as an integrated structural whole. For argument&#39;s sake, if the system identifies seventy-four distinct statutory infractions within the text—such as violations of the Clayton Act or prohibitions against slavery—the user can execute subsequent higher-order operations on this generated set. Specifically, the user may instruct the application to rank-order these seventy-four identified items from most to least egregious, or to evaluate the precise legal significance of each individual item under the jurisprudence of the State of Delaware.</pre></section>
+# Tractatus Tree Synthesis Protocol
 
-      <section><h2>Prompt 4: FAIL: length 771 words</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, adding an objection in quotation marks introduced by &quot;it will be objected&quot; and then rebutting it.</p>
-      <pre>Natural Law and the Inductive Problem
+The application must additionally generate a Tractatus Tree representation for the entire selected region, a process that may require generating multiple segment-level trees and subsequently synthesizing them through operations that (a) omit details irrelevant to higher-order logical structure, and (b) preserve key propositional nodes essential to argument continuity. This synthesis procedure will very likely presuppose that the coherence-mapping function has already executed.
 
-Given only a causal connection of some kind between co-occupants of a single manifold, how does it follow that causal connections between past (known) events will resemble those governing future (unknown) events? How does it follow that our inferences to the best explanation proceed according to any principled methodology?
+# Function Reconfiguration: Achieving Document-Level Coherence
 
-We have established that the integrity of the space-time manifold depends on the integrity of the causal connections hosted by that manifold. A universe of rogue events, none causative of the others, isn&#39;t a universe at all. To the extent that events are causally independent of each other, there is no sense in which they co-occupy some single manifold.
+All existing operations—podcast generation, test creation, outline synthesis, literature review production, and rewrites (particularly important)—must be reconfigured to align with this hierarchical processing architecture. Presently, if the user requests podcast generation for a ninety-page selection, the output lacks coherence because the generator must treat those pages as multiple independent passages. With the modified functionality operational, however, the generator will possess access to the coherence map and synthesized Tractatus Tree, thereby enabling it to treat the selection as the unified semantic entity it actually constitutes. Most crucially, when a lawyer uploads an 800-page document and queries the application, the answers must reflect understanding of the document as a whole, not as multiple independent fragments.
 
-Hume&#39;s attempt to delegitimize induction presupposes that the laws of physics can simply be suspended. That presupposition in its turn assumes that the laws of physics are separable from the space-time manifold; it assumes, in other words, that they are not constitutive of that manifold.
+# Order-Hierarchy Processing Schema
 
-That assumption is erroneous. Suppose that one or more laws of physics were changed. First, it wouldn&#39;t be possible to change just one of these laws. Given a universe in which the speed of light were framework-relative, or in which the Inverse Cube Law were operative, or in which any single one of the laws operative in our universe were replaced by some other law, a number of other laws that are operative in our universe would also have to go.
+The processing architecture must implement a hierarchical strategy indexed by document magnitude. When texts fall below the coherence threshold (Order 0), neither Tractatus Trees nor special coherence measures prove necessary. When magnitude increases by one order (Order 1), exactly one Tractatus Tree and one structural map suffice. For Order 2 documents, coherence emerges through generating and synthesizing Order 1 maps and trees. Order 3 requires synthesizing Order 2 representations. Generally: Order N+1 processing requires synthesizing Order N maps and trees.
 
-Laws are not independent of one another. In actuality, gas-pressure is directly proportional to temperature. If it were inversely proportional to temperature, every one of the laws of mechanics would have to be jettisoned or heavily modified.
+# Large Document Processing: Practical Considerations
 
-&quot;It will be objected that this interdependence merely shows that certain sets of laws cohere with one another, not that any particular set must obtain. The skeptic may grant that laws form coherent packages while denying that this tells us anything about which package governs future events.&quot;
+When the user uploads extensive documents, document-level operations will require substantial processing time. The application should therefore: (1) inform users immediately after upload that such operations are time-intensive and suggest focusing on smaller sections unless extended processing time is acceptable; (2) provide users the ability to abort ongoing processes easily; (3) deliver periodic and frequent progress reports during extended operations; (4) deposit output in relatively small increments so users can verify the application remains productive.
 
-But this objection misunderstands the relationship between laws and the manifold they constitute. If at time t* the laws of physics changed, this would have two consequences. First, relative position, velocity, mass, temperature, and every other physics-relevant parameter are ascertained by means of procedures that presuppose that certain laws are operative. Second, the values of those parameters—not our ability to determine those values, but those values themselves—are defined in terms of the laws of physics that are operative.
+Most importantly, the application should enable synthesis of local operations into document-level operations. If the user processes an 800-page text in 50-page segments, the application should synthesize these local outputs into a comprehensive document-level product.
 
-Thus, if at time t* the laws of physics changed, then the positions, masses, velocities, temperatures of many, if not all, of the occupants of the post-t* universe would be discontinuous from their pre-t* positions, masses, and so forth. For already stated reasons, the state of the post-t* universe would not be a causal consequence of the pre-t* universe. This means that, if the laws of physics changed at time t*, the result would be the obliteration of the space-time manifold—the universe—in which those laws were operative.
+# Interface and Query Functionality
 
-Different laws, different spatiotemporal manifold. Different spatiotemporal manifold, different universe.
+The processing window must be resizable, minimizable, movable, and unobtrusive. Additionally, using this coherence functionality, the application must implement an intelligent &quot;Query&quot; function capable of following commands such as &quot;find all examples in this document of violations of the Clayton Act.&quot; Users must then be able to operate on query outputs: if the application identifies 74 violations, the user can request ranking from most to least egregious or identification of significance within particular jurisdictions.</pre></details>
+       </section>
 
-The space-time manifold isn&#39;t an empty vessel that can house different laws; it is defined by the laws that govern its occupants. Objects are constituted by the forces that govern them; those forces are instances of physical laws. Different laws, different forces; different forces, different objects.
+      <section><h2>Prompt 2: PASS: anthropic returned 671 words; automated checks passed</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, opening with a formal definition of natural law and then a one-line definition of its denial.</p>
+       <p><strong>Applied style instruction:</strong> Rewrite in the style of the sample, opening with a formal definition of the core document-processing concept from the source text and then a one-line definition of its negation or non-compliance state.</p>
+       <h3>Final output (671 words)</h3><pre># Formal Specifications for Document Processing Architecture
 
-What is true of objects is true of all cases of persistence and, therefore, of all instances of causation. Owing to the nomic changes occurring at t*, there would be no sense in which anything happening before t* could be the cause of anything happening after t*. No event-series that began before t* would remain in existence after t*. The laws governing that event series would be gone. So would the laws governing its constituents. It isn&#39;t that the series in question would be severed; it&#39;s that it would no longer even make sense to suppose that it continued to exist after t*.
+**Definition of Coherent Document Processing**: A computational methodology wherein textual artifacts exceeding the operational capacity of atomic processing functions are subjected to hierarchical decomposition, such that each resultant segment (hereinafter &quot;chunk&quot;) remains susceptible to standard functional operations, while simultaneously preserving the structural and semantic integrity of the whole through supplementary coordinating mechanisms (namely, preliminary outlining procedures and Tractatus Tree technology as described in the reference implementations).
 
-Hence the justification for the Uniformity Principle. According to this principle, the laws of physics don&#39;t change. Hume says that any assurance we have as to its veridicality is induction-based and, therefore, that we have no such assurance. But Hume is not right about that. We know that the Uniformity Principle is true because, if it weren&#39;t, nothing would persist—literally—including the very entities that make inductive inferences. The Uniformity Principle is a precondition for the making of inductive inferences; so as long as there are makers of inductive inferences, it holds and inductive inferences either go through or, if they fail, they fail for reasons of incompetence, and not because of anything having to do with the legitimacy of inductive inference per se.</pre></section>
+**Definition of Incoherent Document Processing**: The treatment of a unified textual corpus as though it were a collection of independent, semantically unrelated fragments, thereby generating outputs (summaries, conversions, analyses) that fail to reflect document-level coherence.
 
-      <section><h2>Prompt 5: FAIL: length 1094 words</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, using the construction &quot;It isn&#39;t that X. It&#39;s that Y.&quot; at least twice.</p>
-      <pre>**Rewritten Text**
+Given that the fundamental constraint confronting current implementation involves the incapacity to process extensive documents as unified wholes, it follows that the remedial architecture must satisfy the following conditions:
 
-The present overhaul addresses a fundamental architectural problem. It isn&#39;t that current functionality fails on small text segments. It&#39;s that coherent processing of large documents requires a fundamentally different approach—one that treats extensive texts as unified wholes rather than as collections of independent fragments.
+1. Upon receipt of any uploaded text, the system shall perform automatic segmentation into chunks of processable magnitude, such that existing functionality (podcast generation, outline production, testing modules) operates successfully on each discrete segment.
 
-**Phase One: Foundational Integration**
+2. For each chunk thus isolated, all standard functions shall remain available without degradation of performance.
 
-The system must first absorb the uploaded documentation describing coherent document processing across multiple applications. Two mechanisms prove essential: preliminary outlining procedures and Tractatus Tree technology. These frameworks enable the generation and comprehension of large-scale textual structures by creating hierarchical maps that preserve logical and thematic continuity across extensive passages.
+3. A novel function—&quot;Generate Tractatus Tree&quot;—shall be implemented at the chunk level, producing for each segment a hierarchical logical structure.
 
-**Phase Two: Segmentation Protocol**
+4. When user operations span multiple chunks (supposing, for argument&#39;s sake, a selection encompassing ten chunks), the system must invoke specialized coherence-preservation protocols rather than treating segments independently.
 
-Upon receiving any uploaded text, the application must partition it into segments small enough for current processing capabilities to handle effectively. This segmentation isn&#39;t arbitrary. Rather, it must respect natural divisions in the text—sections, chapters, thematic units—while maintaining tractability for existing analytical functions.
+5. Specifically, the system shall generate a coherent summary functioning as a navigational map, employing precisely those procedures specified in the uploaded coherence documentation.
 
-**Phase Three: Chunk-Level Operations**
+6. Additionally, a comprehensive Tractatus Tree spanning the entire selected region shall be generated, which process may require synthesizing multiple chunk-level trees through selective omission of irrelevant detail and retention of essential propositions, and which synthesis likely presupposes prior execution of coherence functions.
 
-The application must perform all standard functions on individual chunks: podcast generation, outline creation, summary production, and so forth. Each discrete segment receives full analytical treatment as though it were a self-contained document. This preserves the integrity of local operations while establishing the foundation for global synthesis.
+7. All existing functions (podcast generation, testing, outlining, literature review composition) shall be reconfigured to align with this coherence architecture; consequently, whereas current implementation would produce incoherent podcasts from ninety-page selections (treating them as independent fragments), the revised system shall process such selections as unified entities.
 
-**Phase Four: Tractatus Tree Generation**
+Bearing in mind scalability requirements, the system must implement order-based processing hierarchies:
 
-A new function emerges: the generation of Tractatus Trees for individual chunks. Each segment receives its own hierarchical representation, mapping its internal logical structure. These trees capture propositional relationships, argumentative progressions, and conceptual dependencies within their respective text portions. The Tractatus Tree constitutes a formal representation of the chunk&#39;s intellectual architecture.
+(a) Order 0 texts require neither Tractatus Trees nor special coherence measures;&#32;&#32;
+(b) Order 1 texts (one magnitude larger) necessitate one Tractatus Tree and one summary-map (the outline artifact enabling systemic apprehension of large textual expanses as wholes rather than aggregations);&#32;&#32;
+(c) Order 2 texts achieve coherence indirectly through generation and subsequent synthesis of Order 1 maps and trees;&#32;&#32;
+(d) Order N+1 texts through synthesis of Order N artifacts.
 
-**Phase Five: Multi-Chunk Processing**
+What follows is that processing extensive documents (e.g., eight hundred pages) will require substantial computational time. Therefore:
 
-When operations span multiple chunks—for instance, when a user selects a ten-chunk sequence—specialized procedures become necessary. It isn&#39;t that chunk-level processing becomes irrelevant. It&#39;s that synthesis operations must coordinate multiple local analyses into coherent global representations.
+1. Upon upload of large documents, the system shall advise users that document-level operations demand extended processing and recommend focusing on smaller textual portions unless extended wait times are acceptable.
 
-**Phase Six: Coherent Summary Generation**
+2. Users attempting document-level operations on large corpora shall be provided abort functionality to prevent system crashes or user attrition.
 
-The system must employ the procedures described in the uploaded coherence documentation to generate unified summaries of multi-chunk selections. These summaries function as navigational maps, enabling the application to treat extended passages as integrated wholes. The coherence protocols ensure that thematic continuity, argumentative structure, and conceptual relationships survive the summary process. The application must implement whatever procedures those documents specify for maintaining semantic integrity across compression operations.
+3. During extended operations, the system shall deliver frequent progress reports and deposit output in incremental chunks, permitting user verification of processing accuracy.
 
-**Phase Seven: Hierarchical Tree Synthesis**
+4. Most critically, the system shall enable synthesis of local operations into document-level outputs; thus, if a user processes an eight-hundred-page text in fifty-page increments (generating summaries for each segment), the system shall subsequently generate a comprehensive summary of the entire document, with analogous functionality for tests, outlines, podcasts, and rewrites (this rewrite capability being essential).
 
-The application must also generate Tractatus Trees for entire multi-chunk selections. This likely requires generating multiple local trees and then synthesizing them—eliminating irrelevant detail while preserving essential propositions and structural relationships. The synthesis process probably presupposes that coherence functions have already executed, providing the semantic framework within which local trees can be meaningfully integrated.
+5. Users shall be advised that text format is processed more efficiently than PDF format.
 
-**Phase Eight: Function Reconfiguration**
+The user&#39;s capacity to pose document-level queries constitutes the architecture&#39;s primary purpose: when a legal professional uploads an eight-hundred-page regulatory document and submits queries, responses must reflect comprehension of the unified document rather than treating it as thirty-nine independent fragments.
 
-All existing functions—podcast generation, testing, outlining, literature review production—must be reconfigured to align with this new hierarchical processing architecture. Currently, generating a podcast from a ninety-page selection produces incoherent results because the podcast generator treats those pages as multiple independent passages. With the new functionality operational, the system will treat such selections as the unified entities they actually are. Each function must be capable of operating at multiple scales: locally on individual chunks, and globally on synthesized representations of extended passages.
+Additional specifications: the processing interface must permit resizing, minimization, repositioning, and unobtrusive display. Furthermore, a &quot;Query&quot; function shall enable intelligent document search (e.g., &quot;locate all instances of Clayton Act violations&quot;), with results susceptible to further operations (ranking by severity, jurisdictional analysis).</pre>
+       <details><summary>Draft 1: 671 words · anthropic · Checks passed</summary><pre># Formal Specifications for Document Processing Architecture
 
-**Phase Nine: Order-Based Processing Protocols**
+**Definition of Coherent Document Processing**: A computational methodology wherein textual artifacts exceeding the operational capacity of atomic processing functions are subjected to hierarchical decomposition, such that each resultant segment (hereinafter &quot;chunk&quot;) remains susceptible to standard functional operations, while simultaneously preserving the structural and semantic integrity of the whole through supplementary coordinating mechanisms (namely, preliminary outlining procedures and Tractatus Tree technology as described in the reference implementations).
 
-Processing requirements scale with text size according to a hierarchical order system. Order Zero texts are sufficiently brief that neither Tractatus Trees nor special coherence measures are necessary. Order One texts require one Tractatus Tree and one coherence map—the outline that provides the application with a navigational representation of large text sections, enabling treatment of those sections as wholes rather than as aggregated fragments.
+**Definition of Incoherent Document Processing**: The treatment of a unified textual corpus as though it were a collection of independent, semantically unrelated fragments, thereby generating outputs (summaries, conversions, analyses) that fail to reflect document-level coherence.
 
-Order Two texts achieve coherence and enable rewrites indirectly: not through direct textual traversal but through the generation and subsequent synthesis of Tractatus Trees and summary maps. Order Three processing synthesizes Order Two maps and trees. Generally, Order N+1 processing synthesizes Order N representations. This recursive architecture enables the system to handle documents of arbitrary size through iterated abstraction.
+Given that the fundamental constraint confronting current implementation involves the incapacity to process extensive documents as unified wholes, it follows that the remedial architecture must satisfy the following conditions:
 
-**Phase Ten: Large Document Management**
+1. Upon receipt of any uploaded text, the system shall perform automatic segmentation into chunks of processable magnitude, such that existing functionality (podcast generation, outline production, testing modules) operates successfully on each discrete segment.
 
-When users upload extensive documents—eight hundred pages, for instance—document-level operations require substantial processing time. Even with fully functional hierarchical processing, performing comprehensive operations on large documents demands significant computational resources.
+2. For each chunk thus isolated, all standard functions shall remain available without degradation of performance.
 
-Therefore, multiple safeguards become necessary. First, upon receiving such documents, the application should inform users that document-level operations require extended processing time and suggest focusing on smaller text portions unless users are prepared for hour-long processing sessions.
+3. A novel function—&quot;Generate Tractatus Tree&quot;—shall be implemented at the chunk level, producing for each segment a hierarchical logical structure.
 
-Second, users attempting document-level operations on large texts must possess the ability to abort processes easily, given the likelihood of system strain or user impatience.
+4. When user operations span multiple chunks (supposing, for argument&#39;s sake, a selection encompassing ten chunks), the system must invoke specialized coherence-preservation protocols rather than treating segments independently.
 
-Third, during large-document processing, the system should provide periodic, frequent progress reports so users can monitor advancement.
+5. Specifically, the system shall generate a coherent summary functioning as a navigational map, employing precisely those procedures specified in the uploaded coherence documentation.
 
-Fourth, output should be deposited in relatively small increments, enabling users to assess whether processing proceeds correctly.
+6. Additionally, a comprehensive Tractatus Tree spanning the entire selected region shall be generated, which process may require synthesizing multiple chunk-level trees through selective omission of irrelevant detail and retention of essential propositions, and which synthesis likely presupposes prior execution of coherence functions.
 
-Fifth, and most critically, the application must be capable of combining local operations into book-level syntheses. Suppose a user uploads an eight-hundred-page volume and processes it in fifty-page increments, generating summaries for each segment. The application should be able to synthesize these local summaries into a comprehensive summary of the entire volume. The same principle applies mutatis mutandis to tests, outlines, podcasts, and rewrites. The rewrite function constitutes a particularly important component of the application and must fully embody this synthetic capability.
+7. All existing functions (podcast generation, testing, outlining, literature review composition) shall be reconfigured to align with this coherence architecture; consequently, whereas current implementation would produce incoherent podcasts from ninety-page selections (treating them as independent fragments), the revised system shall process such selections as unified entities.
 
-Additionally, the application likely processes text files more efficiently than PDFs due to size considerations, and users should receive this information.
+Bearing in mind scalability requirements, the system must implement order-based processing hierarchies:
 
-Most importantly, the user&#39;s ability to pose document-level queries about entire documents must embody these coherence functionalities. This represents nearly the entire purpose of the overhaul. Consider a lawyer uploading an eight-hundred-page SEC document and querying the application about its contents. The answers provided must reflect understanding of the document as an integrated whole. It isn&#39;t that the document happens to be long. It&#39;s that treating it as thirty-nine independent documents would destroy the very continuities—argumentative, evidentiary, regulatory—that give the document its meaning and that the lawyer needs to understand.
+(a) Order 0 texts require neither Tractatus Trees nor special coherence measures;&#32;&#32;
+(b) Order 1 texts (one magnitude larger) necessitate one Tractatus Tree and one summary-map (the outline artifact enabling systemic apprehension of large textual expanses as wholes rather than aggregations);&#32;&#32;
+(c) Order 2 texts achieve coherence indirectly through generation and subsequent synthesis of Order 1 maps and trees;&#32;&#32;
+(d) Order N+1 texts through synthesis of Order N artifacts.
 
-**Phase Eleven: Interface Optimization**
+What follows is that processing extensive documents (e.g., eight hundred pages) will require substantial computational time. Therefore:
 
-The processing window must support resizing, minimization, repositioning, and general unobtrusiveness, enabling users to continue other work during extended operations.
+1. Upon upload of large documents, the system shall advise users that document-level operations demand extended processing and recommend focusing on smaller textual portions unless extended wait times are acceptable.
 
-**Phase Twelve: Intelligent Search Functionality**
+2. Users attempting document-level operations on large corpora shall be provided abort functionality to prevent system crashes or user attrition.
 
-Using the coherence functionality, the system must create an intelligent document search function capable of executing semantic queries such as &quot;Find all examples in this document of violations of the Clayton Act.&quot; This constitutes a new function: the Query function.
+3. During extended operations, the system shall deliver frequent progress reports and deposit output in incremental chunks, permitting user verification of processing accuracy.
 
-Moreover, users must possess the ability to operate on query outputs. Suppose the application identifies seventy-four Clayton Act violations. The user should be able to command: &quot;List these from most egregious to least egregious,&quot; or &quot;For each violation, identify its significance under Delaware law.&quot; The Query function thus enables not merely location but also comparative analysis and jurisdictional assessment of distributed textual phenomena.</pre></section>
+4. Most critically, the system shall enable synthesis of local operations into document-level outputs; thus, if a user processes an eight-hundred-page text in fifty-page increments (generating summaries for each segment), the system shall subsequently generate a comprehensive summary of the entire document, with analogous functionality for tests, outlines, podcasts, and rewrites (this rewrite capability being essential).
 
-      <section><h2>Prompt 6: PASS: gemini returned 572 words retaining Box A subject</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, stating the core claims as numbered theses (i), (ii), (iii).</p>
-      <pre>The architecture of document-processing software requires a comprehensive overhaul to facilitate the comprehension and synthesis of extensive text manifolds as unified, structural wholes. To handle arbitrary textual inputs effectively, the application must first decompose uploaded texts into bounded, manageable operational chunks compatible with localized functional modules. At this baseline scale—designated as Order 0 when texts are very short—the system executes standard routines, including podcast generation, outline creation, test generation, and literature reviews, without requiring high-level structural mediation. However, for each discrete chunk, the application generates a specialized structural summary termed a &quot;Tractatus Tree.&quot; When user selections encompass multiple chunks—such as a ten-chunk passage—simple independent execution fails to maintain conceptual integrity, reducing cohesive texts to isolated, uncoordinated fragments.
+5. Users shall be advised that text format is processed more efficiently than PDF format.
 
-To eliminate such structural breakdown across multi-chunk passages, the architecture implements a recursive, order-hierarchical framework utilizing synthesized coherence maps and Tractatus trees. For an Order 1 document selection, the app constructs a single macro-level summary map and a unified Tractatus tree by synthesizing key points and pruning redundant details. As document size increases by orders of magnitude, structural coherence is preserved through indirect recursive integration:
+The user&#39;s capacity to pose document-level queries constitutes the architecture&#39;s primary purpose: when a legal professional uploads an eight-hundred-page regulatory document and submits queries, responses must reflect comprehension of the unified document rather than treating it as thirty-nine independent fragments.
 
-(i) Order 2 representations are formed not by traversing raw text directly, but by synthesizing constituent Order 1 summary maps and Tractatus trees;
+Additional specifications: the processing interface must permit resizing, minimization, repositioning, and unobtrusive display. Furthermore, a &quot;Query&quot; function shall enable intelligent document search (e.g., &quot;locate all instances of Clayton Act violations&quot;), with results susceptible to further operations (ranking by severity, jurisdictional analysis).</pre></details>
+       </section>
 
-(ii) Order N+1 representations are generated through the systematic macro-synthesis of Order N structural trees and maps, establishing a continuous hierarchy; and
+      <section><h2>Prompt 3: PASS: gemini returned 610 words; automated checks passed</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, using &quot;Supposing arguendo&quot; and &quot;for argument&#39;s sake&quot; to introduce the slavery example.</p>
+       <p><strong>Applied style instruction:</strong> Rewrite in the style of the sample, using &quot;Supposing arguendo&quot; and &quot;for argument&#39;s sake&quot; to introduce the document-processing example from the source text.</p>
+       <h3>Final output (610 words)</h3><pre>### I. Theoretical Foundations of Architectural Overhaul
 
-(iii) Document-wide functional operations—including podcasts, outlines, rewrites, and analytical queries—derive their legitimacy from this unified hierarchical mapping, ensuring that long texts are treated as holistic entities rather than disconnected sequences.
+To achieve genuine narrative integrity within automated document processing, an application must undergo a structural overhaul derived from preliminary outlining protocols and *Tractatus tree* methodologies. Let us define *document coherence* as the operational capacity of a system to apprehend and synthesize extensive textual inputs as unified semantic wholes rather than fragmented segments. Given that arbitrary document length overwhelms simple processing boundaries, it follows that any uploaded text must initially be decomposed into localized chunks sufficiently concise for standard application functions to process.
 
-All standard features must be realigned to operate upon this multi-layered functional map. When a user uploads a massive document—such as an 800-page book or SEC filing—executing document-level operations introduces significant processing latency. Consequently, the software must incorporate essential operational safeguards. Upon upload, the app must inform the user that global operations require substantial processing time and suggest focusing on smaller selections. Furthermore, if a user initiates a full-document process, the interface must provide an accessible abort control to prevent system lockups. During execution, the app must issue frequent, periodic progress reports and stream output in small, digestible chunks, enabling users to verify that generation remains on track.
+This structural framework scales hierarchically across explicit orders of complexity:
+(a) *Order 0* designates minimal text requiring neither structural mapping nor special coherence protocols;
+(b) *Order 1* denotes an order of magnitude larger text, necessitating a singular *Tractatus tree* and outline summary map;
+(c) *Order 2* achieves structural synthesis indirectly through recursive crawling, generating initial trees and maps before synthesizing them into integrated representations;
+(d) *Order 3* operates through the synthesis of *Order 2* structures; and
+(e) *Order N+1* operates generally through the systematic synthesis of *Order N* maps and trees.
 
-Crucially, the system must synthesize lower-level, localized operations into macro-level document artifacts. If a user analyzes an 800-page book in 50-page increments, generating localized summaries or tests for each block, the application must possess the ability to compile those intermediate outputs into an integrated, book-level summary, test, outline, or rewrite. Because plain text (.txt) files involve substantially less operational overhead than PDF files, the system should explicitly inform users of this efficiency advantage. To maintain workspace functionality during extended processing tasks, the active execution window must be fully adjustable, allowing users to resize, minimize, relocate, or render it unobtrusive.
+### II. Multi-Layered Synthesis and Functional Alignment
 
-The foundational purpose of these coherence mechanisms is to grant the application true whole-document intelligence. When a user—such as a lawyer reviewing a complex 800-page SEC filing—queries the app, the responses provided must reflect a comprehensive understanding of the complete document rather than isolated fragments. Building on this holistic foundation, the software introduces a specialized &quot;Query&quot; function designed for intelligent thematic searching, such as locating every instance of a Clayton Act violation within the text. Users can subsequently execute secondary operations directly on these query outputs, commanding the application to rank identified instances from most to least egregious or evaluate their specific legal implications under Delaware state law.</pre></section>
+When a user selects a sequence of passages spanning multiple chunks—for instance, ten distinct sub-sections—the system initiates a specialized coordination procedure. It utilizes uploaded coherence protocols to construct a global summary map while generating a synthesized *Tractatus tree* designed to excise irrelevant detail while preserving essential claims. Consequently, all core features—including *podcast*, *test me*, *outline*, *literature review*, and *rewrite* functions—must be rigorously reconfigured. If an application attempts to generate a podcast from a ninety-page selection without this integration, it erroneously treats the material as disconnected passages. Bearing in mind the proposed architecture, the reconfigured platform processes such selections as coherent single entities, thereby aggregating local operations into unified, book-level outputs.
 
-      <section><h2>Prompt 7: FAIL: length 923 words</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, replacing every smooth transition with abrupt declarative sentences.</p>
-      <pre>This is going to be a massive overhaul.
+### III. Computational Latency and Execution Protocols
 
-Step 1: Read and absorb the uploaded documents. They describe how the ability to read and generate large coherent documents is achieved. This happens in different apps of mine. It is achieved mainly through the preliminary outlining that is described. It is also achieved through the Tractatus Tree technology that is described.
+If a user uploads an extensive text, such as an eight-hundred-page manuscript, document-level operations inevitably encounter substantial execution latency. To preserve system stability and user engagement, the system must enforce distinct operational safeguards:
+1. *User Notification*: The system must inform the user that global operations require extended duration, suggesting focus on smaller sub-sections unless an hour-long wait is intended;
+2. *Format Optimization*: The application must explicitly communicate that plain text (.txt) files process more readily than portable document formats (.pdf) owing to file size;
+3. *Execution Control*: The user must be provided a simple mechanism to abort long-running tasks to prevent crashes or fatigue;
+4. *Incremental Feedback*: The application must deliver frequent progress reports and deposit generated output in small, verifiable deposits; and
+5. *Interface Adaptability*: The processing window must remain fully resizable, minimizable, moveable, and unobtrusive.
 
-Step 2: Whenever a text is uploaded, the app must break it down into sections. These sections must be small enough that its current functionality works on them.
+### IV. Document-Level Interrogation and Query Synthesis
 
-Step 3: The app must be able to work on any given one of these small chunks. It must be able to perform all its usual functions. Podcast, outline, etc.
+Can an interrogation engine yield valid document-level insights if its underlying architecture treats input as disparate fragments? It cannot. Supposing arguendo that a legal professional uploads an eight-hundred-page Securities and Exchange Commission document to query the platform, the resulting analysis must reflect an understanding of the text in its totality, rather than treating the filing as thirty-nine independent passages.
 
-Step 4: In addition, a new function will be introduced. Generate &quot;Tractatus Tree.&quot; Each little chunk will have this.
+For argument&#39;s sake, consider a specialized *query* function designed for intelligent document traversal. If a user issues the directive to locate all violations of the Clayton Act within the text, the application must extract contextual instances across the entire work. Should this query return seventy-four distinct violations, the user must retain the ability to execute secondary operations upon those results. Consequently, the user may command the system to order these instances from most to least egregious, or evaluate the legal import of each violation within the state of Delaware. What follows is an integrated architecture wherein local operations synthesally construct true document-level comprehension.</pre>
+       <details><summary>Draft 1: 610 words · gemini · Checks passed</summary><pre>### I. Theoretical Foundations of Architectural Overhaul
 
-Step 5: When multiple chunks are involved, the app has to use a special procedure. For example, suppose the user selects a series of pages that take up 10 chunks.
+To achieve genuine narrative integrity within automated document processing, an application must undergo a structural overhaul derived from preliminary outlining protocols and *Tractatus tree* methodologies. Let us define *document coherence* as the operational capacity of a system to apprehend and synthesize extensive textual inputs as unified semantic wholes rather than fragmented segments. Given that arbitrary document length overwhelms simple processing boundaries, it follows that any uploaded text must initially be decomposed into localized chunks sufficiently concise for standard application functions to process.
 
-Step 6: First it uses the procedure described in the uploaded coherence documents to generate a coherent summary of it. It uses this as a map. Basically, it does whatever those documents say it is supposed to do.
+This structural framework scales hierarchically across explicit orders of complexity:
+(a) *Order 0* designates minimal text requiring neither structural mapping nor special coherence protocols;
+(b) *Order 1* denotes an order of magnitude larger text, necessitating a singular *Tractatus tree* and outline summary map;
+(c) *Order 2* achieves structural synthesis indirectly through recursive crawling, generating initial trees and maps before synthesizing them into integrated representations;
+(d) *Order 3* operates through the synthesis of *Order 2* structures; and
+(e) *Order N+1* operates generally through the systematic synthesis of *Order N* maps and trees.
 
-Step 7: It also generates a Tractatus Tree for the whole area selected. This may involve generating multiple Tractatus Trees. Then it &quot;synthesizes&quot; them. This synthesis omits irrelevant detail. It includes key points. It may also very likely presuppose that the other coherence function has been run.
+### II. Multi-Layered Synthesis and Functional Alignment
 
-Step 8: All of the other functions will be reconfigured. Podcast, Test Me, Outline, Literature Review. They will align with this new functionality. To explain: Right now, if the user were to generate a podcast of a 90-page selection, it would not be coherent. This is because the podcast generator would have to treat those 90 pages as multiple short independent passages. But with this new functionality in place, it will be able to treat it as the coherent entity that it is.
+When a user selects a sequence of passages spanning multiple chunks—for instance, ten distinct sub-sections—the system initiates a specialized coordination procedure. It utilizes uploaded coherence protocols to construct a global summary map while generating a synthesized *Tractatus tree* designed to excise irrelevant detail while preserving essential claims. Consequently, all core features—including *podcast*, *test me*, *outline*, *literature review*, and *rewrite* functions—must be rigorously reconfigured. If an application attempts to generate a podcast from a ninety-page selection without this integration, it erroneously treats the material as disconnected passages. Bearing in mind the proposed architecture, the reconfigured platform processes such selections as coherent single entities, thereby aggregating local operations into unified, book-level outputs.
 
-Step 9: When texts are very short (Order 0), there is no need for Tractatus Trees or special coherence-related measures. When they are on the order of magnitude bigger (Order 1), then one Tractatus Tree/one whatever is necessary. The &#39;whatever&#39; refers to the outline. To my dim recollection, my apps make this outline. The ones that have coherence functionality. They make it in order to give themselves a map of large swaths of text. This enables them to treat those swaths as wholes. Rather than as multiple independent pieces. When they are Order 2, that means that coherence and rewrites are achieved indirectly. Not by directly crawling through text. By generating Tractatus Trees/summary-maps. Then synthesizing those. Order 3: by synthesizing Order 2 maps/trees. Order n+1: by synthesizing Order n maps/trees.
+### III. Computational Latency and Execution Protocols
 
-Step 10: When the user uploads a huge document (e.g., 800 pages), it is going to take a very, very long time to do all this stuff. It is hard to perform document-level operations on large documents. Even if all this functionality works. Which it will. Therefore, two things. First, after the user uploads such a document, the app should tell him that document-level operations take time to process. Unless he wants to sit there for an hour, maybe he should focus on some smaller part of the text. Second, if the user tries to run a doc-level operation on a large doc (which many will), he should have the ability to easily abort the process. The app will likely crash. Or he will just get bored. Fourth, when the app is performing a doc-level operation on a large doc, there should be periodic (and rather frequent) progress reports. Moreover, output should be deposited in relatively small chunks. This way the user can tell if the app is on the right track. Fifth, and most importantly, the app should be able to combine local operations into book-level ones. Suppose that the user uploads an 800-page book. He processes it 50 pages at a time. E.g., he generates summaries of each of those sets of 50 pages. The app should be able on that basis to generate a summary of the entire 800-page book. Same mutatis mutandis with tests, outlines, podcasts, rewrites. Very important. The rewrite function is a very important part of the app. Also, the app probably handles TXT more easily than PDF because of size. The user should be told that. Very, very importantly, the user&#39;s ability to ask document-level questions about whole documents must embody these coherence functionalities. This is key. That is almost the whole point. Let us say, some lawyer uploads an 800-page document from the SEC. He queries the app about it. The answers the app gives him must reflect an understanding of the document as a whole. Those answers must not treat that document as 39 independent documents.
+If a user uploads an extensive text, such as an eight-hundred-page manuscript, document-level operations inevitably encounter substantial execution latency. To preserve system stability and user engagement, the system must enforce distinct operational safeguards:
+1. *User Notification*: The system must inform the user that global operations require extended duration, suggesting focus on smaller sub-sections unless an hour-long wait is intended;
+2. *Format Optimization*: The application must explicitly communicate that plain text (.txt) files process more readily than portable document formats (.pdf) owing to file size;
+3. *Execution Control*: The user must be provided a simple mechanism to abort long-running tasks to prevent crashes or fatigue;
+4. *Incremental Feedback*: The application must deliver frequent progress reports and deposit generated output in small, verifiable deposits; and
+5. *Interface Adaptability*: The processing window must remain fully resizable, minimizable, moveable, and unobtrusive.
 
-Step 10 (continued): Make sure that the window where this crap is happening can be resized, minimized, moved, made unobtrusive.
+### IV. Document-Level Interrogation and Query Synthesis
 
-Step 11: Using this coherence functionality, create a function that searches the document intelligently. E.g., that can follow a command such as &quot;Find all examples in this document of violations of Clayton Act&quot; or whatnot. This should be a new function: the &quot;Query&quot; function. Moreover, the user should have the ability to operate on the outputs of such queries. E.g., suppose the app finds 74 violations of Clayton Act. The user can say: OK list these from most egregious to least. Or: For each one, identify its significance in the state of Delaware.</pre></section>
+Can an interrogation engine yield valid document-level insights if its underlying architecture treats input as disparate fragments? It cannot. Supposing arguendo that a legal professional uploads an eight-hundred-page Securities and Exchange Commission document to query the platform, the resulting analysis must reflect an understanding of the text in its totality, rather than treating the filing as thirty-nine independent passages.
 
-      <section><h2>Prompt 8: FAIL: length 1323 words</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, using &quot;ipso facto,&quot; &quot;mutatis mutandis,&quot; and &quot;by parity of reasoning&quot; where they fit naturally.</p>
-      <pre>Restructuring Document-Processing Functionality: An Architectural Blueprint
+For argument&#39;s sake, consider a specialized *query* function designed for intelligent document traversal. If a user issues the directive to locate all violations of the Clayton Act within the text, the application must extract contextual instances across the entire work. Should this query return seventy-four distinct violations, the user must retain the ability to execute secondary operations upon those results. Consequently, the user may command the system to order these instances from most to least egregious, or evaluate the legal import of each violation within the state of Delaware. What follows is an integrated architecture wherein local operations synthesally construct true document-level comprehension.</pre></details>
+       </section>
 
-The contemplated transformation represents, ipso facto, a fundamental reconceptualization of how textual materials are decomposed, analyzed, and synthesized within computational environments. The procedural schema outlined herein addresses the persistent difficulty of maintaining semantic coherence when operations extend beyond the natural processing boundaries of current architectures.
+      <section><h2>Prompt 4: PASS: gemini returned 591 words; automated checks passed</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, adding an objection in quotation marks introduced by &quot;it will be objected&quot; and then rebutting it.</p>
+       <p><strong>Applied style instruction:</strong> Rewrite the document-processing requirements text in the style of the sample, adding an objection in quotation marks introduced by &quot;it will be objected&quot; and then rebutting it using corresponding material from the document-processing source.</p>
+       <h3>Final output (591 words)</h3><pre>### I. Structural Decomposition and Hierarchical Scalability
 
-**Initial Phase: Assimilation of Foundational Methodologies**
+To achieve macro-structural coherence across expansive textual inputs, the application architecture must execute a fundamental systemic overhaul predicated on preliminary outlining protocols and *Tractatus tree* technology. Given that input texts vary fundamentally in volume, any incoming document must be systematically decomposed into discrete textual chunks sufficiently diminutive to be processed by existing internal functions. Consequently, text complexity is categorized according to formal orders of magnitude:
 
-The preliminary requirement consists in thorough absorption of documentation describing techniques whereby applications achieve comprehension and generation of extended, internally consistent documents. These capabilities derive principally from two mechanisms: preliminary outlining procedures (which establish hierarchical frameworks prior to detailed processing) and what shall be termed &quot;Tractatus tree technology&quot;—a systematic decomposition strategy whereby complex argumentative structures are rendered into nested propositional hierarchies, each node representing a discrete claim or evidentiary element.
+(a) *Order 0* designates minimal texts requiring neither *Tractatus tree* structures nor preliminary coherence mapping.&#32;&#32;
+(b) *Order 1* designates texts of an expanded order of magnitude requiring a single *Tractatus tree* alongside a primary conceptual outline map.&#32;&#32;
+(c) *Order 2* designates macro-texts wherein systemic coherence and re-authoring are achieved indirectly through crawling, generating intermediate trees and maps, and synthesizing these components.&#32;&#32;
+(d) *Order N+1* designates structural escalation wherein higher-tier maps and trees are derived strictly via the recursive synthesis of Order *N* structural maps.&#32;&#32;
 
-**Segmentation Protocol**
+What follows is a rigorous operational framework: every isolated chunk retains standard functional capacity—including outline and podcast generation—while introducing local *Tractatus tree* synthesis.
 
-Upon receipt of any textual submission, the application must partition the material into segments sufficiently circumscribed that existing functionalities operate without degradation. This segmentation constitutes not merely a practical expedient but a structural necessity: coherent processing of large-scale documents presupposes that component parts can themselves be coherently processed. The granularity of such segmentation will vary according to the computational characteristics of particular functions, but the governing principle remains constant—each segment must fall within the processing envelope of the application&#39;s foundational capabilities.
+### II. Macro-Textual Coherence and Functional Realignment
 
-**Operations on Individual Segments**
+When an operator selects an extended sequence composed of multiple textual units—for example, a continuous ten-chunk selection—the application must depart from treating passages as isolated fragments. Therefore, to ensure global thematic integrity, all operational modules (including podcast generation, literature reviews, test creation, outlines, and rewriting engine routines) must be systematically reconfigured to align with macro-coherence functions.&#32;
 
-For any given segment thus isolated, the application must retain full operational capacity. All standard functions—podcast generation, outline construction, and similar transformations—must proceed without modification or limitation. The user&#39;s experience when operating upon a single segment should remain indistinguishable from current functionality.
+Supposing *arguendo* that a user selects a ninety-page passage, the system must generate a unified summary-map according to established coherence protocols before generating a synthesized *Tractatus tree* across the target domain. This synthesis filters non-essential details while retaining essential propositions. Furthermore, the architecture introduces a specialized *Query* module capable of intelligent, document-wide conceptual extraction—such as locating all instances of Clayton Act violations within an expansive legal filing. Crucially, the system enables immediate secondary operations upon query outputs, permitting users to order extracted findings by severity or evaluate their jurisdiction-specific significance. The conclusion to draw is that document-level question answering must synthesize structural context, delivering responses derived from an integrated whole rather than fragmented sub-documents.
 
-**Introduction of Tractatus Tree Generation**
+### III. Computational Latency and Execution Safeguards
 
-A novel function shall be introduced: the generation of Tractatus trees for individual segments. Each discrete chunk will possess its own such tree, rendering explicit the propositional architecture implicit within that portion of text. These trees serve dual purposes: they provide compressed representations of argumentative structure, and they furnish the raw material for subsequent synthesis operations when multiple segments must be treated as a unified whole.
+When processing colossal documents, such as eight-hundred-page text corpora, substantial computational duration becomes mathematically inevitable. Bearing in mind these operational constraints, the architecture mandates specific interface safeguards:
 
-**Multi-Segment Processing Procedures**
+1. The application must display explicit warnings regarding processing time, advising users to concentrate on narrower sections unless extended latency is acceptable, while noting that plain text format (.txt) yields superior processing efficiency compared to portable document format (.pdf).&#32;&#32;
+2. The application must provide a prominent user interface control to abort active document-level operations seamlessly.&#32;&#32;
+3. The application must issue frequent progress updates and deposit small, incremental output chunks to demonstrate processing trajectory.&#32;&#32;
+4. The application must possess the capacity to aggregate local operations—such as fifty-page block summaries—into unified book-level outputs across podcasts, tests, outlines, and rewrites.&#32;&#32;
+5. The processing window itself must remain fully resizable, minimizable, and repositionable to minimize user disruption.&#32;&#32;
 
-When operations span multiple segments—when, for instance, a user selects a textual span encompassing ten discrete chunks—specialized procedures become necessary. The application cannot simply iterate through segments independently, for such treatment would sacrifice precisely the coherence that motivates the entire architectural revision. By parity of reasoning, if single-segment operations require Tractatus trees to capture internal structure, multi-segment operations require meta-structures that preserve relationships among segments.
+It will be objected that &quot;executing document-level operations across massive text corpora imposes an unsustainable computational burden that inevitably leads to application failure or user abandonment.&quot; This objection fails to account for the explicit operational controls engineered into the system architecture. Given that large-scale operations are driven by local-to-global aggregation—wherein fifty-page processing blocks are incrementally synthesized into book-level outputs—the application avoids monolithic runtime failure. Consequently, frequent progress reports, immediate output chunk deposits, format optimization warnings, and robust user-initiated abort capabilities neutralize computational risks while preserving holistic analytical coherence.</pre>
+       <details><summary>Draft 1: 591 words · gemini · Checks passed</summary><pre>### I. Structural Decomposition and Hierarchical Scalability
 
-**Coherence Mapping Through Summary Generation**
+To achieve macro-structural coherence across expansive textual inputs, the application architecture must execute a fundamental systemic overhaul predicated on preliminary outlining protocols and *Tractatus tree* technology. Given that input texts vary fundamentally in volume, any incoming document must be systematically decomposed into discrete textual chunks sufficiently diminutive to be processed by existing internal functions. Consequently, text complexity is categorized according to formal orders of magnitude:
 
-The application must initially employ procedures specified in the coherence documentation to generate a unified summary of the multi-segment selection. This summary functions as a navigational map, a compressed representation that enables the application to maintain awareness of thematic continuities, argumentative progressions, and conceptual interdependencies that would otherwise fragment across segment boundaries. The application shall adhere strictly to methodologies specified in the coherence documentation, implementing whatever protocols those materials prescribe.
+(a) *Order 0* designates minimal texts requiring neither *Tractatus tree* structures nor preliminary coherence mapping.&#32;&#32;
+(b) *Order 1* designates texts of an expanded order of magnitude requiring a single *Tractatus tree* alongside a primary conceptual outline map.&#32;&#32;
+(c) *Order 2* designates macro-texts wherein systemic coherence and re-authoring are achieved indirectly through crawling, generating intermediate trees and maps, and synthesizing these components.&#32;&#32;
+(d) *Order N+1* designates structural escalation wherein higher-tier maps and trees are derived strictly via the recursive synthesis of Order *N* structural maps.&#32;&#32;
 
-**Synthesis of Tractatus Trees Across Segments**
+What follows is a rigorous operational framework: every isolated chunk retains standard functional capacity—including outline and podcast generation—while introducing local *Tractatus tree* synthesis.
 
-Simultaneously, the application must generate a Tractatus tree encompassing the entire selected region. This operation will likely require generating individual trees for constituent segments, then synthesizing these into a unified structure through selective omission of granular detail and preservation of essential propositions. The synthesis process may presuppose completion of the coherence-mapping function described previously, insofar as the map provides the contextual understanding necessary to distinguish central claims from peripheral elaborations.
+### II. Macro-Textual Coherence and Functional Realignment
 
-**Reconfiguration of Ancillary Functions**
+When an operator selects an extended sequence composed of multiple textual units—for example, a continuous ten-chunk selection—the application must depart from treating passages as isolated fragments. Therefore, to ensure global thematic integrity, all operational modules (including podcast generation, literature reviews, test creation, outlines, and rewriting engine routines) must be systematically reconfigured to align with macro-coherence functions.&#32;
 
-All supplementary functions—podcast generation, comprehension assessment, outline construction, literature review compilation—must be reconfigured to exploit this new architectural foundation. Under current conditions, generating a podcast from a ninety-page selection produces incoherent results, for the podcast generator necessarily treats those pages as multiple independent passages rather than as constituents of a unified argument. With the coherence infrastructure in place, mutatis mutandis, the application will process such selections as the integrated entities they actually are, producing outputs that reflect document-level understanding rather than mere concatenation of segment-level interpretations.
+Supposing *arguendo* that a user selects a ninety-page passage, the system must generate a unified summary-map according to established coherence protocols before generating a synthesized *Tractatus tree* across the target domain. This synthesis filters non-essential details while retaining essential propositions. Furthermore, the architecture introduces a specialized *Query* module capable of intelligent, document-wide conceptual extraction—such as locating all instances of Clayton Act violations within an expansive legal filing. Crucially, the system enables immediate secondary operations upon query outputs, permitting users to order extracted findings by severity or evaluate their jurisdiction-specific significance. The conclusion to draw is that document-level question answering must synthesize structural context, delivering responses derived from an integrated whole rather than fragmented sub-documents.
 
-**Hierarchical Orders of Processing Complexity**
+### III. Computational Latency and Execution Safeguards
 
-When texts prove sufficiently brief (designated Order 0), neither Tractatus trees nor specialized coherence measures prove necessary; standard processing suffices. When texts increase by an order of magnitude (Order 1), a single Tractatus tree and coherence map become requisite. These instruments—particularly the outline-form map that certain existing applications generate to chart large textual spans—enable treatment of such spans as wholes rather than as assemblages of independent fragments.
+When processing colossal documents, such as eight-hundred-page text corpora, substantial computational duration becomes mathematically inevitable. Bearing in mind these operational constraints, the architecture mandates specific interface safeguards:
 
-At Order 2, coherence and rewriting operations proceed indirectly: not through direct textual traversal but through generation and subsequent synthesis of Tractatus trees and summary maps. Order 3 operations synthesize Order 2 structures; Order n+1 operations synthesize Order n structures. This recursive hierarchy permits, in principle, processing of arbitrarily large documents, though practical constraints emerge at higher orders.
+1. The application must display explicit warnings regarding processing time, advising users to concentrate on narrower sections unless extended latency is acceptable, while noting that plain text format (.txt) yields superior processing efficiency compared to portable document format (.pdf).&#32;&#32;
+2. The application must provide a prominent user interface control to abort active document-level operations seamlessly.&#32;&#32;
+3. The application must issue frequent progress updates and deposit small, incremental output chunks to demonstrate processing trajectory.&#32;&#32;
+4. The application must possess the capacity to aggregate local operations—such as fifty-page block summaries—into unified book-level outputs across podcasts, tests, outlines, and rewrites.&#32;&#32;
+5. The processing window itself must remain fully resizable, minimizable, and repositionable to minimize user disruption.&#32;&#32;
 
-**Temporal Constraints and User Guidance**
+It will be objected that &quot;executing document-level operations across massive text corpora imposes an unsustainable computational burden that inevitably leads to application failure or user abandonment.&quot; This objection fails to account for the explicit operational controls engineered into the system architecture. Given that large-scale operations are driven by local-to-global aggregation—wherein fifty-page processing blocks are incrementally synthesized into book-level outputs—the application avoids monolithic runtime failure. Consequently, frequent progress reports, immediate output chunk deposits, format optimization warnings, and robust user-initiated abort capabilities neutralize computational risks while preserving holistic analytical coherence.</pre></details>
+       </section>
 
-When users upload voluminous documents—say, eight hundred pages—document-level operations consume considerable time, even when all described functionality operates flawlessly. The difficulty of performing such operations on large documents remains substantial. Consequently, two provisions become necessary.
+      <section><h2>Prompt 5: PASS: gemini returned 581 words; automated checks passed</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, using the construction &quot;It isn&#39;t that X. It&#39;s that Y.&quot; at least twice.</p>
+       <p><strong>Applied style instruction:</strong> Rewrite the document-processing requirements text in the style of the sample, using the construction &quot;It isn&#39;t that X. It&#39;s that Y.&quot; at least twice with corresponding concepts from the source text.</p>
+       <h3>Final output (581 words)</h3><pre># Architectural Principles of Coherent Document Processing
 
-First, upon upload of such documents, the application should inform the user that document-level operations require extended processing intervals, and that unless he wishes to remain idle for an hour or more, he might advantageously focus upon some circumscribed portion of the text. Second, when users nonetheless attempt document-level operations on large files (as many inevitably will), they must possess the ability to abort processing readily, given the likelihood of application failure or simple user impatience.
+### I. Segmentation, Coherence Mapping, and Hierarchical Synthesis
 
-**Progress Monitoring and Incremental Output**
+To achieve macro-level text comprehension, an architecture must systematically resolve the tension between local execution constraints and global structural integrity. Given that input texts exceeding operational thresholds present processing impediments, the initial requirement demands systematic structural decomposition.
 
-When the application performs document-level operations on large files, it should provide periodic and relatively frequent progress reports. Moreover, output should be deposited in comparatively small increments, permitting the user to assess whether the application proceeds along appropriate lines. This incremental deposition serves dual purposes: it provides reassurance that processing continues, and it enables early detection of erroneous interpretive directions.
+1. *Segmentation Protocol*: Any uploaded document must be partitioned into operational sub-units (&quot;chunks&quot;) compatible with existing base functions.
+2. *Local Mapping*: Each chunk must support standard operations—including podcast generation and outlining—while generating an individualized *Tractatus tree*.
+3. *Macro-Synthesis Procedures*: When processing contiguous multi-chunk selections (e.g., ten chunks), the system executes coherence procedures—generating an overarching summary map and synthesizing constituent *Tractatus trees* to excise irrelevant detail while retaining key conceptual nodes.
 
-**Composition of Local Operations into Global Results**
+It isn&#39;t that large documents lack internal logical structure. It&#39;s that standard processing mechanisms fail to apprehend multi-page passages as integrated wholes, treating coherent text as fragmented independent passages. Consequently, legacy utilities (including podcast, test, outline, and literature review functions) must be reconfigured to align with this structural synthesis.
 
-Most crucially, the application must possess the capability to synthesize local operations into document-level outputs. Suppose a user uploads an eight-hundred-page volume and processes it in fifty-page increments, generating summaries of each such section. The application should then be able to generate a summary of the entire eight-hundred-page work on that basis. The same principle applies, mutatis mutandis, to tests, outlines, podcasts, and rewrites—the last being particularly important, as rewriting functionality constitutes a central feature of the application. Additionally, the application likely handles TXT formats more readily than PDF owing to file-size considerations; users should be so informed.
+The recursive scaling across orders of magnitude is formalized as follows:
 
-**Document-Level Query Functionality**
+* *Order 0*: Minimal texts wherein short length obviates the necessity for *Tractatus trees* or special coherence measures.
+* *Order 1*: Texts an order of magnitude larger, requiring exactly one outline map and one *Tractatus tree*.
+* *Order 2*: Texts wherein macro-coherence and rewrites are achieved indirectly by synthesizing lower-level *Tractatus trees* and summary maps.
+* *Order 3*: Texts governed by synthesizing Order 2 maps and trees.
+* *Order N+1*: Arbitrary high-order texts processed by synthesizing Order N maps and trees.
 
-Of paramount importance: the user&#39;s ability to pose document-level questions about complete documents must embody these coherence functionalities. This constitutes nearly the entire purpose of the architectural revision. Consider a lawyer who uploads an eight-hundred-page Securities and Exchange Commission filing and queries the application regarding its contents. The answers provided must reflect understanding of the document as an integrated whole; those answers must emphatically not treat that document as thirty-nine independent documents. The coherence infrastructure ensures that responses draw upon genuine document-level comprehension rather than fragmented segment-level interpretations.
+It isn&#39;t that the system directly executes global rewrites on high-order texts through brute-force crawling. It&#39;s that macro-coherence at Order N+1 is achieved hierarchically by synthesizing the structural representations of Order N. What follows is an extensible recursive framework capable of scaling across textual magnitudes.
 
-**Interface Considerations**
+### II. Execution Constraints and Advanced Query Governance
 
-The window within which these operations proceed must permit resizing, minimization, repositioning, and general unobtrusive configuration, allowing users to continue other work during extended processing intervals.
+Supposing arguendo that a user uploads a massive document—such as an 800-page book—system operations encounter significant latency. To preserve operational stability, five explicit execution protocols must be enforced:
 
-**Intelligent Search Functionality**
+1. *Advisory Notification*: Upon upload, the system must inform the user that document-level processing requires substantial time, advising focus on smaller text selections.
+2. *Cancellation Control*: The application must provide robust abort functionality, allowing users to terminate stalled document-level operations easily.
+3. *Incremental Progress Reporting*: System execution must emit frequent progress reports and deposit outputs incrementally in small chunks.
+4. *Bottom-Up Aggregation*: The system must aggregate local operations (e.g., 50-page chunk summaries, tests, podcasts, outlines, or rewrites) into integrated 800-page deliverables.
+5. *Payload and Interface Governance*: Plain text (.txt) files must be explicitly prioritized over PDF formats due to efficiency. Additionally, the operational window displaying these processes must remain resizable, minimizable, movable, and unobtrusive.
 
-Exploiting this coherence infrastructure, the application should implement intelligent document search—a &quot;Query&quot; function capable of executing commands such as &quot;identify all instances in this document of Clayton Act violations.&quot; Such searches transcend simple string-matching; they require semantic understanding of what constitutes a violation and interpretive judgment regarding whether particular textual passages describe such violations.
+Bearing in mind these execution protocols, can a document-level query operate meaningfully without whole-text integration? If a lawyer uploads an 800-page SEC document and queries the application, the system must deliver responses reflecting an understanding of the document as a whole, rather than treating the text as thirty-nine independent documents.
 
-Furthermore, users must be able to perform operations upon query results. If the application identifies seventy-four Clayton Act violations, the user might command: &quot;List these from most to least egregious,&quot; or &quot;For each violation, identify its significance under Delaware law.&quot; These secondary operations presuppose that the application has not merely located relevant passages but has comprehended them sufficiently to enable comparative evaluation and jurisdictional analysis.
+Furthermore, the system incorporates an intelligent *Query* function capable of executing complex search commands (e.g., &quot;find all examples in this document of violations of Clayton Act&quot;). Users retain the ability to perform secondary operations on query outputs—such as sorting identified violations from most egregious to least, or evaluating the legal significance of each violation in Delaware. The conclusion to draw is that true document-level comprehension requires both structural synthesis and interactive query manipulation.</pre>
+       <details><summary>Draft 1: 581 words · gemini · Checks passed</summary><pre># Architectural Principles of Coherent Document Processing
 
-The architecture thus described transforms the application from a processor of textual fragments into an instrument capable of genuine document-level comprehension, preserving semantic continuity across arbitrary scales of textual magnitude.</pre></section>
+### I. Segmentation, Coherence Mapping, and Hierarchical Synthesis
 
-      <section><h2>Prompt 9: FAIL: length 1196 words</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, adding a concrete, slightly odd analogy (comparable to the eel or flamethrower examples) to illustrate the legality/morality distinction.</p>
-      <pre>The Legality-Morality Distinction and the Limits of Legal Obligation
+To achieve macro-level text comprehension, an architecture must systematically resolve the tension between local execution constraints and global structural integrity. Given that input texts exceeding operational thresholds present processing impediments, the initial requirement demands systematic structural decomposition.
 
-Given only that an action falls within the bounds of what statute permits, how does it follow that one ought to perform that action? How does it follow that the specific justifications we offer for our conduct are ever at all principled?
+1. *Segmentation Protocol*: Any uploaded document must be partitioned into operational sub-units (&quot;chunks&quot;) compatible with existing base functions.
+2. *Local Mapping*: Each chunk must support standard operations—including podcast generation and outlining—while generating an individualized *Tractatus tree*.
+3. *Macro-Synthesis Procedures*: When processing contiguous multi-chunk selections (e.g., ten chunks), the system executes coherence procedures—generating an overarching summary map and synthesizing constituent *Tractatus trees* to excise irrelevant detail while retaining key conceptual nodes.
 
-We have seen that the integrity of a moral framework depends on the integrity of the normative connections it hosts. A society of rogue actors, none responsive to moral considerations beyond bare legality, isn&#39;t a moral community at all. To the extent that actions are morally independent of each other—governed solely by statute rather than by shared ethical commitments—there is no sense in which they constitute some unified normative order.
+It isn&#39;t that large documents lack internal logical structure. It&#39;s that standard processing mechanisms fail to apprehend multi-page passages as integrated wholes, treating coherent text as fragmented independent passages. Consequently, legacy utilities (including podcast, test, outline, and literature review functions) must be reconfigured to align with this structural synthesis.
 
-The attempt to collapse morality into legality presupposes that moral principles can simply be suspended or ignored. That presupposition in its turn assumes that moral principles are separable from the social fabric; it assumes, in other words, that they are not constitutive of that fabric.
+The recursive scaling across orders of magnitude is formalized as follows:
 
-That assumption is erroneous. Suppose that one or more moral principles governing a society were eliminated or replaced. First of all, it wouldn&#39;t be possible to eliminate just one such principle. Given a society in which promise-keeping carried no moral weight, or in which fiduciary obligations were unrecognized, or in which any single one of the principles operative in functional communities were replaced by some other principle, a number of other principles that sustain social cooperation would also have to be abandoned.
+* *Order 0*: Minimal texts wherein short length obviates the necessity for *Tractatus trees* or special coherence measures.
+* *Order 1*: Texts an order of magnitude larger, requiring exactly one outline map and one *Tractatus tree*.
+* *Order 2*: Texts wherein macro-coherence and rewrites are achieved indirectly by synthesizing lower-level *Tractatus trees* and summary maps.
+* *Order 3*: Texts governed by synthesizing Order 2 maps and trees.
+* *Order N+1*: Arbitrary high-order texts processed by synthesizing Order N maps and trees.
 
-Moral principles are not independent of one another. In actuality, trust is directly proportional to reliability. If it were inversely proportional to reliability, every one of the norms governing interpersonal relations would have to be jettisoned or heavily modified.
+It isn&#39;t that the system directly executes global rewrites on high-order texts through brute-force crawling. It&#39;s that macro-coherence at Order N+1 is achieved hierarchically by synthesizing the structural representations of Order N. What follows is an extensible recursive framework capable of scaling across textual magnitudes.
 
-Consider a museum curator responsible for priceless artifacts. Legally, she might auction them to the highest bidder and pocket the proceeds, provided she navigates bankruptcy law cleverly enough to shield the transaction. Morally, she holds those objects in trust for the public; her legal authority is instrumental, not absolute. The distinction here resembles that between owning a rescue dog and owning a lamp. Both are your legal property. But if you smash the lamp, you&#39;ve destroyed something you owned; if you starve the dog, you&#39;ve betrayed a dependent creature despite your formal ownership. The law recognizes your dominion in both cases, yet morality draws a boundary the law may not. Legal permission is the outer fence; moral obligation is the path within it.
+### II. Execution Constraints and Advanced Query Governance
 
-Also, if moral constraints did not limit the exercise of legal rights, all of our social institutions would collapse. There would be no principled ways of sustaining cooperation or, therefore, commerce or, therefore, rates of economic growth or cultural development.
+Supposing arguendo that a user uploads a massive document—such as an 800-page book—system operations encounter significant latency. To preserve operational stability, five explicit execution protocols must be enforced:
 
-Bearing in mind the interdependencies among moral and legal norms, suppose that at time t* the moral principles of a society were abandoned, leaving only bare legal compliance. This would have two consequences.
+1. *Advisory Notification*: Upon upload, the system must inform the user that document-level processing requires substantial time, advising focus on smaller text selections.
+2. *Cancellation Control*: The application must provide robust abort functionality, allowing users to terminate stalled document-level operations easily.
+3. *Incremental Progress Reporting*: System execution must emit frequent progress reports and deposit outputs incrementally in small chunks.
+4. *Bottom-Up Aggregation*: The system must aggregate local operations (e.g., 50-page chunk summaries, tests, podcasts, outlines, or rewrites) into integrated 800-page deliverables.
+5. *Payload and Interface Governance*: Plain text (.txt) files must be explicitly prioritized over PDF formats due to efficiency. Additionally, the operational window displaying these processes must remain resizable, minimizable, movable, and unobtrusive.
 
-First, relative trustworthiness, cooperative capacity, institutional legitimacy, and every other morally relevant parameter are ascertained by means of practices that presuppose that certain moral principles are operative.
+Bearing in mind these execution protocols, can a document-level query operate meaningfully without whole-text integration? If a lawyer uploads an 800-page SEC document and queries the application, the system must deliver responses reflecting an understanding of the document as a whole, rather than treating the text as thirty-nine independent documents.
 
-Second, the values of those parameters—not our ability to determine those values, but those values themselves—are defined in terms of the moral principles that are operative.
+Furthermore, the system incorporates an intelligent *Query* function capable of executing complex search commands (e.g., &quot;find all examples in this document of violations of Clayton Act&quot;). Users retain the ability to perform secondary operations on query outputs—such as sorting identified violations from most egregious to least, or evaluating the legal significance of each violation in Delaware. The conclusion to draw is that true document-level comprehension requires both structural synthesis and interactive query manipulation.</pre></details>
+       </section>
 
-Thus, if at time t* the moral principles of a community were abandoned, then the levels of trust, the boundaries of legitimate authority, the standards of fiduciary responsibility, and so forth, of the occupants of the post-t* community would be discontinuous from their pre-t* levels. For already stated reasons, the state of the post-t* community would not be a natural development of the pre-t* community. This means that, if the moral principles were abandoned at time t*, the result would be the obliteration of the normative framework—the community—in which those principles were operative.
+      <section><h2>Prompt 6: PASS: gemini returned 649 words; automated checks passed</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, stating the core claims as numbered theses (i), (ii), (iii).</p>
+       <p><strong>Applied style instruction:</strong> Rewrite in the style of the sample, stating the core document-processing requirements from the source text as numbered theses (i), (ii), (iii).</p>
+       <h3>Final output (649 words)</h3><pre>### I. Ontological Hierarchy of Document Processing
 
-Different principles, different social fabric. Different social fabric, different community.
+To conceptualize document processing, we must first formulate a formal definition: a *coherent document* is an articulated semantic structure wherein global meaning supervenes upon local passages without reducing to their simple sum. *Consequently*, processing such a document requires hierarchical abstraction across distinct operational orders:
 
-The social order isn&#39;t an empty vessel that can house different moral principles; it is constituted by the principles that govern its members.
+a) *Order 0*: Very short texts requiring no *Tractatus Tree* or structural mapping mechanisms.
+b) *Order 1*: Texts an order of magnitude larger, necessitating a singular *Tractatus Tree* and a preliminary outline to establish a contextual map.
+c) *Order 2*: Extensive texts whose coherence is achieved indirectly by crawling through, generating, and synthesizing underlying Order 1 maps and trees.
+d) *Order N+1*: High-order texts synthesized recursively from Order N structural representations.
 
-But for the moment, let us suppose arguendo that, even though the operative moral principles are abandoned at t*, the social structure whose principles have been eliminated continues to exist. In that case, we have to ask: What were the norms that governed conduct during t*-inclusive intervals? Let&#39;s suppose that, at some pre-t* time T, a fiduciary relationship is established. Up until t*, the norms governing that relationship are the standard norms of trust and accountability.
+### II. Core Document-Processing Requirements
 
-Granting these suppositions, imagine that during some t*-inclusive interval, the fiduciary&#39;s duties transition from morally robust obligations to mere legal formalities, and that at t*, she occupies a hybrid state.
+The essential architecture rests upon three fundamental theses:
 
-What are the norms that govern her conduct during that interval? What are the norms that govern her conduct when she is at that transitional point? In fact, at t* and after t*, what are the principles that bind together the various role-constitutive expectations? If so much as a single moral principle has been abandoned at t*, practically every other such principle will have to change as well. If the principle of good faith changes, then the mutual expectations of all the parties involved change. Of course, the normative forces in question are largely trust-based; but, owing to the change in foundational principles, the relative weights of those expectations would change, and the cooperative framework in question would have to change if social institutions were to continue to exist in anything like their previous form, let alone continue functioning; and it is an open question, certainly, whether the changes would be such as to validate our desire that institutions continue to exist and, what&#39;s more, to continue serving their purposes. And, of course, what is true of fiduciary relationships would be true of contracts, professional standards, and civic obligations generally.
+(i) Large textual inputs must undergo structural fragmentation into operational sub-units while preserving macro-level unity through preliminary outlining and *Tractatus Tree* synthesis across hierarchical orders.
+(ii) System operations—ranging from podcasts and outlines to literature reviews, tests, rewrites, and intelligent queries—must be aligned with global contextual representations rather than isolated fragments.
+(iii) Computational constraints inherent in processing extensive texts must be mitigated through progressive execution, intermediate outputs, flexible user interfaces, and the inductive combination of local outputs into holistic document-level results.
 
-Whatever the consequences would be if at a given time even one foundational moral principle were abandoned, it can be assumed that the consequences would be so drastic that: (i) pre-t* relationships, roles, and institutional structures would change discontinuously at t*—or, at least, the likelihood that they would change continuously, or remain stable, would be vanishingly close to zero; and (ii) pre-t* institutions would cease to function at t*, as the principles that sustained them would no longer be operative.
+### III. Functional Alignment and Macro-Coherence
 
-We have already seen that if post-t* social realities are discontinuous with pre-t* realities, then there is no single normative framework that both phases jointly constitute.
+How can application functions maintain structural fidelity across extended texts? *Given that* standard processing mechanisms treat extended inputs as disparate passages, it follows that functions such as podcasts, literature reviews, tests, and rewrites must be reconfigured to align with macro-level maps. *Bearing in mind* that a user may select a series of pages spanning ten discrete chunks, the system must execute a specialized procedure: it generates a coherent summary-map alongside a synthesized *Tractatus Tree* for the selected region, omitting irrelevant detail while preserving key points. *Supposing arguendo* that an opposing view claims, &quot;processing text as independent fragments yields sufficient analytical depth,&quot; we must reject this assertion. If an application treats a ninety-page selection as multiple short independent passages—such as when a lawyer queries an eight-hundred-page Securities and Exchange Commission filing—*then* the system fails to capture global semantic dependencies, improperly reducing the text to thirty-nine independent documents. *Therefore*, document-level queries and output transformations must incorporate unified coherence maps to evaluate the text as an integrated whole.
 
-Hence the warrant for distinguishing legality from morality. According to this distinction, moral principles constrain legal permissions. Those who collapse morality into legality claim that any assurance we have of morality&#39;s independence is tradition-based and therefore that we have no such assurance. But that view is mistaken. We know that morality is distinct from legality because, if it weren&#39;t, social trust would collapse—literally—including the very trust that makes legal systems functional. The independence of morality from mere legality is a precondition for the legitimacy of legal systems; so as long as there are makers of legal claims, moral constraints hold and legal justifications either succeed or, if they fail, fail for reasons of bad faith or incompetence, not because of anything having to do with the legitimacy of moral reasoning per se.</pre></section>
+### IV. Operational Constraints and System Interfaces
 
-      <section><h2>Prompt 10: FAIL: HTTP 502: Gemini API Error: 429 - You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
-* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.6-flash
-Please retry in 39.571552709s.</h2>
-      <p><strong>Instruction:</strong> Rewrite in style of sample, formatting the distinction between legal status and moral authority as a header with &quot;≠&quot;.</p>
-      <pre>(No output)</pre></section></html>
+When a user uploads a massive text, such as an eight-hundred-page document, computational overhead creates substantial latency. *Thus*, system execution must balance holistic processing with practical utility through four specific protocols:
+
+1) *User Notification*: The system must inform the user of anticipated processing delays, suggesting focus on smaller sub-sections unless an extended execution time of up to an hour is expressly accepted.
+2) *Process Management*: An accessible abort option must be provided, while intermediate results are deposited in small chunks alongside frequent progress reports within a resizable, minimizable, and unobtrusive window.
+3) *Format Optimization*: Users should be advised that plain text (.txt) files process more easily than portable document format (.pdf) files due to size constraints.
+4) *Inductive Aggregation*: The application must combine local operations—such as processing fifty-page increments—into comprehensive book-level summaries, tests, podcasts, outlines, and critical rewrites.
+
+### V. The Intelligent Query Paradigm
+
+Finally, the system introduces a specialized *Query* function capable of intelligent macro-textual traversal. If a user issues a targeted search instruction—for instance, directing the system to locate all violations of the Clayton Act within an uploaded document—*then* the application must identify these occurrences through its underlying coherence framework. *Consequently*, the user retains the capacity to perform higher-order operations upon these query outputs, such as ranking identified violations from most to least egregious or evaluating their specific legal significance in Delaware. What follows is a fully integrated framework wherein local analytical operations synthesize into macro-level understanding. The conclusion to draw is that document-level processing depends entirely upon aligning structural mapping with systemic execution.</pre>
+       <details><summary>Draft 1: 649 words · gemini · Checks passed</summary><pre>### I. Ontological Hierarchy of Document Processing
+
+To conceptualize document processing, we must first formulate a formal definition: a *coherent document* is an articulated semantic structure wherein global meaning supervenes upon local passages without reducing to their simple sum. *Consequently*, processing such a document requires hierarchical abstraction across distinct operational orders:
+
+a) *Order 0*: Very short texts requiring no *Tractatus Tree* or structural mapping mechanisms.
+b) *Order 1*: Texts an order of magnitude larger, necessitating a singular *Tractatus Tree* and a preliminary outline to establish a contextual map.
+c) *Order 2*: Extensive texts whose coherence is achieved indirectly by crawling through, generating, and synthesizing underlying Order 1 maps and trees.
+d) *Order N+1*: High-order texts synthesized recursively from Order N structural representations.
+
+### II. Core Document-Processing Requirements
+
+The essential architecture rests upon three fundamental theses:
+
+(i) Large textual inputs must undergo structural fragmentation into operational sub-units while preserving macro-level unity through preliminary outlining and *Tractatus Tree* synthesis across hierarchical orders.
+(ii) System operations—ranging from podcasts and outlines to literature reviews, tests, rewrites, and intelligent queries—must be aligned with global contextual representations rather than isolated fragments.
+(iii) Computational constraints inherent in processing extensive texts must be mitigated through progressive execution, intermediate outputs, flexible user interfaces, and the inductive combination of local outputs into holistic document-level results.
+
+### III. Functional Alignment and Macro-Coherence
+
+How can application functions maintain structural fidelity across extended texts? *Given that* standard processing mechanisms treat extended inputs as disparate passages, it follows that functions such as podcasts, literature reviews, tests, and rewrites must be reconfigured to align with macro-level maps. *Bearing in mind* that a user may select a series of pages spanning ten discrete chunks, the system must execute a specialized procedure: it generates a coherent summary-map alongside a synthesized *Tractatus Tree* for the selected region, omitting irrelevant detail while preserving key points. *Supposing arguendo* that an opposing view claims, &quot;processing text as independent fragments yields sufficient analytical depth,&quot; we must reject this assertion. If an application treats a ninety-page selection as multiple short independent passages—such as when a lawyer queries an eight-hundred-page Securities and Exchange Commission filing—*then* the system fails to capture global semantic dependencies, improperly reducing the text to thirty-nine independent documents. *Therefore*, document-level queries and output transformations must incorporate unified coherence maps to evaluate the text as an integrated whole.
+
+### IV. Operational Constraints and System Interfaces
+
+When a user uploads a massive text, such as an eight-hundred-page document, computational overhead creates substantial latency. *Thus*, system execution must balance holistic processing with practical utility through four specific protocols:
+
+1) *User Notification*: The system must inform the user of anticipated processing delays, suggesting focus on smaller sub-sections unless an extended execution time of up to an hour is expressly accepted.
+2) *Process Management*: An accessible abort option must be provided, while intermediate results are deposited in small chunks alongside frequent progress reports within a resizable, minimizable, and unobtrusive window.
+3) *Format Optimization*: Users should be advised that plain text (.txt) files process more easily than portable document format (.pdf) files due to size constraints.
+4) *Inductive Aggregation*: The application must combine local operations—such as processing fifty-page increments—into comprehensive book-level summaries, tests, podcasts, outlines, and critical rewrites.
+
+### V. The Intelligent Query Paradigm
+
+Finally, the system introduces a specialized *Query* function capable of intelligent macro-textual traversal. If a user issues a targeted search instruction—for instance, directing the system to locate all violations of the Clayton Act within an uploaded document—*then* the application must identify these occurrences through its underlying coherence framework. *Consequently*, the user retains the capacity to perform higher-order operations upon these query outputs, such as ranking identified violations from most to least egregious or evaluating their specific legal significance in Delaware. What follows is a fully integrated framework wherein local analytical operations synthesize into macro-level understanding. The conclusion to draw is that document-level processing depends entirely upon aligning structural mapping with systemic execution.</pre></details>
+       </section>
+
+      <section><h2>Prompt 7: PASS: gemini returned 647 words; automated checks passed</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, replacing every smooth transition with abrupt declarative sentences.</p>
+       <p><strong>Applied style instruction:</strong> Rewrite the document-processing requirements text in the style of the sample, replacing every smooth transition with abrupt declarative sentences.</p>
+       <h3>Final output (647 words)</h3><pre>### I. ARCHITECTURAL OVERHAUL AND LOCAL PROCESSING
+
+The document-processing architecture requires a comprehensive structural overhaul. System functionality relies upon preliminary outlining protocols and *Tractatus tree* technology to generate coherent document-level representations across extensive texts.
+
+Textual decomposition is mandatory. Every uploaded text must be partitioned into localized chunks small enough that baseline system functionality operates efficiently upon them.
+
+The local processing protocol operates on these individual chunks. Each chunk retains access to baseline capabilities (including podcast creation, outline generation, literature reviews, and automated testing).
+
+A new core operation is introduced. Each localized chunk generates its own distinct *Tractatus tree*.
+
+Multi-chunk selections require a unified synthesis procedure. If a user selects a sequence spanning multiple segments (such as ten contiguous chunks), the system invokes a specialized coherence mechanism.
+
+This mechanism generates a coherent summary functioning as a structural map. The system constructs a global *Tractatus tree* for the selected domain by synthesizing constituent trees into a singular structure—eliminating irrelevant detail while retaining key points—which presupposes that the coherence function has executed.
+
+&quot;Objection: Local operations may proceed independently without reference to global coherence.&quot;
+
+This objection fails. Existing functions—including podcast generation, literature reviews, outlines, and tests—must be reconfigured to align with global functionality. Generating a podcast from a ninety-page selection without coordination yields incoherence because the generator treats those pages as independent passages; the reconfigured framework treats the selection as a singular coherent entity.
+
+### II. RECURSIVE HIERARCHICAL TEXT ORDERS
+
+Text processing complexity varies deterministically according to textual scale.
+
+1. *Order 0* texts are minimal passages requiring neither *Tractatus trees* nor special coherence maps.
+2. *Order 1* texts are an order of magnitude larger, requiring exactly one global summary-map outline and one primary *Tractatus tree*.
+3. *Order 2* texts achieve global coherence and rewrites indirectly, synthesizing *Order 1* trees and summary-maps rather than directly crawling through raw text.
+4. *Order 3* texts achieve coherence through the systematic synthesis of *Order 2* maps and trees.
+5. *Order N+1* texts achieve coherence by recursively synthesizing *Order N* maps and trees.
+
+### III. HIGH-VOLUME COMPUTATION AND INTELLIGENT QUERYING
+
+Processing massive documents introduces severe operational latencies. Executing document-level operations on large texts (such as an eight-hundred-page volume) requires substantial computational time.
+
+The system enforces specific safeguards and optimizations for high-volume inputs:
+(a) The system explicitly notifies the user that document-level processing requires extended time, suggesting focus on smaller textual selections to avoid hour-long delays.
+(b) The system provides an easily accessible abort mechanism, allowing the user to terminate long-running operations to prevent application freezing.
+(c) The system emits frequent progress reports, depositing output in small chunks so that the user verifies correct execution.
+(d) The system aggregates localized operations into book-level outputs; bearing in mind that processing an eight-hundred-page book fifty pages at a time yields localized summaries, the system uses those outputs to construct a summary of the entire book (and similarly with tests, outlines, podcasts, and rewrites).
+(e) The system processes plain text (`.txt`) files far more easily than portable document format (`.pdf`) files due to file size, explicitly informing the user of this preference.
+
+System query functionality must embody these core coherence mechanisms. Supposing arguendo that a legal practitioner uploads an eight-hundred-page document from the Securities and Exchange Commission and queries its contents, the system&#39;s response must reflect an integrated understanding of the document as a whole rather than treating it as thirty-nine independent documents.
+
+A specialized *Query* function executes intelligent searches. If a user commands the application to find all Clayton Act violations within a text, the system isolates every matching example. The user can then execute secondary operations directly upon these outputs (such as ranking seventy-four identified violations from most to least egregious, or determining their specific legal significance in Delaware).
+
+The user interface window housing these operations must remain fully resizable, minimizable, movable, and unobtrusive.
+
+What follows is a unified document-processing framework that guarantees global coherence across arbitrary scales.</pre>
+       <details><summary>Draft 1: 647 words · gemini · Checks passed</summary><pre>### I. ARCHITECTURAL OVERHAUL AND LOCAL PROCESSING
+
+The document-processing architecture requires a comprehensive structural overhaul. System functionality relies upon preliminary outlining protocols and *Tractatus tree* technology to generate coherent document-level representations across extensive texts.
+
+Textual decomposition is mandatory. Every uploaded text must be partitioned into localized chunks small enough that baseline system functionality operates efficiently upon them.
+
+The local processing protocol operates on these individual chunks. Each chunk retains access to baseline capabilities (including podcast creation, outline generation, literature reviews, and automated testing).
+
+A new core operation is introduced. Each localized chunk generates its own distinct *Tractatus tree*.
+
+Multi-chunk selections require a unified synthesis procedure. If a user selects a sequence spanning multiple segments (such as ten contiguous chunks), the system invokes a specialized coherence mechanism.
+
+This mechanism generates a coherent summary functioning as a structural map. The system constructs a global *Tractatus tree* for the selected domain by synthesizing constituent trees into a singular structure—eliminating irrelevant detail while retaining key points—which presupposes that the coherence function has executed.
+
+&quot;Objection: Local operations may proceed independently without reference to global coherence.&quot;
+
+This objection fails. Existing functions—including podcast generation, literature reviews, outlines, and tests—must be reconfigured to align with global functionality. Generating a podcast from a ninety-page selection without coordination yields incoherence because the generator treats those pages as independent passages; the reconfigured framework treats the selection as a singular coherent entity.
+
+### II. RECURSIVE HIERARCHICAL TEXT ORDERS
+
+Text processing complexity varies deterministically according to textual scale.
+
+1. *Order 0* texts are minimal passages requiring neither *Tractatus trees* nor special coherence maps.
+2. *Order 1* texts are an order of magnitude larger, requiring exactly one global summary-map outline and one primary *Tractatus tree*.
+3. *Order 2* texts achieve global coherence and rewrites indirectly, synthesizing *Order 1* trees and summary-maps rather than directly crawling through raw text.
+4. *Order 3* texts achieve coherence through the systematic synthesis of *Order 2* maps and trees.
+5. *Order N+1* texts achieve coherence by recursively synthesizing *Order N* maps and trees.
+
+### III. HIGH-VOLUME COMPUTATION AND INTELLIGENT QUERYING
+
+Processing massive documents introduces severe operational latencies. Executing document-level operations on large texts (such as an eight-hundred-page volume) requires substantial computational time.
+
+The system enforces specific safeguards and optimizations for high-volume inputs:
+(a) The system explicitly notifies the user that document-level processing requires extended time, suggesting focus on smaller textual selections to avoid hour-long delays.
+(b) The system provides an easily accessible abort mechanism, allowing the user to terminate long-running operations to prevent application freezing.
+(c) The system emits frequent progress reports, depositing output in small chunks so that the user verifies correct execution.
+(d) The system aggregates localized operations into book-level outputs; bearing in mind that processing an eight-hundred-page book fifty pages at a time yields localized summaries, the system uses those outputs to construct a summary of the entire book (and similarly with tests, outlines, podcasts, and rewrites).
+(e) The system processes plain text (`.txt`) files far more easily than portable document format (`.pdf`) files due to file size, explicitly informing the user of this preference.
+
+System query functionality must embody these core coherence mechanisms. Supposing arguendo that a legal practitioner uploads an eight-hundred-page document from the Securities and Exchange Commission and queries its contents, the system&#39;s response must reflect an integrated understanding of the document as a whole rather than treating it as thirty-nine independent documents.
+
+A specialized *Query* function executes intelligent searches. If a user commands the application to find all Clayton Act violations within a text, the system isolates every matching example. The user can then execute secondary operations directly upon these outputs (such as ranking seventy-four identified violations from most to least egregious, or determining their specific legal significance in Delaware).
+
+The user interface window housing these operations must remain fully resizable, minimizable, movable, and unobtrusive.
+
+What follows is a unified document-processing framework that guarantees global coherence across arbitrary scales.</pre></details>
+       </section>
+
+      <section><h2>Prompt 8: PASS: gemini returned 620 words; automated checks passed</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, using &quot;ipso facto,&quot; &quot;mutatis mutandis,&quot; and &quot;by parity of reasoning&quot; where they fit naturally.</p>
+       <p><strong>Applied style instruction:</strong> Rewrite the document-processing requirements text in the style of the sample, using &quot;ipso facto,&quot; &quot;mutatis mutandis,&quot; and &quot;by parity of reasoning&quot; where they fit naturally.</p>
+       <h3>Final output (620 words)</h3><pre># Architectural Refinement of Document Processing
+
+## I. Structural Segmentation and Hierarchical Coherence
+
+How does an application achieve global coherence when processing large-scale texts? The solution resides in integrating preliminary outlining protocols and *Tractatus tree* technologies. Supposing *arguendo* that a document is ingested by the system, the application must execute a primary structural decomposition, partitioning the input text into sub-units sufficiently small to ensure that extant functionality operates effectively upon each chunk.
+
+1. *Order 0 Texts*: Very short inputs require neither *Tractatus tree* constructs nor specialized coherence-related measures.
+2. *Order 1 Texts*: Inputs exhibiting an order of magnitude increase in scale (Order 1) necessitate exactly one *Tractatus tree* and one summary-map outline to establish global structural awareness and serve as a guide.
+3. *Higher-Order Texts ($N+1$)*: For Order 2 inputs, coherence and rewrites are achieved indirectly by synthesizing Order 1 summary-maps and *Tractatus trees*; *by parity of reasoning*, Order $N+1$ representations are derived inductively through the synthesis of Order $N$ maps and trees.
+
+Consequently, if an uploaded text is partitioned into discrete chunks, each chunk *ipso facto* receives an individual local *Tractatus tree*. What follows is a rigorous framework for structural scaling across arbitrary text lengths.
+
+## II. Multi-Chunk Synthesis and Utility Realignment
+
+When a user designates a multi-chunk selection—such as a ten-chunk passage—the system must execute a dedicated macro-procedure. Bearing in mind foundational coherence documentation, the system generates a coherent summary-map as a structural guide, subsequently synthesizing multiple local *Tractatus trees* into a unified tree for the selected region. This synthesis omits irrelevant detail while preserving key thematic points, presupposing prior execution of the foundational coherence function.
+
+All operational functions—specifically podcasts, tests, outlining, literature reviews, and rewrites—must be reconfigured to align with this architecture. One might pose the objection: &quot;Why must existing functions be modified if short-passage processing functions locally?&quot; This view is untenable. Generating a podcast from a ninety-page selection under un-aligned architecture fails because the system treats those ninety pages as multiple short independent passages. Once realigned, the application processes the selection as a coherent whole. The conclusion to draw is that functional utilities must strictly mirror the underlying coherence architecture.
+
+## III. Large-Scale Execution Protocols and Intelligent Querying
+
+When processing massive documents—such as an eight-hundred-page volume—computational execution entails significant time. Given that document-level operations on massive texts are resource-intensive, the system must enforce specific operational protocols:
+
+A. *User Notifications and Abort Controls*: Upon ingestion of a large document, the application must explicitly notify the user that processing requires extended time, suggesting that the user focus on a smaller sub-selection of text while providing a clear mechanism to abort operations easily.
+B. *Feedback and Input Format*: The system shall issue frequent progress updates, deposit output incrementally in small chunks so the user can verify progress, and inform the user that plain text (.txt) is processed more easily than PDF files.
+C. *Local-to-Global Aggregation*: The application must aggregate local operations into book-level outputs. If a user processes an eight-hundred-page book in fifty-page increments, the system synthesizes those local outputs into a comprehensive summary, podcast, test, outline, or rewrite for the entire volume; *mutatis mutandis*, all derivative functions operate upon these aggregated structures.
+
+Crucially, global query utilities must embody these coherence functionalities. If a lawyer uploads an eight-hundred-page SEC document and queries the system, answers must reflect unified comprehension rather than evaluating thirty-nine independent documents. Furthermore, a new *Query* function enables intelligent searches—such as locating Clayton Act violations—and permits users to operate upon query outputs, such as ranking seventy-four identified violations from most to least egregious or determining their legal significance in Delaware. Finally, the interface window in which these document-level operations occur must remain fully resizable, minimizable, movable, and unobtrusive. What follows is a completely integrated document-processing system.</pre>
+       <details><summary>Draft 1: 620 words · gemini · Checks passed</summary><pre># Architectural Refinement of Document Processing
+
+## I. Structural Segmentation and Hierarchical Coherence
+
+How does an application achieve global coherence when processing large-scale texts? The solution resides in integrating preliminary outlining protocols and *Tractatus tree* technologies. Supposing *arguendo* that a document is ingested by the system, the application must execute a primary structural decomposition, partitioning the input text into sub-units sufficiently small to ensure that extant functionality operates effectively upon each chunk.
+
+1. *Order 0 Texts*: Very short inputs require neither *Tractatus tree* constructs nor specialized coherence-related measures.
+2. *Order 1 Texts*: Inputs exhibiting an order of magnitude increase in scale (Order 1) necessitate exactly one *Tractatus tree* and one summary-map outline to establish global structural awareness and serve as a guide.
+3. *Higher-Order Texts ($N+1$)*: For Order 2 inputs, coherence and rewrites are achieved indirectly by synthesizing Order 1 summary-maps and *Tractatus trees*; *by parity of reasoning*, Order $N+1$ representations are derived inductively through the synthesis of Order $N$ maps and trees.
+
+Consequently, if an uploaded text is partitioned into discrete chunks, each chunk *ipso facto* receives an individual local *Tractatus tree*. What follows is a rigorous framework for structural scaling across arbitrary text lengths.
+
+## II. Multi-Chunk Synthesis and Utility Realignment
+
+When a user designates a multi-chunk selection—such as a ten-chunk passage—the system must execute a dedicated macro-procedure. Bearing in mind foundational coherence documentation, the system generates a coherent summary-map as a structural guide, subsequently synthesizing multiple local *Tractatus trees* into a unified tree for the selected region. This synthesis omits irrelevant detail while preserving key thematic points, presupposing prior execution of the foundational coherence function.
+
+All operational functions—specifically podcasts, tests, outlining, literature reviews, and rewrites—must be reconfigured to align with this architecture. One might pose the objection: &quot;Why must existing functions be modified if short-passage processing functions locally?&quot; This view is untenable. Generating a podcast from a ninety-page selection under un-aligned architecture fails because the system treats those ninety pages as multiple short independent passages. Once realigned, the application processes the selection as a coherent whole. The conclusion to draw is that functional utilities must strictly mirror the underlying coherence architecture.
+
+## III. Large-Scale Execution Protocols and Intelligent Querying
+
+When processing massive documents—such as an eight-hundred-page volume—computational execution entails significant time. Given that document-level operations on massive texts are resource-intensive, the system must enforce specific operational protocols:
+
+A. *User Notifications and Abort Controls*: Upon ingestion of a large document, the application must explicitly notify the user that processing requires extended time, suggesting that the user focus on a smaller sub-selection of text while providing a clear mechanism to abort operations easily.
+B. *Feedback and Input Format*: The system shall issue frequent progress updates, deposit output incrementally in small chunks so the user can verify progress, and inform the user that plain text (.txt) is processed more easily than PDF files.
+C. *Local-to-Global Aggregation*: The application must aggregate local operations into book-level outputs. If a user processes an eight-hundred-page book in fifty-page increments, the system synthesizes those local outputs into a comprehensive summary, podcast, test, outline, or rewrite for the entire volume; *mutatis mutandis*, all derivative functions operate upon these aggregated structures.
+
+Crucially, global query utilities must embody these coherence functionalities. If a lawyer uploads an eight-hundred-page SEC document and queries the system, answers must reflect unified comprehension rather than evaluating thirty-nine independent documents. Furthermore, a new *Query* function enables intelligent searches—such as locating Clayton Act violations—and permits users to operate upon query outputs, such as ranking seventy-four identified violations from most to least egregious or determining their legal significance in Delaware. Finally, the interface window in which these document-level operations occur must remain fully resizable, minimizable, movable, and unobtrusive. What follows is a completely integrated document-processing system.</pre></details>
+       </section>
+
+      <section><h2>Prompt 9: FAIL: Subject check failed: The rewrite introduces an analogy about examining a house with keyholes and floor plans that is not present in the original input.</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, adding a concrete, slightly odd analogy (comparable to the eel or flamethrower examples) to illustrate the legality/morality distinction.</p>
+       <p><strong>Applied style instruction:</strong> Rewrite in the style of the sample, adding a concrete, slightly odd analogy (comparable to the illustrative examples in the sample) to illustrate a key distinction in the document-processing requirements.</p>
+       <h3>Final output (661 words)</h3><pre># I. Structural Segmentation and Hierarchical Architecture
+
+The proposed system overhaul mandates that uploaded textual artifacts be systematically decomposed into discrete constituent units small enough to be processed by existing operational modalities. If a text is ingested, then it must undergo preliminary segmentation before localized functions—including podcast generation, outlining, literature reviews, testing, and rewrites—can operate upon individual chunks. Central to this architecture is the generation of a localized *Tractatus Tree* for each discrete unit, alongside preliminary outlining mechanisms derived from fundamental coherence protocols.
+
+To comprehend the necessity of this structural transformation, we must formally distinguish two modalities of multi-chunk execution:
+1. *Additive Segmentation*: The unintegrated treatment of a continuous 90-page selection as a mere sequence of isolated, independent passages.
+2. *Synthesized Coherence*: The unified processing of multi-chunk selections through global structural maps and aggregated hierarchical trees.
+
+Consider the logical distinction in processing: executing operations via *Additive Segmentation* forces the system to treat a 90-page selection as multiple short, independent passages, thereby destroying narrative and argumentative continuity. Conversely, *Synthesized Coherence* constructs a primary outline map according to established coherence protocols, alongside a synthesized *Tractatus Tree* that prunes irrelevant detail while retaining essential propositions. Think of this distinction as analogous to examining a house: *Additive Segmentation* inspects each room independently through separate keyholes, never perceiving the connecting hallways or shared architectural blueprint, whereas *Synthesized Coherence* walks through the entire structure with a comprehensive floor plan, understanding how each room relates to the unified whole. Consequently, when multi-chunk selections are specified, the application executes a primary coherence procedure to establish global unity, ensuring that downstream operations treat the selection as a singular, integrated whole.
+
+# II. Algorithmic Scaling Across Document Orders
+
+Given that document complexity expands non-linearly with scale, processing protocols must adhere to an explicit hierarchical order:
+(a) *Order 0*: Texts of minimal length require neither *Tractatus Trees* nor overarching coherence mapping.
+(b) *Order 1*: Texts expanded by an order of magnitude necessitate a single *Tractatus Tree* and a primary outline-map to establish global unity.
+(c) *Order 2*: Coherence and structural rewrites are achieved indirectly, not by direct text-crawling, but by synthesizing Order 1 trees and summary-maps.
+(d) *Order 3*: Processing proceeds through the synthesis of Order 2 maps and structural trees.
+(e) *Order N+1*: Execution proceeds recursively through the synthesis of Order N maps and structural trees.
+
+# III. User Interface Protocols and Intelligent Query Processing
+
+When an extensive text (such as an 800-page treatise) is ingested, system operations suffer significant temporal constraints. Supposing *arguendo* that a user attempts a document-level operation on a vast text, the system must enforce strict operational constraints:
+1. *User Admonition and Scope Advice*: The interface must explicitly notify the user that document-level processing requires substantial temporal duration, recommending focus on smaller subdivisions unless long processing delays are acceptable.
+2. *Cancellation and Progress Reporting*: To prevent application failure or user frustration, an easily accessible abort mechanism must be provided, accompanied by frequent progress notifications and incremental output deposits in small chunks.
+3. *Local-to-Global Aggregation*: The architecture must systematically aggregate localized operations—such as 50-page summaries, outlines, podcasts, tests, and rewrites—into cohesive, book-level outputs.
+4. *Format Optimization*: The system should inform the user that plain text (.txt) formats likely process more easily than PDF files due to size considerations.
+5. *Interface Control*: The processing window must remain fully resizable, minimizable, and movable so as to remain unobtrusive.
+
+Crucially, global query capabilities must fully embody these coherence mechanisms. If a user (e.g., a legal practitioner evaluating an 800-page SEC filing) executes a document-level query, the generated output must reflect an integrated understanding of the unified document rather than 39 disjointed analyses. Furthermore, the newly introduced *Query* function must permit intelligent document searching (such as identifying all Clayton Act violations) and enable immediate downstream operations upon results—allowing users to rank extracted instances by severity or evaluate their specific legal significance in Delaware. What follows is a fully unified system wherein local operations and global synthesis converge into a singular, coherent framework.</pre>
+       <details><summary>Draft 1: 606 words · gemini · Subject check failed: The rewrite introduces an unsupported analogy comparing document segmentation to grinding an elephant into three thousand identical sausages.</summary><pre>### I. Structural Segmentation and Hierarchical Architecture
+
+The proposed system overhaul requires that uploaded textual artifacts be systematically decomposed into discrete constituent units small enough to be processed by existing operational modalities. If a text is ingested, then it must undergo preliminary segmentation before localized functions—including podcast generation, outlining, literature reviews, and testing—can operate upon individual chunks. Central to this architecture is the generation of a localized *Tractatus Tree* for each discrete unit, alongside preliminary outlining mechanisms derived from fundamental coherence protocols.
+
+To comprehend the necessity of this structural transformation, we must formally define two modes of multi-chunk execution:
+1. *Additive Segmentation*: The erroneous treatment of a continuous 90-page selection as a mere sequence of isolated, independent passages.
+2. *Synthesized Coherence*: The unified processing of multi-chunk selections through global structural maps and aggregated hierarchical trees.
+
+Consider, for argument&#39;s sake, an illustrative analogy: attempting to comprehend a massive document via *Additive Segmentation* is precisely akin to examining an elephant by grinding it into three thousand identical sausages and inspecting each link in isolation; one possesses the full material mass, yet completely lacks the living architecture of the animal. Conversely, *Synthesized Coherence* constructs a unified map that preserves the organism&#39;s overarching skeletal structure. Consequently, when multi-chunk selections are specified, the application must execute a primary coherence procedure to generate a structural map, alongside a synthesized *Tractatus Tree* that prunes irrelevant detail while retaining essential propositions.
+
+### II. Algorithmic Scaling Across Document Orders
+
+Given that document complexity expands non-linearly with scale, processing protocols must adhere to an explicit hierarchical order:
+(a) *Order 0*: Texts of minimal length require neither *Tractatus Trees* nor overarching coherence mapping.
+(b) *Order 1*: Texts expanded by an order of magnitude necessitate a single *Tractatus Tree* and a primary outline-map to establish global unity.
+(c) *Order 2*: Coherence and structural rewrites are achieved indirectly, not by direct text-crawling, but by synthesizing Order 1 trees and summary-maps.
+(d) *Order N+1*: Execution proceeds recursively through the synthesis of Order N maps and structural trees.
+
+### III. User Interface Protocols and Intelligent Query Processing
+
+When an extensive text (such as an 800-page treatise) is ingested, system operations suffer significant latency constraints. Supposing *arguendo* that a user attempts a document-level operation on a vast text, the system must enforce strict operational constraints:
+1. *User Admonition and Scope Advice*: The interface must explicitly notify the user that document-level processing requires substantial temporal duration, recommending focus on smaller subdivisions unless long processing delays are acceptable.
+2. *Cancellation and Progress Reporting*: To prevent application failure or user frustration, an easily accessible abort mechanism must be provided, accompanied by frequent progress notifications and incremental output deposits.
+3. *Local-to-Global Aggregation*: The architecture must systematically aggregate localized operations—such as 50-page summaries, outlines, podcasts, tests, and rewrites—into cohesive, book-level outputs.
+4. *Format Optimization*: The system must inform the user that plain text (.txt) formats process far more efficiently than PDF files due to file size variations.
+5. *Interface Control*: The processing window must remain fully resizable, minimizable, and movable so as to remain unobtrusive.
+
+Crucially, global query capabilities must fully embody these coherence mechanisms. If a user (e.g., a legal practitioner evaluating an 800-page SEC filing) executes a document-level query, the generated output must reflect an integrated understanding of the unified document rather than 39 disjointed analyses. Furthermore, the newly introduced *Query* function must permit intelligent document searching (such as identifying all Clayton Act violations) and enable immediate downstream operations upon results—allowing users to rank extracted instances by severity or evaluate their specific legal significance in Delaware. What follows is a fully unified system wherein local operations and global synthesis converge into a singular, coherent framework.</pre></details>
+<details><summary>Draft 2: 612 words · gemini · Subject check failed: The rewrite invents the claim that .txt files process &quot;far more efficiently&quot; than PDFs &quot;due to file size variations&quot; when the original only says the app &quot;probably handles TXT more easily than PDF CUZ OF SIZE.&quot;</summary><pre>### I. Structural Segmentation and Hierarchical Architecture
+
+The proposed system overhaul mandates that uploaded textual artifacts be systematically decomposed into discrete constituent units small enough to be processed by existing operational modalities. If a text is ingested, then it must undergo preliminary segmentation before localized functions—including podcast generation, outlining, literature reviews, testing, and rewrites—can operate upon individual chunks. Central to this architecture is the generation of a localized *Tractatus Tree* for each discrete unit, alongside preliminary outlining mechanisms derived from fundamental coherence protocols.
+
+To comprehend the necessity of this structural transformation, we must formally distinguish two modalities of multi-chunk execution:
+1. *Additive Segmentation*: The unintegrated treatment of a continuous 90-page selection as a mere sequence of isolated, independent passages.
+2. *Synthesized Coherence*: The unified processing of multi-chunk selections through global structural maps and aggregated hierarchical trees.
+
+Consider the logical distinction in processing: executing operations via *Additive Segmentation* forces the system to treat a 90-page selection as multiple short, independent passages, thereby destroying narrative and argumentative continuity. Conversely, *Synthesized Coherence* constructs a primary outline map according to established coherence protocols, alongside a synthesized *Tractatus Tree* that prunes irrelevant detail while retaining essential propositions. Consequently, when multi-chunk selections are specified, the application executes a primary coherence procedure to establish global unity, ensuring that downstream operations treat the selection as a singular, integrated whole.
+
+### II. Algorithmic Scaling Across Document Orders
+
+Given that document complexity expands non-linearly with scale, processing protocols must adhere to an explicit hierarchical order:
+(a) *Order 0*: Texts of minimal length require neither *Tractatus Trees* nor overarching coherence mapping.
+(b) *Order 1*: Texts expanded by an order of magnitude necessitate a single *Tractatus Tree* and a primary outline-map to establish global unity.
+(c) *Order 2*: Coherence and structural rewrites are achieved indirectly, not by direct text-crawling, but by synthesizing Order 1 trees and summary-maps.
+(d) *Order 3*: Processing proceeds through the synthesis of Order 2 maps and structural trees.
+(e) *Order N+1*: Execution proceeds recursively through the synthesis of Order N maps and structural trees.
+
+### III. User Interface Protocols and Intelligent Query Processing
+
+When an extensive text (such as an 800-page treatise) is ingested, system operations suffer significant temporal constraints. Supposing *arguendo* that a user attempts a document-level operation on a vast text, the system must enforce strict operational constraints:
+1. *User Admonition and Scope Advice*: The interface must explicitly notify the user that document-level processing requires substantial temporal duration, recommending focus on smaller subdivisions unless long processing delays are acceptable.
+2. *Cancellation and Progress Reporting*: To prevent application failure or user frustration, an easily accessible abort mechanism must be provided, accompanied by frequent progress notifications and incremental output deposits in small chunks.
+3. *Local-to-Global Aggregation*: The architecture must systematically aggregate localized operations—such as 50-page summaries, outlines, podcasts, tests, and rewrites—into cohesive, book-level outputs.
+4. *Format Optimization*: The system must inform the user that plain text (.txt) formats process far more efficiently than PDF files due to file size variations.
+5. *Interface Control*: The processing window must remain fully resizable, minimizable, and movable so as to remain unobtrusive.
+
+Crucially, global query capabilities must fully embody these coherence mechanisms. If a user (e.g., a legal practitioner evaluating an 800-page SEC filing) executes a document-level query, the generated output must reflect an integrated understanding of the unified document rather than 39 disjointed analyses. Furthermore, the newly introduced *Query* function must permit intelligent document searching (such as identifying all Clayton Act violations) and enable immediate downstream operations upon results—allowing users to rank extracted instances by severity or evaluate their specific legal significance in Delaware. What follows is a fully unified system wherein local operations and global synthesis converge into a singular, coherent framework.</pre></details>
+<details><summary>Draft 3: 661 words · anthropic · Subject check failed: The rewrite introduces an analogy about examining a house with keyholes and floor plans that is not present in the original input.</summary><pre># I. Structural Segmentation and Hierarchical Architecture
+
+The proposed system overhaul mandates that uploaded textual artifacts be systematically decomposed into discrete constituent units small enough to be processed by existing operational modalities. If a text is ingested, then it must undergo preliminary segmentation before localized functions—including podcast generation, outlining, literature reviews, testing, and rewrites—can operate upon individual chunks. Central to this architecture is the generation of a localized *Tractatus Tree* for each discrete unit, alongside preliminary outlining mechanisms derived from fundamental coherence protocols.
+
+To comprehend the necessity of this structural transformation, we must formally distinguish two modalities of multi-chunk execution:
+1. *Additive Segmentation*: The unintegrated treatment of a continuous 90-page selection as a mere sequence of isolated, independent passages.
+2. *Synthesized Coherence*: The unified processing of multi-chunk selections through global structural maps and aggregated hierarchical trees.
+
+Consider the logical distinction in processing: executing operations via *Additive Segmentation* forces the system to treat a 90-page selection as multiple short, independent passages, thereby destroying narrative and argumentative continuity. Conversely, *Synthesized Coherence* constructs a primary outline map according to established coherence protocols, alongside a synthesized *Tractatus Tree* that prunes irrelevant detail while retaining essential propositions. Think of this distinction as analogous to examining a house: *Additive Segmentation* inspects each room independently through separate keyholes, never perceiving the connecting hallways or shared architectural blueprint, whereas *Synthesized Coherence* walks through the entire structure with a comprehensive floor plan, understanding how each room relates to the unified whole. Consequently, when multi-chunk selections are specified, the application executes a primary coherence procedure to establish global unity, ensuring that downstream operations treat the selection as a singular, integrated whole.
+
+# II. Algorithmic Scaling Across Document Orders
+
+Given that document complexity expands non-linearly with scale, processing protocols must adhere to an explicit hierarchical order:
+(a) *Order 0*: Texts of minimal length require neither *Tractatus Trees* nor overarching coherence mapping.
+(b) *Order 1*: Texts expanded by an order of magnitude necessitate a single *Tractatus Tree* and a primary outline-map to establish global unity.
+(c) *Order 2*: Coherence and structural rewrites are achieved indirectly, not by direct text-crawling, but by synthesizing Order 1 trees and summary-maps.
+(d) *Order 3*: Processing proceeds through the synthesis of Order 2 maps and structural trees.
+(e) *Order N+1*: Execution proceeds recursively through the synthesis of Order N maps and structural trees.
+
+# III. User Interface Protocols and Intelligent Query Processing
+
+When an extensive text (such as an 800-page treatise) is ingested, system operations suffer significant temporal constraints. Supposing *arguendo* that a user attempts a document-level operation on a vast text, the system must enforce strict operational constraints:
+1. *User Admonition and Scope Advice*: The interface must explicitly notify the user that document-level processing requires substantial temporal duration, recommending focus on smaller subdivisions unless long processing delays are acceptable.
+2. *Cancellation and Progress Reporting*: To prevent application failure or user frustration, an easily accessible abort mechanism must be provided, accompanied by frequent progress notifications and incremental output deposits in small chunks.
+3. *Local-to-Global Aggregation*: The architecture must systematically aggregate localized operations—such as 50-page summaries, outlines, podcasts, tests, and rewrites—into cohesive, book-level outputs.
+4. *Format Optimization*: The system should inform the user that plain text (.txt) formats likely process more easily than PDF files due to size considerations.
+5. *Interface Control*: The processing window must remain fully resizable, minimizable, and movable so as to remain unobtrusive.
+
+Crucially, global query capabilities must fully embody these coherence mechanisms. If a user (e.g., a legal practitioner evaluating an 800-page SEC filing) executes a document-level query, the generated output must reflect an integrated understanding of the unified document rather than 39 disjointed analyses. Furthermore, the newly introduced *Query* function must permit intelligent document searching (such as identifying all Clayton Act violations) and enable immediate downstream operations upon results—allowing users to rank extracted instances by severity or evaluate their specific legal significance in Delaware. What follows is a fully unified system wherein local operations and global synthesis converge into a singular, coherent framework.</pre></details>
+       </section>
+
+      <section><h2>Prompt 10: PASS: anthropic returned 637 words; automated checks passed</h2>
+       <p><strong>Instruction:</strong> Rewrite in style of sample, formatting the distinction between legal status and moral authority as a header with &quot;≠&quot;.</p>
+       <p><strong>Applied style instruction:</strong> Rewrite in the style of the sample, formatting the distinction between corresponding key concepts in the document-processing text as a header with &quot;≠&quot;.</p>
+       <h3>Final output (637 words)</h3><pre># Chunk-Level Processing ≠ Document-Level Coherence
+
+The fundamental architectural transformation required herein concerns the distinction between operations performed upon discrete textual fragments (hereinafter &quot;chunks&quot;) and operations performed upon extended documents conceived as unified wholes. Given that current functionality operates reliably only within token-constrained boundaries—that is, given that the application as presently constituted cannot meaningfully process texts exceeding determinate length thresholds—it follows that comprehensive document-level operations necessitate (a) preliminary decomposition of uploaded materials into processable segments, (b) execution of fragment-level functions upon these segments, and (c) subsequent synthesis of fragment-level outputs into coherent document-level products through technologies described in the referenced coherence documentation, specifically the preliminary outlining procedures and the Tractatus tree methodology.
+
+The procedural sequence runs thus: First, upon text upload, the application must partition the material into chunks sufficiently small that existing functionality remains operative (the segmentation threshold being determined by current token limitations). Second, the application must preserve all extant capabilities—podcast generation, outline construction, examination protocols—at the chunk level, such that any individual fragment may be subjected to these operations independently. Third, a novel function shall be introduced, namely Tractatus tree generation, which shall be executable upon each discrete chunk. Fourth, when user-selected ranges span multiple chunks (supposing arguendo a ninety-page selection requiring ten discrete chunks), specialized procedures must govern processing: the application shall invoke the coherence-generation protocols specified in the uploaded documentation to produce a unified summary functioning as navigational infrastructure, thereby treating the selection as a singular semantic entity rather than as a mere concatenation of independent passages.
+
+The Tractatus tree generation for multi-chunk selections presents particular architectural challenges, inasmuch as document-level tree construction may require (i) generation of multiple fragment-level trees followed by synthesis operations that eliminate extraneous detail while preserving essential propositions, or (ii) dependency upon prior execution of coherence-mapping functions to establish the semantic scaffold upon which synthesis proceeds. Consequently, all existing functions—podcast generation, examination protocols, outline construction, literature review production—must be reconfigured to align with this bifurcated architecture, such that operations requested across extensive textual ranges (e.g., podcast generation spanning ninety pages) produce outputs reflecting document-level coherence rather than outputs treating the material as seventy independent micro-documents.
+
+Bearing in mind that processing requirements scale with document magnitude, the following hierarchical structure obtains: Order 0 documents (minimal length) require neither Tractatus trees nor specialized coherence measures; Order 1 documents (one magnitude increment) necessitate a single Tractatus tree and a single coherence-mapping outline (the &quot;summary-map&quot; that enables holistic treatment); Order 2 documents achieve coherence indirectly through generation and subsequent synthesis of Order 1 maps and trees; Order N+1 documents through synthesis of Order N structures, and so forth recursively.
+
+What follows from this scaling architecture is that document-level operations upon extensive materials (e.g., eight-hundred-page uploads) demand considerable processing duration. Therefore: (1) Upon large document upload, the application shall advise users that document-level operations require substantial processing time and suggest focusing upon smaller textual ranges unless extended wait times are acceptable; (2) Users shall retain abort functionality to terminate lengthy processes; (3) Progress indicators shall issue at frequent intervals during extended operations; (4) Output delivery shall occur in incremental portions permitting user evaluation of processing accuracy; (5) Most critically, the application must synthesize chunk-level operations into document-level products—if a user processes an eight-hundred-page text in fifty-page increments (generating summaries, outlines, examinations, podcasts, or rewrites for each segment), the application shall aggregate these outputs into comprehensive document-level equivalents.
+
+Furthermore, the interrogative functionality must incorporate coherence mechanisms: when users pose document-level queries concerning extensive materials (e.g., regulatory documents of eight hundred pages), responses must reflect holistic document comprehension rather than treating the material as fragmented units. Additionally, a novel &quot;Query&quot; function shall enable intelligent document searching responsive to commands such as &quot;locate all instances satisfying criterion X,&quot; with subsequent operations executable upon query results (e.g., ranking located instances by specified criteria, analyzing jurisdictional significance).</pre>
+       <details><summary>Draft 1: 637 words · anthropic · Checks passed</summary><pre># Chunk-Level Processing ≠ Document-Level Coherence
+
+The fundamental architectural transformation required herein concerns the distinction between operations performed upon discrete textual fragments (hereinafter &quot;chunks&quot;) and operations performed upon extended documents conceived as unified wholes. Given that current functionality operates reliably only within token-constrained boundaries—that is, given that the application as presently constituted cannot meaningfully process texts exceeding determinate length thresholds—it follows that comprehensive document-level operations necessitate (a) preliminary decomposition of uploaded materials into processable segments, (b) execution of fragment-level functions upon these segments, and (c) subsequent synthesis of fragment-level outputs into coherent document-level products through technologies described in the referenced coherence documentation, specifically the preliminary outlining procedures and the Tractatus tree methodology.
+
+The procedural sequence runs thus: First, upon text upload, the application must partition the material into chunks sufficiently small that existing functionality remains operative (the segmentation threshold being determined by current token limitations). Second, the application must preserve all extant capabilities—podcast generation, outline construction, examination protocols—at the chunk level, such that any individual fragment may be subjected to these operations independently. Third, a novel function shall be introduced, namely Tractatus tree generation, which shall be executable upon each discrete chunk. Fourth, when user-selected ranges span multiple chunks (supposing arguendo a ninety-page selection requiring ten discrete chunks), specialized procedures must govern processing: the application shall invoke the coherence-generation protocols specified in the uploaded documentation to produce a unified summary functioning as navigational infrastructure, thereby treating the selection as a singular semantic entity rather than as a mere concatenation of independent passages.
+
+The Tractatus tree generation for multi-chunk selections presents particular architectural challenges, inasmuch as document-level tree construction may require (i) generation of multiple fragment-level trees followed by synthesis operations that eliminate extraneous detail while preserving essential propositions, or (ii) dependency upon prior execution of coherence-mapping functions to establish the semantic scaffold upon which synthesis proceeds. Consequently, all existing functions—podcast generation, examination protocols, outline construction, literature review production—must be reconfigured to align with this bifurcated architecture, such that operations requested across extensive textual ranges (e.g., podcast generation spanning ninety pages) produce outputs reflecting document-level coherence rather than outputs treating the material as seventy independent micro-documents.
+
+Bearing in mind that processing requirements scale with document magnitude, the following hierarchical structure obtains: Order 0 documents (minimal length) require neither Tractatus trees nor specialized coherence measures; Order 1 documents (one magnitude increment) necessitate a single Tractatus tree and a single coherence-mapping outline (the &quot;summary-map&quot; that enables holistic treatment); Order 2 documents achieve coherence indirectly through generation and subsequent synthesis of Order 1 maps and trees; Order N+1 documents through synthesis of Order N structures, and so forth recursively.
+
+What follows from this scaling architecture is that document-level operations upon extensive materials (e.g., eight-hundred-page uploads) demand considerable processing duration. Therefore: (1) Upon large document upload, the application shall advise users that document-level operations require substantial processing time and suggest focusing upon smaller textual ranges unless extended wait times are acceptable; (2) Users shall retain abort functionality to terminate lengthy processes; (3) Progress indicators shall issue at frequent intervals during extended operations; (4) Output delivery shall occur in incremental portions permitting user evaluation of processing accuracy; (5) Most critically, the application must synthesize chunk-level operations into document-level products—if a user processes an eight-hundred-page text in fifty-page increments (generating summaries, outlines, examinations, podcasts, or rewrites for each segment), the application shall aggregate these outputs into comprehensive document-level equivalents.
+
+Furthermore, the interrogative functionality must incorporate coherence mechanisms: when users pose document-level queries concerning extensive materials (e.g., regulatory documents of eight hundred pages), responses must reflect holistic document comprehension rather than treating the material as fragmented units. Additionally, a novel &quot;Query&quot; function shall enable intelligent document searching responsive to commands such as &quot;locate all instances satisfying criterion X,&quot; with subsequent operations executable upon query results (e.g., ranking located instances by specified criteria, analyzing jurisdictional significance).</pre></details>
+       </section></html>

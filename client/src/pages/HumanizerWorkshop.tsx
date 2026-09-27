@@ -54,6 +54,7 @@ type WorkshopProvider =
 type RewriteJob = {
   chunks: string[];
   outputs: string[];
+  issues: string[];
   nextIndex: number;
   baseInstructions: string;
   fromOutput: boolean;
@@ -464,6 +465,9 @@ export default function HumanizerWorkshop() {
         }
         if (controller.signal.aborted || pendingRewrite.current !== job) return;
         job.outputs.push(payload.text.trim());
+        if (Array.isArray(payload.issues) && payload.issues.length) {
+          job.issues.push(`Part ${index + 1}: ${payload.issues.join(" ")}`);
+        }
         job.nextIndex++;
         if (typeof payload.provider === "string") job.usedProviders.add(payload.provider);
         if (typeof payload.fallbackReason === "string") job.fallbackReasons.add(payload.fallbackReason);
@@ -472,11 +476,15 @@ export default function HumanizerWorkshop() {
       if (controller.signal.aborted || pendingRewrite.current !== job) return;
       setOutputText(job.outputs.join("\n\n"));
       setPreviousAiScore(job.previousAiScore);
-      setRewriteMessage(
-        `Rewritten ${job.chunks.length === 1 ? "in one part" : `in ${job.chunks.length} parts`} with ${Array.from(job.usedProviders).join(", ")}.` +
-        (job.fallbackReasons.size ? ` ${Array.from(job.fallbackReasons).join(" ")}` : "") +
-        (job.fromOutput ? " The new draft is being rescanned by GPTZero." : ""),
-      );
+      if (job.issues.length) {
+        setRewriteError(`Draft available below, but the checks did not pass after correction: ${job.issues.join(" ")}`);
+      } else {
+        setRewriteMessage(
+          `Rewritten ${job.chunks.length === 1 ? "in one part" : `in ${job.chunks.length} parts`} with ${Array.from(job.usedProviders).join(", ")}.` +
+          (job.fallbackReasons.size ? ` ${Array.from(job.fallbackReasons).join(" ")}` : "") +
+          (job.fromOutput ? " The new draft is being rescanned by GPTZero." : ""),
+        );
+      }
       setRewriteProgress(null);
       setCanResume(false);
       pendingRewrite.current = null;
@@ -526,6 +534,7 @@ export default function HumanizerWorkshop() {
       const job: RewriteJob = {
         chunks: splitWorkshopDocument(original),
         outputs: [],
+        issues: [],
         nextIndex: 0,
         baseInstructions,
         fromOutput,
@@ -777,7 +786,7 @@ export default function HumanizerWorkshop() {
               <p role="status" className="border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-semibold text-emerald-900">{rewriteMessage}</p>
             ) : null}
             {rewriteError ? (
-              <p role="alert" className="border-b border-red-200 bg-red-50 px-5 py-2 text-sm text-red-800">Rewrite failed: {rewriteError}</p>
+              <p role="alert" className="border-b border-red-200 bg-red-50 px-5 py-2 text-sm text-red-800">{rewriteError.startsWith("Draft available below") ? rewriteError : `Rewrite failed: ${rewriteError}`}</p>
             ) : null}
             <Textarea
               value={outputText}

@@ -34,11 +34,13 @@ type DiagnosticResult = {
 type RewriteResult = {
   number: number;
   prompt: string;
+  appliedInstruction?: string;
   status: DiagnosticStatus;
   words?: number;
   durationMs?: number;
   provider?: string;
   output?: string;
+  drafts?: Array<{ text: string; words: number; issues: string[]; provider: string }>;
   error?: string;
 };
 
@@ -158,23 +160,20 @@ export default function HumanizerDiagnostics() {
           }
           const output = payload.text.trim();
           const words = output.split(/\s+/).length;
-          const sourceTerms = ["document", "chunk", "coherence", "tractatus"];
-          const retained = sourceTerms.filter((term) => output.toLowerCase().includes(term)).length;
-          const styleBleed = /\bnatural law\b|\bslavery\b|\blegal positivism\b|\btorture\b/i.test(output);
-           const error = payload.provider !== "gemini"
-             ? `Gemini did not perform this transformation; ${payload.provider || "another provider"} was substituted. ${payload.fallbackReason || ""}`
-             : words < 480 || words > 720
-             ? `Length check failed: ${words} words, expected approximately 600 (480–720 accepted).`
-            : styleBleed
-              ? "Source-fidelity check failed: the rewrite imported natural-law content not present in Box A."
-            : retained < 2
-              ? "Source-fidelity check failed: the rewrite does not retain at least two central Box A terms (document, chunk, coherence, tractatus)."
-              : undefined;
+          if (!Array.isArray(payload.issues) || !Array.isArray(payload.drafts)) {
+            throw new Error("The server did not return rewrite checks and draft evidence.");
+          }
+          const issues = [...payload.issues];
+          if (payload.provider !== "gemini") {
+            issues.push(`Gemini did not perform this transformation; ${payload.provider || "another provider"} was substituted. ${payload.fallbackReason || ""}`);
+          }
+          const error = issues.length ? issues.join(" ") : undefined;
           setRewriteResults((current) => current.map((item) =>
             item.number === testCase.number ? {
               ...item, status: error ? "failed" : "passed", words,
               durationMs: Math.round(performance.now() - started),
               provider: String(payload.provider || "unknown"), output, error,
+              drafts: payload.drafts, appliedInstruction: payload.appliedInstruction,
             } : item,
           ));
         } catch (error: any) {
@@ -486,6 +485,7 @@ export default function HumanizerDiagnostics() {
           <p className="mt-1 text-sm text-slate-700">
             Uses the supplied Box A text and full Box D style sample. Each click runs 10 different supplied instructions
             through the real rewrite endpoint, requesting approximately 600 words per result. Prompts rotate through all 50.
+            Correction drafts and the applied style instruction remain available for inspection.
             These instructions refer to natural law, whereas the supplied Box A text concerns document processing;
             the source-fidelity check flags results that abandon Box A.
           </p>
@@ -517,11 +517,26 @@ export default function HumanizerDiagnostics() {
                   </span>
                 </div>
                 <p className="mt-2 text-sm">{item.prompt}</p>
+                {item.appliedInstruction ? (
+                  <p className="mt-2 text-sm text-slate-600">Applied style instruction: {item.appliedInstruction}</p>
+                ) : null}
                 {item.error ? <p role="alert" className="mt-2 text-sm text-red-700">{item.error}</p> : null}
                 {item.output ? (
                   <details className="mt-3 rounded border bg-slate-50 p-3">
                     <summary className="cursor-pointer font-semibold">Inspect full transformed text</summary>
                     <div className="mt-3 whitespace-pre-wrap font-serif text-sm leading-relaxed">{item.output}</div>
+                  </details>
+                ) : null}
+                {item.drafts && item.drafts.length > 1 ? (
+                  <details className="mt-3 rounded border bg-slate-50 p-3">
+                    <summary className="cursor-pointer font-semibold">Inspect all {item.drafts.length} drafts and checks</summary>
+                    {item.drafts.map((draft, index) => (
+                      <div key={index} className="mt-3 border-t pt-3">
+                        <p className="text-sm font-semibold">Draft {index + 1} · {draft.words} words · {draft.provider}</p>
+                        <p className="text-sm">{draft.issues.length ? draft.issues.join(" ") : "Checks passed."}</p>
+                        <div className="mt-2 whitespace-pre-wrap font-serif text-sm leading-relaxed">{draft.text}</div>
+                      </div>
+                    ))}
                   </details>
                 ) : null}
               </article>
