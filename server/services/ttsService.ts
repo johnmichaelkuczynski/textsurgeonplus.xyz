@@ -77,12 +77,14 @@ async function synthesizeChunk(
   text: string,
   voice: TtsVoice,
   format: "mp3" | "wav",
+  signal?: AbortSignal,
 ): Promise<Buffer> {
   const outputFormat = format === "wav" ? `pcm_${PCM_SAMPLE_RATE}` : "mp3_44100_128";
   const response = await fetch(
     `${ELEVENLABS_TTS_URL}/${voice}?output_format=${outputFormat}`,
     {
       method: "POST",
+      signal,
       headers: {
         "xi-api-key": getElevenLabsKey(),
         "Content-Type": "application/json",
@@ -142,6 +144,7 @@ async function segmentSpeakers(
   text: string,
   speakers: SpeakerConfig[],
   instructions: string,
+  signal?: AbortSignal,
 ): Promise<SpeakerSegment[]> {
   const speakerNames = speakers.map((s) => s.name);
   const systemPrompt = `You split a manuscript into voice-acting segments. The available speakers are: ${speakerNames.join(", ")}.
@@ -159,6 +162,7 @@ Respond with JSON: {"segments": [{"speaker": "<name>", "text": "<verbatim text>"
 
   const response = await fetch(OPENAI_CHAT_URL, {
     method: "POST",
+    signal,
     headers: {
       Authorization: `Bearer ${getOpenAiKey()}`,
       "Content-Type": "application/json",
@@ -196,7 +200,8 @@ Respond with JSON: {"segments": [{"speaker": "<name>", "text": "<verbatim text>"
 
 // --- Public API ---
 
-export async function generateAudio(req: TtsRequest): Promise<{ buffer: Buffer; mime: string; ext: string }> {
+export async function generateAudio(req: TtsRequest, signal?: AbortSignal): Promise<{ buffer: Buffer; mime: string; ext: string }> {
+  signal?.throwIfAborted();
   const format = req.format === "wav" ? "wav" : "mp3";
   const mime = format === "wav" ? "audio/wav" : "audio/mpeg";
 
@@ -210,13 +215,15 @@ export async function generateAudio(req: TtsRequest): Promise<{ buffer: Buffer; 
     }
     const fallbackVoice = speakers[0].voice;
 
-    const segments = await segmentSpeakers(req.text, speakers, req.instructions || "");
+    const segments = await segmentSpeakers(req.text, speakers, req.instructions || "", signal);
 
     const buffers: Buffer[] = [];
     for (const segment of segments) {
+      signal?.throwIfAborted();
       const voice = voiceByName.get(segment.speaker.trim().toLowerCase()) || fallbackVoice;
       for (const chunk of chunkText(segment.text)) {
-        buffers.push(await synthesizeChunk(chunk, voice, format));
+        signal?.throwIfAborted();
+        buffers.push(await synthesizeChunk(chunk, voice, format, signal));
       }
     }
     return { buffer: concatAudio(buffers, format), mime, ext: format };
@@ -225,7 +232,8 @@ export async function generateAudio(req: TtsRequest): Promise<{ buffer: Buffer; 
   const voice = req.voice && (TTS_VOICES as readonly string[]).includes(req.voice) ? req.voice : TTS_VOICES[0];
   const buffers: Buffer[] = [];
   for (const chunk of chunkText(req.text)) {
-    buffers.push(await synthesizeChunk(chunk, voice, format));
+    signal?.throwIfAborted();
+    buffers.push(await synthesizeChunk(chunk, voice, format, signal));
   }
   return { buffer: concatAudio(buffers, format), mime, ext: format };
 }

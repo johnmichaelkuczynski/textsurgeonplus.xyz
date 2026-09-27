@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import {
   AlertCircle,
@@ -12,13 +12,18 @@ import {
   StopCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DiagnosticLivePopup, type DiagnosticTrace } from "@/components/DiagnosticLivePopup";
 import { diagnosticThinkers } from "@/data/diagnosticThinkers";
+import { CORE_FUNCTIONS, checkCoreFunction } from "@/lib/coreFunctionDiagnostics";
 import {
-  checkMultiPartRewrite, checkPresets, checkStripePublic, checkTts, checkUpload,
+  READ_ONLY_DIAGNOSTIC_CASES, UNCOVERED_HIGH_IMPACT_CATEGORIES, checkReadOnlyEndpoint,
+} from "@/lib/readOnlyDiagnostics";
+import {
+  checkStripePublic, checkTts, checkUpload,
   type CheckEvidence,
 } from "@/lib/workshopDiagnosticChecks";
 
-type DiagnosticStatus = "waiting" | "running" | "passed" | "failed" | "unverified";
+type DiagnosticStatus = "waiting" | "running" | "passed" | "failed" | "unverified" | "stopped";
 
 type DiagnosticResult = {
   id: string;
@@ -31,64 +36,46 @@ type DiagnosticResult = {
   error?: string;
 };
 
-type RewriteResult = {
-  number: number;
-  prompt: string;
-  appliedInstruction?: string;
-  status: DiagnosticStatus;
-  words?: number;
-  durationMs?: number;
-  provider?: string;
-  output?: string;
-  drafts?: Array<{ text: string; words: number; issues: string[]; provider: string }>;
-  error?: string;
-};
-
-const PROVIDERS = [
-  ["gemini", "Gemini"],
-  ["openai", "OpenAI"],
-  ["anthropic", "Anthropic"],
-  ["grok", "Grok"],
-  ["perplexity", "Perplexity"],
-  ["deepseek", "DeepSeek"],
-  ["venice", "Venice AI"],
-] as const;
-
-function labelForProvider(provider: string) {
-  return PROVIDERS.find(([id]) => id === provider)?.[1] || provider;
+function credentialForThinker(thinker: string) {
+  if (thinker === "Le Bon") return "LEBON_API_KEY";
+  return `${thinker.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "_")}_API_KEY`;
 }
 
 const INITIAL_RESULTS: DiagnosticResult[] = [
-  ...PROVIDERS.map(([id, label]) => ({
-    id,
-    label: `${label} rewrite and API key`,
-    description: `Rewrites a real Box A sample with Box C instructions and Box D style and content samples; requires ${label} itself, not a fallback provider.`,
+  ...CORE_FUNCTIONS.map(({ id, label }) => ({
+    id: `core:${id}`, label: `Main page: ${label}`,
+    description: "Runs the main-page function with a synthetic source and displays its genuine streamed response in a dedicated popup.",
+    status: "waiting" as const,
+  })),
+  ...READ_ONLY_DIAGNOSTIC_CASES.map((testCase) => ({
+    id: `read:${testCase.id}`, label: testCase.label,
+    description: "Makes a real, read-only request and verifies the returned data shape without changing user records.",
     status: "waiting" as const,
   })),
   {
     id: "gptzero",
     label: "Automatic GPTZero detection",
-    description: "Submits a real workshop-length sample and verifies that GPTZero returns a classification.",
+    description: "Submits a diagnostic sample to GPTZero and verifies that a classification is returned.",
     status: "waiting",
   },
-  { id: "score-guided", label: "Box B score-guided Rewrite", description: "Scans a draft, rewrites it using the returned GPTZero feedback, and scans the new draft. A lower score is not guaranteed.", status: "waiting" },
   { id: "source-upload", label: "Box A PDF upload", description: "Uploads and reads a real diagnostic PDF.", status: "waiting" },
   { id: "style-upload", label: "Box D PDF style upload", description: "Uploads the same PDF through the separate style-sample parser.", status: "waiting" },
-  { id: "presets", label: "Box C style presets", description: "Checks all 50 selectable instructions and the rewrite API's instruction limit.", status: "waiting" },
-  { id: "multi-part", label: "Large-document part-by-part rewrite", description: "Checks complete text splitting, then rewrites every part through the real route in order. This is a small live smoke test, not a two-million-character run.", status: "waiting" },
   { id: "tts", label: "ElevenLabs audio and API key", description: "Generates a short real audio clip; does not just check whether a key is present.", status: "waiting" },
   { id: "stripe-public", label: "Stripe public configuration", description: "Checks that a publishable key is available; does not validate Stripe secret credentials.", status: "waiting" },
   { id: "stripe-secret", label: "Stripe secret and webhook credentials", description: "A safe live credential probe does not exist on the running server; payment and webhook operations are not triggered by diagnostics.", status: "unverified" },
-  { id: "genius-generic", label: "Shared corpus API key", description: "Makes a real corpus search using GENIUS_API_KEY. A stored key alone does not prove access; the corpus endpoint must also be configured.", status: "waiting" },
+  { id: "genius-generic", label: "Generic GENIUS_API_KEY", description: "The supported authors use their own named keys. This generic key is not used by their corpus routes and cannot be marked verified by an author-specific search.", status: "unverified" },
+  ...UNCOVERED_HIGH_IMPACT_CATEGORIES.map((item, index) => ({
+    id: `uncovered:${index}`, label: item.category, description: item.reason, status: "unverified" as const,
+  })),
   ...diagnosticThinkers.map((thinker) => ({
-    id: `thinker:${thinker}`, label: `${thinker} corpus access`,
-    description: "Makes a real corpus search for this thinker using the shared credential; configuration alone cannot pass.",
+    id: `thinker:${thinker}`, label: `${thinker} corpus API key`,
+    description: `Makes a real corpus search using ${credentialForThinker(thinker)}; the returned credential name must match and a passage must be found.`,
     status: "waiting" as const,
   })),
 ];
 
 function diagnosticVisitorId() {
-  const key = "humanizer-workshop-diagnostic-visitor-id";
+  const key = "humanizer-diagnostic-visitor-id";
   const existing = window.localStorage.getItem(key);
   if (existing) return existing;
   const value = `diagnostic-${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`;
@@ -99,182 +86,79 @@ function diagnosticVisitorId() {
 export default function HumanizerDiagnostics() {
   const [results, setResults] = useState<DiagnosticResult[]>(INITIAL_RESULTS);
   const [isRunning, setIsRunning] = useState(false);
+  const [wasStopped, setWasStopped] = useState(false);
   const abortController = useRef<AbortController | null>(null);
-  const [rewriteResults, setRewriteResults] = useState<RewriteResult[]>([]);
-  const [rewriteRunning, setRewriteRunning] = useState(false);
-  const [rewriteError, setRewriteError] = useState("");
-  const rewriteController = useRef<AbortController | null>(null);
+  const [traces, setTraces] = useState<Record<string, DiagnosticTrace>>({});
+  const [activeTraceId, setActiveTraceId] = useState<string | null>(null);
+  useEffect(() => () => abortController.current?.abort(), []);
 
-  const runHumanizerDiagnostic = async (sharedController?: AbortController) => {
-    if (rewriteController.current) return;
-    const controller = sharedController || new AbortController();
-    rewriteController.current = controller;
-    setRewriteRunning(true);
-    setRewriteError("");
-    setRewriteResults([]);
-    try {
-      const fixtureResponse = await fetch("/api/humanizer/diagnostic-prompts", {
-        credentials: "include",
-        signal: controller.signal,
-      });
-      if (!fixtureResponse.headers.get("content-type")?.includes("application/json")) {
-        throw new Error("The server returned a webpage instead of diagnostic data. The new server route is not active.");
-      }
-      const fixture = await fixtureResponse.json();
-      if (!fixtureResponse.ok) throw new Error(fixture?.error || `HTTP ${fixtureResponse.status}`);
-      if (
-        !Array.isArray(fixture?.prompts) ||
-        fixture.prompts.length < 10
-      ) {
-        throw new Error("The diagnostic files are incomplete.");
-      }
-      const offset = Number(window.localStorage.getItem("humanizer-diagnostic-next-prompt") || 0);
-      const start = Number.isFinite(offset) ? offset % fixture.prompts.length : 0;
-      const cases: RewriteResult[] = Array.from({ length: 10 }, (_, index) => {
-        const number = (start + index) % fixture.prompts.length;
-        return { number: number + 1, prompt: fixture.prompts[number], status: "waiting" };
-      });
-      window.localStorage.setItem("humanizer-diagnostic-next-prompt", String((start + 10) % fixture.prompts.length));
-      setRewriteResults(cases);
-      for (const testCase of cases) {
-        if (controller.signal.aborted) break;
-        const started = performance.now();
-        setRewriteResults((current) => current.map((item) =>
-          item.number === testCase.number ? { ...item, status: "running" } : item,
-        ));
-        try {
-          const response = await fetch("/api/humanizer/diagnostic-rewrite", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            signal: controller.signal,
-            body: JSON.stringify({ promptIndex: testCase.number - 1 }),
-          });
-          if (!response.headers.get("content-type")?.includes("application/json")) {
-            throw new Error("The server returned a webpage instead of a rewrite. The new server route is not active.");
-          }
-          const payload = await response.json();
-          if (!response.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
-          if (typeof payload?.text !== "string" || !payload.text.trim()) {
-            throw new Error("No transformed text was returned.");
-          }
-          const output = payload.text.trim();
-          const words = output.split(/\s+/).length;
-          if (!Array.isArray(payload.issues) || !Array.isArray(payload.drafts)) {
-            throw new Error("The server did not return rewrite checks and draft evidence.");
-          }
-          const issues = [...payload.issues];
-          if (payload.provider !== "gemini") {
-            issues.push(`Gemini did not perform this transformation; ${payload.provider || "another provider"} was substituted. ${payload.fallbackReason || ""}`);
-          }
-          const error = issues.length ? issues.join(" ") : undefined;
-          setRewriteResults((current) => current.map((item) =>
-            item.number === testCase.number ? {
-              ...item, status: error ? "failed" : "passed", words,
-              durationMs: Math.round(performance.now() - started),
-              provider: String(payload.provider || "unknown"), output, error,
-              drafts: payload.drafts, appliedInstruction: payload.appliedInstruction,
-            } : item,
-          ));
-        } catch (error: any) {
-          setRewriteResults((current) => current.map((item) =>
-            item.number === testCase.number ? {
-              ...item, status: "failed",
-              durationMs: Math.round(performance.now() - started),
-              error: error?.name === "AbortError" ? "Stopped." : error?.message || "Rewrite failed.",
-            } : item,
-          ));
-          if (controller.signal.aborted) break;
-        }
-      }
-    } catch (error: any) {
-      if (error?.name !== "AbortError") setRewriteError(error?.message || "Diagnostic failed.");
-    } finally {
-      if (rewriteController.current === controller) rewriteController.current = null;
-      setRewriteRunning(false);
-    }
+  const recordTrace = (id: string, label: string, status: DiagnosticTrace["status"], output?: string, error?: string) => {
+    const time = new Date().toLocaleTimeString();
+    setTraces((current) => {
+      const previous = current[id];
+      return {
+        ...current,
+        [id]: {
+          id, label, status,
+          events: status === "running"
+            ? [`${time} — Started a real request. Waiting for the provider or service to respond.`]
+            : [...(previous?.events || []), `${time} — ${status === "passed" ? "Passed." : status === "stopped" ? "Stopped by user; no result verified." : `Failed or unverified: ${error || "No verified result."}`}`],
+          output: status === "running" ? undefined : output ?? previous?.output,
+        },
+      };
+    });
+    if (status === "running") setActiveTraceId(id);
+  };
+
+  const appendTraceStage = (id: string, message: string) => {
+    setTraces((current) => {
+      const trace = current[id];
+      if (!trace) return current;
+      return {
+        ...current,
+        [id]: { ...trace, events: [...trace.events, `${new Date().toLocaleTimeString()} — ${message}`] },
+      };
+    });
   };
 
   const updateResult = (id: string, patch: Partial<DiagnosticResult>) => {
     setResults((current) =>
       current.map((result) => (result.id === id ? { ...result, ...patch } : result)),
     );
-  };
-
-  const runProviderCheck = async (
-    provider: (typeof PROVIDERS)[number][0],
-    signal: AbortSignal,
-  ) => {
-    const startedAt = performance.now();
-    updateResult(provider, {
-      status: "running",
-      durationMs: undefined,
-      httpStatus: undefined,
-      evidence: undefined,
-      error: undefined,
-    });
-    try {
-      const response = await fetch("/api/humanizer/rewrite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        signal,
-        body: JSON.stringify({
-          text: "The archive records each document in the order it arrived. Readers compare the records to identify changes in the account, while retaining the source's context and chronology.",
-          provider,
-          instructions: "Rewrite this passage naturally. Keep its subject, concrete facts, and approximate length.",
-          styleSample: "A garden survives when its soil is tended patiently. Its early growth is modest, but the seasons reward attention.",
-          styleInstructions: "Use the sample's measured cadence, not its topic.",
-          contentSample: "An archive can show how records changed over time.",
-          contentInstructions: "Do not add facts from this sample to the source.",
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      const durationMs = Math.round(performance.now() - startedAt);
-      if (!response.ok) {
-        throw Object.assign(
-          new Error(payload?.error || `Request failed with HTTP ${response.status}`),
-          { httpStatus: response.status, durationMs },
-        );
-      }
-      if (typeof payload?.text !== "string" || !payload.text.trim()) {
-        throw Object.assign(new Error("The provider returned no generated text"), {
-          httpStatus: response.status,
-          durationMs,
-        });
-      }
-      if (payload.provider !== provider) {
-        throw Object.assign(
-          new Error(`${labelForProvider(provider)} did not pass: ${payload.provider || "another provider"} answered instead. ${payload.fallbackReason || ""}`),
-          { httpStatus: response.status, durationMs },
-        );
-      }
-      if (!/\b(archive|record|records|document|documents)\b/i.test(payload.text) ||
-          /\b(garden|soil|seasons)\b/i.test(payload.text)) {
-        throw Object.assign(new Error("Source-fidelity check failed: the rewrite lost the archive subject or imported the style sample's garden subject."), {
-          httpStatus: response.status, durationMs,
-        });
-      }
-      updateResult(provider, {
-        status: "passed",
-        durationMs,
-        httpStatus: response.status,
-        evidence: payload.text.trim(),
-      });
-      return payload.text.trim();
-    } catch (error: any) {
-      const durationMs = error?.durationMs || Math.round(performance.now() - startedAt);
-      updateResult(provider, {
-        status: "failed",
-        durationMs,
-        httpStatus: error?.httpStatus,
-        error: error?.name === "AbortError" ? "Diagnostic stopped" : error?.message || "Request failed",
-      });
-      return "";
+    if (patch.status === "running" || patch.status === "passed" || patch.status === "failed") {
+      const label = INITIAL_RESULTS.find((item) => item.id === id)?.label || id;
+      recordTrace(id, label, patch.status, patch.evidence, patch.error);
     }
   };
 
-  const runGptZeroCheck = async (sample: string, signal: AbortSignal) => {
+  const appendStreamedText = (id: string, chunk: string) => {
+    setTraces((current) => {
+      const trace = current[id];
+      if (!trace) return current;
+      return { ...current, [id]: { ...trace, output: (trace.output || "") + chunk } };
+    });
+  };
+
+  const runMainFunctions = async (signal: AbortSignal) => {
+    for (const { id } of CORE_FUNCTIONS) {
+      if (signal.aborted) break;
+      const traceId = `core:${id}`;
+      await runCheck(traceId, (activeSignal) =>
+        checkCoreFunction(id, activeSignal, (chunk) => {
+          if (!activeSignal.aborted) appendStreamedText(traceId, chunk);
+        }), signal);
+    }
+  };
+
+  const runReadOnlyChecks = async (signal: AbortSignal) => {
+    for (const testCase of READ_ONLY_DIAGNOSTIC_CASES) {
+      if (signal.aborted) break;
+      await runCheck(`read:${testCase.id}`, (activeSignal) => checkReadOnlyEndpoint(testCase, activeSignal), signal);
+    }
+  };
+
+  const runGptZeroCheck = async (signal: AbortSignal) => {
+    if (signal.aborted) return;
     const startedAt = performance.now();
     updateResult("gptzero", {
       status: "running",
@@ -284,9 +168,7 @@ export default function HumanizerDiagnostics() {
       error: undefined,
     });
     const diagnosticSample =
-      sample.length >= 50
-        ? sample
-        : "Furthermore, it is important to recognize that technological progress offers numerous significant benefits while also presenting several complex challenges for modern society.";
+      "Public libraries preserve books, local records, and community archives. Readers use these collections to compare accounts, follow changes over time, and understand how each document fits its historical context.";
     try {
       const response = await fetch("/api/gptzero/detect", {
         method: "POST",
@@ -299,6 +181,7 @@ export default function HumanizerDiagnostics() {
         }),
       });
       const payload = await response.json().catch(() => null);
+      if (signal.aborted) return;
       const durationMs = Math.round(performance.now() - startedAt);
       if (!response.ok) {
         throw Object.assign(
@@ -322,6 +205,7 @@ export default function HumanizerDiagnostics() {
         }`,
       });
     } catch (error: any) {
+      if (signal.aborted) return;
       updateResult("gptzero", {
         status: "failed",
         durationMs: error?.durationMs || Math.round(performance.now() - startedAt),
@@ -332,11 +216,12 @@ export default function HumanizerDiagnostics() {
   };
 
   const runCheck = async (id: string, check: (signal: AbortSignal) => Promise<CheckEvidence> | CheckEvidence, signal: AbortSignal) => {
+    if (signal.aborted) return;
     const started = performance.now();
     updateResult(id, { status: "running", error: undefined, evidence: undefined, durationMs: undefined, httpStatus: undefined });
     try {
       const result = await check(signal);
-      if (signal.aborted) throw new DOMException("Stopped", "AbortError");
+      if (signal.aborted) return;
       updateResult(id, {
         ...result,
         status: result.degradedReason ? "failed" : "passed",
@@ -344,6 +229,7 @@ export default function HumanizerDiagnostics() {
         durationMs: Math.round(performance.now() - started),
       });
     } catch (error: any) {
+      if (signal.aborted) return;
       updateResult(id, {
         status: "failed", durationMs: Math.round(performance.now() - started),
         httpStatus: error?.httpStatus,
@@ -361,9 +247,15 @@ export default function HumanizerDiagnostics() {
       if (!payload || typeof payload !== "object" || typeof payload.credential?.name !== "string") {
         throw Object.assign(new Error(`Corpus status did not return credential evidence (HTTP ${response.status}).`), { httpStatus: response.status });
       }
-      if (!response.ok || !payload.credential.configured || !payload.configuration?.ready || !payload.access?.ok) {
+      const expectedCredential = credentialForThinker(thinker);
+      if (payload.credential.name !== expectedCredential) {
         throw Object.assign(new Error(
-          `${payload.credential.name}: ${payload.configuration?.missing?.length ? `Missing ${payload.configuration.missing.join(", ")}` : payload.access?.message || "Corpus search failed"}`,
+          `Expected ${expectedCredential}; the server selected ${payload.credential.name}. This author's key has not been tested.`,
+        ), { httpStatus: response.status });
+      }
+      if (!response.ok || !payload.credential.configured || !payload.configuration?.ready || !payload.access?.ok || !(payload.access.passageCount > 0)) {
+        throw Object.assign(new Error(
+          `${payload.credential.name}: ${payload.configuration?.missing?.length ? `Missing ${payload.configuration.missing.join(", ")}` : payload.access?.passageCount === 0 ? "No passage was returned; this author's corpus access is unverified" : payload.access?.message || "Corpus search failed"}`,
         ), { httpStatus: response.status });
       }
       return {
@@ -372,63 +264,20 @@ export default function HumanizerDiagnostics() {
       };
     }, signal);
 
-  const runScoreGuidedCheck = (source: string, signal: AbortSignal) =>
-    runCheck("score-guided", async () => {
-      if (source.length < 50) throw new Error("No provider returned a usable Box B draft to test.");
-      const scan = async (text: string) => {
-        const response = await fetch("/api/gptzero/detect", {
-          method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", signal,
-          body: JSON.stringify({ text: `${text.slice(0, 2_000)} Diagnostic run ${crypto.randomUUID()}.`, visitorId: diagnosticVisitorId() }),
-        });
-        const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.documentClassification) {
-          throw Object.assign(new Error(payload?.error || `GPTZero did not classify the draft (HTTP ${response.status}).`), { httpStatus: response.status });
-        }
-        return payload;
-      };
-      const before = await scan(source);
-      const response = await fetch("/api/humanizer/rewrite", {
-        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", signal,
-        body: JSON.stringify({
-          text: source, provider: "gemini",
-          instructions: `Revise this Box B draft using its GPTZero classification ${before.documentClassification}. Preserve its archive subject, facts, and approximate length. Improve natural variation; do not claim any score is guaranteed.`,
-        }),
-      });
-      const rewrite = await response.json().catch(() => null);
-      if (!response.ok || typeof rewrite?.text !== "string" || !rewrite.text.trim()) {
-        throw Object.assign(new Error(rewrite?.error || `Box B rewrite failed (HTTP ${response.status}).`), { httpStatus: response.status });
-      }
-      const after = await scan(rewrite.text);
-      return {
-        evidence: `Original classification: ${before.documentClassification}. Rewritten: ${rewrite.text.trim()} New classification: ${after.documentClassification}. No lower-score claim is made.`,
-        httpStatus: response.status,
-        degradedReason: rewrite.provider !== "gemini"
-          ? `Gemini did not perform Box B Rewrite; ${rewrite.provider || "another provider"} was substituted. ${rewrite.fallbackReason || ""}`
-          : undefined,
-      };
-    }, signal);
-
   const runAll = async () => {
-    if (isRunning || rewriteRunning) return;
+    if (abortController.current || isRunning) return;
     const controller = new AbortController();
     abortController.current = controller;
+    setWasStopped(false);
     setIsRunning(true);
     setResults(INITIAL_RESULTS);
-    setRewriteResults([]);
-    setRewriteError("");
     try {
-      const samples: string[] = [];
-      for (const [provider] of PROVIDERS) {
-        if (controller.signal.aborted) break;
-        samples.push(await runProviderCheck(provider, controller.signal));
-      }
-      if (!controller.signal.aborted) await runGptZeroCheck(samples.find((sample) => sample.length >= 50) || "", controller.signal);
-      if (!controller.signal.aborted) await runScoreGuidedCheck(samples.find((sample) => sample.length >= 50) || "", controller.signal);
+      await runMainFunctions(controller.signal);
+      await runReadOnlyChecks(controller.signal);
+      if (!controller.signal.aborted) await runGptZeroCheck(controller.signal);
       const checks: [string, (signal: AbortSignal) => Promise<CheckEvidence> | CheckEvidence][] = [
         ["source-upload", (signal) => checkUpload("/api/parse-file", signal)],
         ["style-upload", (signal) => checkUpload("/api/parse-style-sample", signal)],
-        ["presets", () => checkPresets()],
-        ["multi-part", checkMultiPartRewrite],
         ["tts", checkTts],
         ["stripe-public", checkStripePublic],
       ];
@@ -436,39 +285,103 @@ export default function HumanizerDiagnostics() {
         if (controller.signal.aborted) break;
         await runCheck(id, check, controller.signal);
       }
-      if (!controller.signal.aborted) {
-        await runCheck("genius-generic", async () => {
-          const response = await fetch("/api/thinker-chat/corpus-status?thinker=Plato&test=true", {
-            credentials: "include", signal: controller.signal,
-          });
-          const payload = await response.json().catch(() => null);
-          if (!response.ok || payload?.credential?.name !== "GENIUS_API_KEY" || !payload?.access?.ok) {
-            throw Object.assign(new Error(
-              payload?.configuration?.missing?.length
-                ? `Missing ${payload.configuration.missing.join(", ")}`
-                : payload?.access?.message || "The shared corpus credential was not verified by a live search.",
-            ), { httpStatus: response.status });
-          }
-          return { evidence: `${payload.access.message}; ${payload.access.passageCount} passage(s).`, httpStatus: response.status };
-        }, controller.signal);
-      }
       for (let i = 0; i < diagnosticThinkers.length && !controller.signal.aborted; i += 4) {
         await Promise.all(diagnosticThinkers.slice(i, i + 4).map((thinker) => runThinkerCheck(thinker, controller.signal)));
       }
-      if (!controller.signal.aborted) await runHumanizerDiagnostic(controller);
     } finally {
-      setIsRunning(false);
-      abortController.current = null;
+      if (abortController.current === controller) {
+        setIsRunning(false);
+        abortController.current = null;
+      }
     }
   };
 
-  const stop = () => abortController.current?.abort();
-  const passed = results.filter((result) => result.status === "passed").length +
-    rewriteResults.filter((item) => item.status === "passed").length;
-  const failed = results.filter((result) => result.status === "failed").length +
-    rewriteResults.filter((item) => item.status === "failed").length;
-  const unverified = results.filter((result) => result.status === "unverified" || result.status === "waiting" || result.status === "running").length +
-    rewriteResults.filter((item) => item.status === "waiting" || item.status === "running").length;
+  const runMainFunctionDiagnostics = async () => {
+    if (abortController.current || isRunning) return;
+    const controller = new AbortController();
+    abortController.current = controller;
+    setWasStopped(false);
+    setIsRunning(true);
+    setResults((current) => current.map((result) =>
+      result.id.startsWith("core:")
+        ? { ...result, status: "waiting", error: undefined, evidence: undefined, httpStatus: undefined, durationMs: undefined }
+        : result,
+    ));
+    try {
+      await runMainFunctions(controller.signal);
+    } finally {
+      if (abortController.current === controller) {
+        setIsRunning(false);
+        abortController.current = null;
+      }
+    }
+  };
+
+  const runReadOnlyDiagnostics = async () => {
+    if (abortController.current || isRunning) return;
+    const controller = new AbortController();
+    abortController.current = controller;
+    setWasStopped(false);
+    setIsRunning(true);
+    setResults((current) => current.map((result) =>
+      result.id.startsWith("read:")
+        ? { ...result, status: "waiting", error: undefined, evidence: undefined, httpStatus: undefined, durationMs: undefined }
+        : result,
+    ));
+    try {
+      await runReadOnlyChecks(controller.signal);
+    } finally {
+      if (abortController.current === controller) {
+        setIsRunning(false);
+        abortController.current = null;
+      }
+    }
+  };
+
+  const runAuthorKeyDiagnostics = async () => {
+    if (abortController.current || isRunning) return;
+    const controller = new AbortController();
+    abortController.current = controller;
+    setWasStopped(false);
+    setIsRunning(true);
+    setResults((current) => current.map((result) =>
+      result.id.startsWith("thinker:")
+        ? { ...result, status: "waiting", error: undefined, evidence: undefined, httpStatus: undefined, durationMs: undefined }
+        : result,
+    ));
+    try {
+      for (let i = 0; i < diagnosticThinkers.length && !controller.signal.aborted; i += 4) {
+        await Promise.all(diagnosticThinkers.slice(i, i + 4).map((thinker) => runThinkerCheck(thinker, controller.signal)));
+      }
+    } finally {
+      if (abortController.current === controller) {
+        setIsRunning(false);
+        abortController.current = null;
+      }
+    }
+  };
+
+  const stop = () => {
+    const controller = abortController.current;
+    if (!controller) return;
+    controller.abort();
+    abortController.current = null;
+    setIsRunning(false);
+    setWasStopped(true);
+    setResults((current) => current.map((result) =>
+      result.status === "running" || result.status === "waiting"
+        ? { ...result, status: "stopped", error: "Stopped by user; not verified.", evidence: undefined }
+        : result,
+    ));
+    setTraces((current) => Object.fromEntries(Object.entries(current).map(([id, trace]) =>
+      [id, trace.status === "running"
+        ? { ...trace, status: "stopped" as const, events: [...trace.events, `${new Date().toLocaleTimeString()} — Stopped by user. No further results will be accepted.`] }
+        : trace],
+    )));
+  };
+  const passed = results.filter((result) => result.status === "passed").length;
+  const failed = results.filter((result) => result.status === "failed").length;
+  const unverified = results.filter((result) => result.status === "unverified" || result.status === "waiting" || result.status === "running" || result.status === "stopped").length;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
@@ -496,67 +409,15 @@ export default function HumanizerDiagnostics() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-5 p-5 lg:p-8">
-        <section className="rounded-xl border-2 border-blue-200 bg-white p-5 shadow-sm">
-          <h2 className="text-lg font-black">Humanizer transformation diagnostic</h2>
-          <p className="mt-1 text-sm text-slate-700">
-            Uses the supplied Box A text and full Box D style sample. Each click runs 10 different supplied instructions
-            through the real rewrite endpoint, requesting approximately 600 words per result. Prompts rotate through all 50.
-            Correction drafts and the applied style instruction remain available for inspection.
-            These instructions refer to natural law, whereas the supplied Box A text concerns document processing;
-            the source-fidelity check flags results that abandon Box A.
+        <section className="rounded-xl border-2 border-amber-300 bg-amber-50 p-5 shadow-sm text-amber-950">
+          <h2 className="text-lg font-black">Workshop checks unavailable</h2>
+          <p className="mt-1 text-sm">
+            Transformation, provider rewrite, style/content sample, score-guided rewrite, preset, and multipart workshop
+            diagnostics are retired pending replacement logic. They are not run and are not counted as passed.
           </p>
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            {rewriteRunning ? (
-              <Button type="button" variant="destructive" onClick={() => rewriteController.current?.abort()}>
-                <StopCircle className="mr-2 h-4 w-4" /> Stop transformation diagnostic
-              </Button>
-            ) : (
-                <Button type="button" disabled={isRunning} onClick={() => void runHumanizerDiagnostic()} className="bg-blue-700 hover:bg-blue-800" data-testid="button-humanizer-diagnostic">
-                <Play className="mr-2 h-4 w-4" /> Test 10 transformations
-              </Button>
-            )}
-            <span role="status" className="text-sm text-slate-700">
-              {rewriteResults.filter((item) => item.status === "passed" || item.status === "failed").length}
-              /{rewriteResults.length} completed · {rewriteResults.filter((item) => item.status === "passed").length} passed
-            </span>
-          </div>
-          {rewriteError ? <p role="alert" className="mt-3 rounded bg-red-50 p-3 text-sm text-red-800">{rewriteError}</p> : null}
-          <div className="mt-4 space-y-3">
-            {rewriteResults.map((item) => (
-              <article key={item.number} className={`rounded-lg border p-4 ${item.status === "passed" ? "border-emerald-300" : item.status === "failed" ? "border-red-300" : "border-slate-200"}`}>
-                <div className="flex flex-wrap justify-between gap-2">
-                  <h3 className="font-bold">Prompt {item.number} · {item.status}</h3>
-                  <span className="text-xs text-slate-600">
-                    {item.words !== undefined ? `${item.words} words · ` : ""}
-                    {item.provider ? `${item.provider} · ` : ""}
-                    {item.durationMs !== undefined ? `${item.durationMs.toLocaleString()} ms` : ""}
-                  </span>
-                </div>
-                <p className="mt-2 text-sm">{item.prompt}</p>
-                {item.appliedInstruction ? (
-                  <p className="mt-2 text-sm text-slate-600">Applied style instruction: {item.appliedInstruction}</p>
-                ) : null}
-                {item.error ? <p role="alert" className="mt-2 text-sm text-red-700">{item.error}</p> : null}
-                {item.output ? (
-                  <details className="mt-3 rounded border bg-slate-50 p-3">
-                    <summary className="cursor-pointer font-semibold">Inspect full transformed text</summary>
-                    <div className="mt-3 whitespace-pre-wrap font-serif text-sm leading-relaxed">{item.output}</div>
-                  </details>
-                ) : null}
-                {item.drafts && item.drafts.length > 1 ? (
-                  <details className="mt-3 rounded border bg-slate-50 p-3">
-                    <summary className="cursor-pointer font-semibold">Inspect all {item.drafts.length} drafts and checks</summary>
-                    {item.drafts.map((draft, index) => (
-                      <div key={index} className="mt-3 border-t pt-3">
-                        <p className="text-sm font-semibold">Draft {index + 1} · {draft.words} words · {draft.provider}</p>
-                        <p className="text-sm">{draft.issues.length ? draft.issues.join(" ") : "Checks passed."}</p>
-                        <div className="mt-2 whitespace-pre-wrap font-serif text-sm leading-relaxed">{draft.text}</div>
-                      </div>
-                    ))}
-                  </details>
-                ) : null}
-              </article>
-            ))}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" variant="outline" disabled aria-disabled="true">Workshop transformation checks unavailable</Button>
+            <Button type="button" variant="outline" disabled aria-disabled="true">Workshop rewrite and sample checks unavailable</Button>
           </div>
         </section>
         <section className="rounded-xl border bg-white p-5 shadow-sm">
@@ -564,39 +425,61 @@ export default function HumanizerDiagnostics() {
             <div>
               <h2 className="text-lg font-black">Live system check</h2>
               <p className="mt-1 max-w-2xl text-sm text-slate-600">
-                This sends real rewrite, parser, detection, audio, and corpus requests. It runs the 10 transformation cases afterward.
-                It may take several minutes and consume paid API usage. Green means a real result was verified; fallback providers do not pass for the requested key.
+                This sends real requests and may take substantial time and consume paid API usage.
+                Main-page analysis streams provider text as it arrives. Other checks show live request status, then the actual output when their API responds.
+                Green means a real result was verified; fallback providers do not pass for the requested key.
               </p>
             </div>
             {isRunning ? (
-              <Button type="button" variant="destructive" onClick={stop} className="gap-2">
-                <StopCircle className="h-4 w-4" /> Stop diagnostics
+              <Button type="button" variant="destructive" onClick={stop} className="gap-2" data-testid="button-stop-diagnostics">
+                <StopCircle className="h-4 w-4" /> Stop all diagnostics now
               </Button>
             ) : (
-              <Button type="button" onClick={() => void runAll()} className="gap-2 bg-cyan-700 hover:bg-cyan-800">
-                <Play className="h-4 w-4" /> Run all diagnostics
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" onClick={() => void runAll()} className="gap-2 bg-cyan-700 hover:bg-cyan-800">
+                  <Play className="h-4 w-4" /> Run all diagnostics
+                </Button>
+                <Button type="button" variant="outline" onClick={() => void runAuthorKeyDiagnostics()} className="gap-2" data-testid="button-check-author-keys">
+                  <Play className="h-4 w-4" /> Check each author key
+                </Button>
+                <Button type="button" variant="outline" onClick={() => void runMainFunctionDiagnostics()} className="gap-2" data-testid="button-check-main-functions">
+                  <Play className="h-4 w-4" /> Check main-page functions
+                </Button>
+                <Button type="button" variant="outline" onClick={() => void runReadOnlyDiagnostics()} className="gap-2" data-testid="button-check-read-only">
+                  <Play className="h-4 w-4" /> Check read-only functions
+                </Button>
+              </div>
             )}
           </div>
           <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-            <span className="rounded-full bg-slate-100 px-3 py-1">{results.length + rewriteResults.length} checks listed</span>
+            <span className="rounded-full bg-slate-100 px-3 py-1">{results.length} checks listed</span>
             <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">{passed} passed</span>
             <span className="rounded-full bg-red-100 px-3 py-1 text-red-800">{failed} failed</span>
             <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-900">{unverified} not verified</span>
           </div>
           {isRunning ? <p role="status" className="mt-3 text-sm font-semibold text-blue-800">Diagnostics running. Results update as each real request completes.</p> : null}
+          {wasStopped ? <p role="status" className="mt-3 text-sm font-semibold text-red-800">Stopped. Active requests were canceled, remaining checks will not start, and incomplete checks are not verified.</p> : null}
           {!isRunning && (passed > 0 || failed > 0) ? (
-            <p role="status" className={`mt-3 text-sm font-semibold ${failed || unverified || rewriteError ? "text-red-800" : "text-emerald-800"}`}>
-              {failed || unverified || rewriteError
+            <p role="status" className={`mt-3 text-sm font-semibold ${failed || unverified ? "text-red-800" : "text-emerald-800"}`}>
+              {failed || unverified
                 ? "Not all functions and credentials are verified. Review failed and unverified checks before relying on the app."
                 : "All listed live checks passed."}
             </p>
           ) : null}
           <p className="mt-3 text-sm text-amber-900">
             Stripe secret and webhook keys cannot be tested safely through the current running server. Clear All, browser reload recovery,
-            a complete two-million-character run, payments, and unrelated Text Surgeon tools are not verified by this workshop suite.
+            a complete two-million-character run, payments, and Text Surgeon tools not named above remain unverified.
             No untested function is counted as passed.
           </p>
+        </section>
+        <section className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
+          <h2 className="text-lg font-black">Functions that are not yet verified</h2>
+          <p className="mt-1">A green result applies only to the named function and actual key tested. The following areas remain unverified; this page does not treat them as passes:</p>
+          <ul className="mt-3 list-disc space-y-2 pl-5">
+            {UNCOVERED_HIGH_IMPACT_CATEGORIES.map((item) => (
+              <li key={item.category}><strong>{item.category}:</strong> {item.reason}</li>
+            ))}
+          </ul>
         </section>
 
         <section className="space-y-3">
@@ -606,7 +489,7 @@ export default function HumanizerDiagnostics() {
                 ? "border-emerald-300 bg-emerald-50"
                 : result.status === "failed"
                   ? "border-red-300 bg-red-50"
-                    : result.status === "unverified"
+                    : result.status === "unverified" || result.status === "stopped"
                       ? "border-amber-300 bg-amber-50"
                     : result.status === "running"
                     ? "border-blue-300 bg-blue-50"
@@ -649,6 +532,11 @@ export default function HumanizerDiagnostics() {
                         {result.error}
                       </div>
                     ) : null}
+                    {traces[result.id] ? (
+                      <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => setActiveTraceId(result.id)}>
+                        View diagnostic popup
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
               </article>
@@ -657,7 +545,7 @@ export default function HumanizerDiagnostics() {
         </section>
         <details className="rounded-xl border bg-white p-4 shadow-sm">
           <summary className="cursor-pointer font-bold">
-            Author corpus searches ({results.filter((result) => result.id.startsWith("thinker:") && result.status === "passed").length}/{diagnosticThinkers.length} verified)
+            Individual author corpus keys ({results.filter((result) => result.id.startsWith("thinker:") && result.status === "passed").length}/{diagnosticThinkers.length} verified)
           </summary>
           <div className="mt-3 space-y-2">
             {results.filter((result) => result.id.startsWith("thinker:")).map((result) => (
@@ -667,10 +555,21 @@ export default function HumanizerDiagnostics() {
                 {result.durationMs !== undefined ? ` · ${result.durationMs.toLocaleString()} ms` : ""}
                 {result.evidence ? <p className="mt-1 break-words">{result.evidence}</p> : null}
                 {result.error ? <p className="mt-1 break-words text-red-800">{result.error}</p> : null}
+                {traces[result.id] ? (
+                  <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => setActiveTraceId(result.id)}>
+                    View diagnostic popup
+                  </Button>
+                ) : null}
               </div>
             ))}
           </div>
         </details>
+        <DiagnosticLivePopup
+          trace={activeTraceId ? traces[activeTraceId] || null : null}
+          onClose={() => setActiveTraceId(null)}
+          onStop={stop}
+          canStop={isRunning}
+        />
       </main>
     </div>
   );

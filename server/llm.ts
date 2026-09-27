@@ -415,12 +415,13 @@ async function callOpenAI(text: string, apiKey: string, functionType: string): P
   return parseJSON(data.choices[0].message.content);
 }
 
-async function callOpenAIStreaming(text: string, apiKey: string, functionType: string, onChunk: (chunk: string) => void): Promise<void> {
+async function callOpenAIStreaming(text: string, apiKey: string, functionType: string, onChunk: (chunk: string) => void, signal?: AbortSignal): Promise<void> {
   const minQuotes = calculateMinQuotes(text);
   const prompt = getSystemPrompt(functionType, minQuotes);
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
+    signal,
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
@@ -653,7 +654,7 @@ export async function analyzeText(text: string, provider: string, functionType: 
   }
 }
 
-export async function analyzeTextStreaming(text: string, provider: string, functionType: string, onChunk: (chunk: string) => void): Promise<void> {
+export async function analyzeTextStreaming(text: string, provider: string, functionType: string, onChunk: (chunk: string) => void, signal?: AbortSignal): Promise<void> {
   // Get API keys from environment variables (Replit Secrets)
   const apiKeys = {
     openai: process.env.OPENAI_API_KEY || "",
@@ -666,7 +667,7 @@ export async function analyzeTextStreaming(text: string, provider: string, funct
   switch (provider) {
     case "openai":
       if (!apiKeys.openai) throw new Error("OPENAI_API_KEY not configured. Add it as an environment variable.");
-      return callOpenAIStreaming(text, apiKeys.openai, functionType, onChunk);
+      return callOpenAIStreaming(text, apiKeys.openai, functionType, onChunk, signal);
     
     case "anthropic":
     case "grok":
@@ -674,9 +675,11 @@ export async function analyzeTextStreaming(text: string, provider: string, funct
     case "deepseek":
       // Fallback to non-streaming for providers without streaming support yet
       const result = await analyzeText(text, provider, functionType);
+      signal?.throwIfAborted();
       const fullText = JSON.stringify(result, null, 2);
       // Simulate streaming by chunking the response
       for (let i = 0; i < fullText.length; i += 50) {
+        signal?.throwIfAborted();
         onChunk(fullText.slice(i, i + 50));
         await new Promise(resolve => setTimeout(resolve, 10));
       }

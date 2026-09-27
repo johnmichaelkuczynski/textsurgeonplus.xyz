@@ -1,4 +1,4 @@
-// Thinkers whose corpus searches can be checked with the shared corpus credential.
+// Mirrors the author-specific corpus credential names in server/services/genius101.ts.
 export const diagnosticThinkers = [
   "Adam Smith", "Adler", "Aesop", "Allen", "Aristotle", "Bacon", "Bergler",
   "Bergson", "Berkeley", "Confucius", "Darwin", "Descartes", "Dewey",

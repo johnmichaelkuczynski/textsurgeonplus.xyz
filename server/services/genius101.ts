@@ -19,15 +19,71 @@ export type Genius101Status = {
   access?: { ok: boolean; message: string; passageCount?: number };
 };
 
-function getConfiguration() {
-  const credentialName = "GENIUS_API_KEY";
-  const credential = process.env[credentialName] || "";
+const THINKER_KEYS: Record<string, string> = {
+  "Adam Smith": "ADAM_SMITH_API_KEY",
+  Adler: "ADLER_API_KEY",
+  Aesop: "AESOP_API_KEY",
+  Allen: "ALLEN_API_KEY",
+  Aristotle: "ARISTOTLE_API_KEY",
+  Bacon: "BACON_API_KEY",
+  Bergler: "BERGLER_API_KEY",
+  Bergson: "BERGSON_API_KEY",
+  Berkeley: "BERKELEY_API_KEY",
+  Confucius: "CONFUCIUS_API_KEY",
+  Darwin: "DARWIN_API_KEY",
+  Descartes: "DESCARTES_API_KEY",
+  Dewey: "DEWEY_API_KEY",
+  Dworkin: "DWORKIN_API_KEY",
+  "Emma Goldman": "EMMA_GOLDMAN_API_KEY",
+  Engels: "ENGELS_API_KEY",
+  Freud: "FREUD_API_KEY",
+  Galileo: "GALILEO_API_KEY",
+  Gardner: "GARDNER_API_KEY",
+  Hegel: "HEGEL_API_KEY",
+  Hobbes: "HOBBES_API_KEY",
+  Hume: "HUME_API_KEY",
+  Jung: "JUNG_API_KEY",
+  Kant: "KANT_API_KEY",
+  Kernberg: "KERNBERG_API_KEY",
+  Kuczynski: "KUCZYNSKI_API_KEY",
+  "La Rochefoucauld": "LA_ROCHEFOUCAULD_API_KEY",
+  Laplace: "LAPLACE_API_KEY",
+  "Le Bon": "LEBON_API_KEY",
+  Leibniz: "LEIBNIZ_API_KEY",
+  Locke: "LOCKE_API_KEY",
+  Luther: "LUTHER_API_KEY",
+  Machiavelli: "MACHIAVELLI_API_KEY",
+  Maimonides: "MAIMONIDES_API_KEY",
+  Marden: "MARDEN_API_KEY",
+  Marx: "MARX_API_KEY",
+  Mill: "MILL_API_KEY",
+  Nietzsche: "NIETZSCHE_API_KEY",
+  Peirce: "PEIRCE_API_KEY",
+  Plato: "PLATO_API_KEY",
+  "Poincaré": "POINCARE_API_KEY",
+  Popper: "POPPER_API_KEY",
+  Rousseau: "ROUSSEAU_API_KEY",
+  Sartre: "SARTRE_API_KEY",
+  Schopenhauer: "SCHOPENHAUER_API_KEY",
+  Spencer: "SPENCER_API_KEY",
+  Stekel: "STEKEL_API_KEY",
+  Tocqueville: "TOCQUEVILLE_API_KEY",
+  Veblen: "VEBLEN_API_KEY",
+  Weyl: "WEYL_API_KEY",
+  Whewell: "WHEWELL_API_KEY",
+  "William James": "WILLIAM_JAMES_API_KEY",
+};
+
+function getConfiguration(thinker: string) {
+  const credentialName = THINKER_KEYS[thinker] || "";
+  const credential = credentialName ? process.env[credentialName] || "" : "";
   const baseUrl = (process.env.GENIUS_101_API_BASE_URL || "").trim();
   const searchPath = (process.env.GENIUS_101_SEARCH_PATH || "").trim();
   const authHeader = (process.env.GENIUS_101_AUTH_HEADER || "").trim();
   const authScheme = process.env.GENIUS_101_AUTH_SCHEME ?? "";
   const missing: string[] = [];
-  if (!credential) missing.push(credentialName);
+  if (!credentialName) missing.push(`No author-specific credential registered for ${thinker}`);
+  else if (!credential) missing.push(credentialName);
   if (!baseUrl) missing.push("GENIUS_101_API_BASE_URL");
   if (!searchPath) missing.push("GENIUS_101_SEARCH_PATH");
   if (!authHeader) missing.push("GENIUS_101_AUTH_HEADER");
@@ -79,7 +135,7 @@ function extractPassages(payload: any): CorpusPassage[] {
 }
 
 export function getGenius101Status(thinker: string): Genius101Status {
-  const config = getConfiguration();
+  const config = getConfiguration(thinker);
   return {
     thinker,
     credential: { configured: !!config.credential, name: config.credentialName },
@@ -97,14 +153,19 @@ export async function searchGenius101(
   thinker: string,
   query: string,
   limit = 8,
+  signal?: AbortSignal,
 ): Promise<CorpusPassage[]> {
-  const config = getConfiguration();
+  signal?.throwIfAborted();
+  const config = getConfiguration(thinker);
   if (config.missing.length) {
     throw new Error(`Genius 101 corpus access is not configured: missing ${config.missing.join(", ")}`);
   }
 
   const url = new URL(config.searchPath, config.baseUrl);
   const controller = new AbortController();
+  const onAbort = () => controller.abort();
+  signal?.addEventListener("abort", onAbort, { once: true });
+  if (signal?.aborted) controller.abort();
   const timeout = setTimeout(() => controller.abort(), 15_000);
   try {
     const response = await fetch(url, {
@@ -122,24 +183,26 @@ export async function searchGenius101(
     const payload = await response.json();
     return extractPassages(payload).slice(0, limit);
   } catch (error: any) {
+    if (signal?.aborted) throw error;
     if (error?.name === "AbortError") throw new Error("Genius 101 corpus request timed out");
     throw error;
   } finally {
+    signal?.removeEventListener("abort", onAbort);
     clearTimeout(timeout);
   }
 }
 
-export async function diagnoseGenius101(thinker: string): Promise<Genius101Status> {
+export async function diagnoseGenius101(thinker: string, signal?: AbortSignal): Promise<Genius101Status> {
   const status = getGenius101Status(thinker);
   if (!status.configuration.ready) return status;
   try {
-    const passages = await searchGenius101(thinker, thinker, 1);
+    const passages = await searchGenius101(thinker, thinker, 1, signal);
     return {
       ...status,
       access: {
-        ok: true,
+        ok: passages.length > 0,
         passageCount: passages.length,
-        message: passages.length ? "Credential and corpus search succeeded" : "Credential succeeded; no test passage was returned",
+        message: passages.length ? "Credential and corpus search succeeded" : "Request succeeded; no passage was returned, so corpus access is unverified",
       },
     };
   } catch (error: any) {

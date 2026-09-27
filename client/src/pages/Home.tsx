@@ -4394,7 +4394,16 @@ ${parsed.analyzer}`);
             </div>
           </div>
         </div>
-        <div className="flex min-h-12 items-center justify-end gap-4 border-t border-violet-200 bg-gradient-to-l from-violet-100 via-violet-50 to-white px-10 py-2">
+        <div className="flex min-h-12 flex-wrap items-center justify-between gap-3 border-t border-violet-200 bg-gradient-to-l from-violet-100 via-violet-50 to-white px-4 py-2 sm:px-10">
+          <a
+            href="/humanizer-workshop/diagnostics"
+            className="flex shrink-0 items-center gap-2 rounded-md bg-cyan-700 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-cyan-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700"
+            data-testid="link-main-diagnostics"
+          >
+            <Stethoscope className="h-4 w-4" />
+            Diagnostics
+          </a>
+          <div className="flex flex-wrap items-center justify-end gap-4">
           <span className="max-w-[520px] text-right text-xs font-bold uppercase leading-snug tracking-wide text-violet-900">
             Need an idea? Talk to some of history&apos;s most creative minds in their own words.
           </span>
@@ -4420,6 +4429,7 @@ ${parsed.analyzer}`);
               ))}
             </SelectContent>
           </Select>
+          </div>
         </div>
       </header>
 

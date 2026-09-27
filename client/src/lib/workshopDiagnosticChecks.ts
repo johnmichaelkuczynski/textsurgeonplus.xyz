@@ -1,5 +1,3 @@
-import { splitWorkshopDocument, WORKSHOP_CHUNK_CHARS } from "@/lib/humanizerChunks";
-
 export type CheckEvidence = { evidence: string; httpStatus?: number; degradedReason?: string };
 
 async function jsonResponse(response: Response) {
@@ -46,54 +44,6 @@ export async function checkUpload(path: string, signal: AbortSignal): Promise<Ch
     throw new Error("The PDF parser did not extract the known sample text.");
   }
   return { evidence: `PDF extracted ${payload.text.length} characters correctly.`, httpStatus: response.status };
-}
-
-export async function checkPresets(): Promise<CheckEvidence> {
-  const { humanizerStylePresets } = await import("@/data/humanizerStylePresets");
-  if (humanizerStylePresets.length !== 50 ||
-      new Set(humanizerStylePresets.map((preset) => preset.id)).size !== 50 ||
-      humanizerStylePresets.some((preset) => !preset.instruction.trim() || preset.instruction.length > 3_000)) {
-    throw new Error("The 50 supplied style presets are missing, duplicated, empty, or too long for Box C.");
-  }
-  return { evidence: "All 50 selectable Box C instructions loaded, unique, and within the API limit." };
-}
-
-export async function checkMultiPartRewrite(signal: AbortSignal): Promise<CheckEvidence> {
-  const text = Array.from({ length: 40 }, (_, i) =>
-    `Paragraph ${i + 1}: The archive preserves original reports so readers can compare evidence, track revisions, and understand the argument in context.\n\n`,
-  ).join("");
-  const parts = splitWorkshopDocument(text);
-  if (parts.length < 2 || parts.some((part) => part.length > WORKSHOP_CHUNK_CHARS) || parts.join("") !== text) {
-    throw new Error("The document splitter lost text or produced an oversized part.");
-  }
-  // Exercise the actual rewrite route in sequence, not just the local splitter.
-  let previous = "";
-  const substitutions: string[] = [];
-  for (let index = 0; index < parts.length; index++) {
-    if (signal.aborted) throw new DOMException("Stopped", "AbortError");
-    const part = parts[index];
-    const instructions = `Part ${index + 1} of ${parts.length}. Rewrite only this part without a new introduction or conclusion. Preserve its subject and approximate length.${previous ? ` Previous part ended: ${previous.slice(-100)}` : ""}`;
-    const response = await fetch("/api/humanizer/rewrite", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      signal,
-      body: JSON.stringify({ text: part, provider: "gemini", instructions }),
-    });
-    const payload = await jsonResponse(response);
-    if (typeof payload.text !== "string" || payload.text.trim().length < 30) {
-      throw new Error(`Part ${index + 1} returned no usable rewrite.`);
-    }
-    if (payload.provider !== "gemini") {
-      substitutions.push(`Part ${index + 1}: ${payload.provider || "unknown provider"} substituted. ${payload.fallbackReason || ""}`);
-    }
-    previous = payload.text.trim();
-  }
-  return {
-    evidence: `${parts.length} consecutive parts completed through the real rewrite route; all source characters were assigned to a part.`,
-    httpStatus: 200,
-    degradedReason: substitutions.length ? substitutions.join(" ") : undefined,
-  };
 }
 
 export async function checkTts(signal: AbortSignal): Promise<CheckEvidence> {

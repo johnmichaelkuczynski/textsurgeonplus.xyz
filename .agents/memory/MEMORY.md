@@ -1,2 +1,4 @@
 - [Humanizer diagnostic fidelity](humanizer-diagnostic-fidelity.md) — style-sample topic can contaminate output even when length and source-keyword checks pass.
 - [Provider diagnostic honesty](provider-diagnostic-honesty.md) — a successful fallback rewrite does not verify the requested provider's key.
+- [Author corpus credentials](author-corpus-credentials.md) — preserve distinct author keys; a shared-key search cannot verify them individually.
+- [Live Vite file replacement](vite-hmr-file-replacement.md) — avoid transient deletion of imported pages during hot updates; it can crash the running preview.
