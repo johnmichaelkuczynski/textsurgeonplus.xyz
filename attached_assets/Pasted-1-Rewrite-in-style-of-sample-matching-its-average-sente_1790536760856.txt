@@ -1,0 +1,50 @@
+1. Rewrite in style of sample, matching its average sentence length and its variation in sentence length.
+2. Rewrite in style of sample, matching its paragraph lengths, including any unevenness.
+3. Rewrite in style of sample, copying its punctuation habits (colons, semicolons, dashes, parentheses) in similar proportions.
+4. Rewrite in style of sample, matching its level of formality exactly.
+5. Rewrite in style of sample, using its characteristic transitional words and dropping any it never uses.
+6. Rewrite in style of sample, reproducing its way of opening paragraphs.
+7. Rewrite in style of sample, reproducing its way of ending paragraphs.
+8. Rewrite in style of sample, matching its ratio of short declarative sentences to long complex ones.
+9. Rewrite in style of sample, adopting its use or avoidance of headers, lists, and numbering.
+10. Rewrite in style of sample, matching its vocabulary level and avoiding words it would not plausibly use.
+11. Rewrite in style of sample, keeping all claims but ordering them the way the sample tends to order ideas.
+12. Rewrite in style of sample, matching how directly or indirectly it states conclusions.
+13. Rewrite in style of sample, matching its degree of hedging or its absence of hedging.
+14. Rewrite in style of sample, using its recurring sentence templates wherever the content allows.
+15. Rewrite in style of sample, matching how it introduces examples.
+16. Rewrite in style of sample, matching how it handles objections or opposing views, if it does.
+17. Rewrite in style of sample, matching its use of first, second, or impersonal voice.
+18. Rewrite in style of sample, matching its use of contractions.
+19. Rewrite in style of sample, matching its rhythm, including abrupt stops and run-on stretches.
+20. Rewrite in style of sample, reproducing its minor irregularities (clipped phrasing, slight awkwardness) rather than polishing them away.
+21. Rewrite in style of sample, removing any phrasing that sounds generic, balanced, or template-like if the sample lacks it.
+22. Rewrite in style of sample, avoiding tidy topic-sentence/support/summary structure unless the sample uses it.
+23. Rewrite in style of sample, matching whether it repeats key terms or varies them with synonyms.
+24. Rewrite in style of sample, matching its use of technical or foreign-language terms.
+25. Rewrite in style of sample, matching its use of quotation marks, italics, and emphasis.
+26. Rewrite in style of sample, matching how it defines terms.
+27. Rewrite in style of sample, matching its use of parenthetical asides.
+28. Rewrite in style of sample, matching its use of questions, rhetorical or otherwise.
+29. Rewrite in style of sample, matching how much it explains versus asserts.
+30. Rewrite in style of sample, matching its density of ideas per sentence.
+31. Rewrite in style of sample, matching its tone toward the reader (confiding, lecturing, curt, etc.).
+32. Rewrite in style of sample, matching its tone toward the subject matter.
+33. Rewrite in style of sample, matching its use of concrete versus abstract language.
+34. Rewrite in style of sample, matching its use of metaphor and analogy, including how often and how odd.
+35. Rewrite in style of sample, matching its use of symbols, variables, or shorthand.
+36. Rewrite in style of sample, matching how it links sentences (explicit connectives versus bare juxtaposition).
+37. Rewrite in style of sample, matching its preference for active or passive voice.
+38. Rewrite in style of sample, matching its preference for nominal or verbal constructions.
+39. Rewrite in style of sample, matching its sentence-initial words and avoiding openings it never uses.
+40. Rewrite in style of sample, matching its lexical quirks and pet phrases without copying its content.
+41. Rewrite in style of sample, preserving every claim of the original and adding none.
+42. Rewrite in style of sample, preserving the original's meaning while restructuring sentences freely.
+43. Rewrite in style of sample, as though the sample's author had written the original from scratch.
+44. Rewrite in style of sample, making it indistinguishable in voice from the sample if the two were placed side by side.
+45. Rewrite in style of sample, first compressing the original, then expanding it in the sample's manner.
+46. Rewrite in style of sample, splitting or merging sentences so the result matches the sample's sentence boundaries.
+47. Rewrite in style of sample, matching its level of predictability in word choice, favoring less obvious words where the sample does.
+48. Rewrite in style of sample, matching how it signals emphasis or importance.
+49. Rewrite in style of sample, matching its formatting conventions (spacing, indentation, section breaks).
+50. Rewrite in style of sample, matching its overall length ratio of prose to structure, and its degree of polish.

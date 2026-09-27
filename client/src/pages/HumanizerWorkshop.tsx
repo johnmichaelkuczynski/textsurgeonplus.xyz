@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { humanizerStylePresets } from "@/data/humanizerStylePresets";
 
 const WORKSHOP_FILE_LIMIT = 2 * 1024 * 1024;
 const AUTHORS = [
@@ -50,8 +51,20 @@ type WorkshopProvider =
 type GptZeroState =
   | { status: "waiting" }
   | { status: "scanning" }
-  | { status: "complete"; classification: string; confidence?: string }
-  | { status: "error"; message: string };
+  | { status: "complete"; text: string; classification: string; confidence?: string; aiScore?: number }
+  | { status: "error"; text: string; message: string };
+
+function getAiScore(probabilities: unknown): number | undefined {
+  if (!probabilities || typeof probabilities !== "object" || Array.isArray(probabilities)) return undefined;
+  const scores = probabilities as Record<string, unknown>;
+  const aiKey = Object.keys(scores).find((key) =>
+    /^(ai|ai_generated|ai_probability|completely_generated|completely_generated_prob)$/i.test(key),
+  );
+  const probability = aiKey ? scores[aiKey] : undefined;
+  return typeof probability === "number" && Number.isFinite(probability) && probability >= 0 && probability <= 1
+    ? Math.round(probability * 100)
+    : undefined;
+}
 
 function getWorkshopVisitorId() {
   const key = "humanizer-workshop-visitor-id";
@@ -60,6 +73,28 @@ function getWorkshopVisitorId() {
   const value = `workshop-${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`;
   window.localStorage.setItem(key, value);
   return value;
+}
+
+async function detectWorkshopText(text: string, signal?: AbortSignal): Promise<Extract<GptZeroState, { status: "complete" }>> {
+  const normalized = text.trim();
+  const response = await fetch("/api/gptzero/detect", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    signal,
+    body: JSON.stringify({ text: normalized, visitorId: getWorkshopVisitorId() }),
+  });
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) throw new Error(payload?.error || "GPTZero scan failed");
+  const classification = payload?.documentClassification || payload?.predictedClass;
+  if (typeof classification !== "string" || !classification) throw new Error("GPTZero returned no classification");
+  return {
+    status: "complete",
+    text: normalized,
+    classification,
+    confidence: typeof payload?.confidenceCategory === "string" ? payload.confidenceCategory : undefined,
+    aiScore: getAiScore(payload?.classProbabilities),
+  };
 }
 
 function useAutomaticGptZero(text: string): GptZeroState {
@@ -78,30 +113,14 @@ function useAutomaticGptZero(text: string): GptZeroState {
     const timeout = window.setTimeout(async () => {
       setState({ status: "scanning" });
       try {
-        const response = await fetch("/api/gptzero/detect", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            text: normalized,
-            visitorId: getWorkshopVisitorId(),
-          }),
-        });
-        const payload = await response.json().catch(() => null);
+        const result = await detectWorkshopText(normalized);
         if (activeRequest !== requestId.current) return;
-        if (!response.ok) {
-          throw new Error(payload?.error || "GPTZero scan failed");
-        }
-        setState({
-          status: "complete",
-          classification:
-            payload?.documentClassification || payload?.predictedClass || "Unknown",
-          confidence: payload?.confidenceCategory || undefined,
-        });
+        setState(result);
       } catch (error: any) {
         if (activeRequest !== requestId.current) return;
         setState({
           status: "error",
+          text: normalized,
           message: error?.message || "GPTZero scan failed",
         });
       }
@@ -110,11 +129,14 @@ function useAutomaticGptZero(text: string): GptZeroState {
     return () => window.clearTimeout(timeout);
   }, [text]);
 
+  if (text.trim().length < 50) return { status: "waiting" };
+  if (state.status === "waiting" || ((state.status === "complete" || state.status === "error") && state.text !== text.trim())) {
+    return { status: "scanning" };
+  }
   return state;
 }
 
-function GptZeroReadout({ text }: { text: string }) {
-  const state = useAutomaticGptZero(text);
+function GptZeroReadout({ state, previousAiScore }: { state: GptZeroState; previousAiScore?: number }) {
   if (state.status === "waiting") {
     return <span className="text-xs text-slate-500">GPTZero: waiting for 50 characters</span>;
   }
@@ -135,17 +157,23 @@ function GptZeroReadout({ text }: { text: string }) {
   return (
     <span className="flex items-center gap-1 text-xs font-semibold text-emerald-700">
       <ShieldCheck className="h-3 w-3" />
-      GPTZero: {state.classification.replaceAll("_", " ")}
+      GPTZero: {state.aiScore !== undefined ? `${state.aiScore}% AI likelihood · ` : ""}
+      {state.classification.replaceAll("_", " ")}
       {state.confidence ? ` · ${state.confidence}` : ""}
+      {previousAiScore !== undefined && state.aiScore !== undefined ? ` · previous ${previousAiScore}%` : ""}
     </span>
   );
 }
 
-function BoxFooter({ text }: { text: string }) {
+function AutomaticGptZeroReadout({ text }: { text: string }) {
+  return <GptZeroReadout state={useAutomaticGptZero(text)} />;
+}
+
+function BoxFooter({ text, detection, previousAiScore }: { text: string; detection?: GptZeroState; previousAiScore?: number }) {
   const words = text.trim() ? text.trim().split(/\s+/).length : 0;
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 border-t bg-white px-4 py-2">
-      <GptZeroReadout text={text} />
+      {detection ? <GptZeroReadout state={detection} previousAiScore={previousAiScore} /> : <AutomaticGptZeroReadout text={text} />}
       <span className="text-xs font-semibold text-slate-600">{words.toLocaleString()} words</span>
     </div>
   );
@@ -336,7 +364,7 @@ function SampleBox({
               }
               className="min-h-[130px] resize-y bg-white"
             />
-            <GptZeroReadout text={instructions} />
+            <AutomaticGptZeroReadout text={instructions} />
           </div>
         </div>
       </div>
@@ -347,7 +375,10 @@ function SampleBox({
 export default function HumanizerWorkshop() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
+  const outputDetection = useAutomaticGptZero(outputText);
+  const [previousAiScore, setPreviousAiScore] = useState<number | undefined>();
   const [customInstructions, setCustomInstructions] = useState("Rewrite in style of sample");
+  const [selectedStylePreset, setSelectedStylePreset] = useState("");
   const [styleSample, setStyleSample] = useState("");
   const [styleInstructions, setStyleInstructions] = useState("");
   const [contentSample, setContentSample] = useState("");
@@ -358,8 +389,12 @@ export default function HumanizerWorkshop() {
   const [rewriteError, setRewriteError] = useState("");
   const rewriteRequest = useRef<AbortController | null>(null);
 
-  const rewriteText = async (source: string) => {
+  const rewriteText = async (source: string, fromOutput = false) => {
     if (!source.trim()) return;
+    if (fromOutput && source.trim().length < 50) {
+      setRewriteError("Box B needs at least 50 characters for an AI score before a score-guided rewrite.");
+      return;
+    }
     rewriteRequest.current?.abort();
     const controller = new AbortController();
     rewriteRequest.current = controller;
@@ -367,6 +402,16 @@ export default function HumanizerWorkshop() {
     setRewriteError("");
     setRewriteMessage("");
     try {
+      const feedback = fromOutput
+        ? outputDetection.status === "complete" && outputDetection.text === source.trim()
+          ? outputDetection
+          : await detectWorkshopText(source, controller.signal)
+        : null;
+      if (controller.signal.aborted) return;
+      const instructions = feedback
+        ? `${customInstructions.trim()}\n\nRevise the current Box B draft using this GPTZero result for this exact text: ${feedback.aiScore !== undefined ? `${feedback.aiScore}% AI likelihood` : `classification ${feedback.classification}`}${feedback.confidence ? ` (${feedback.confidence} confidence)` : ""}. Aim for a lower AI likelihood by improving natural variation and clarity, while preserving the draft's subject, facts, voice, and approximate length. Do not add unrelated content or claim any score is guaranteed.`
+        : customInstructions;
+      if (instructions.length > 3_000) throw new Error("Box C instructions are too long for a score-guided rewrite.");
       const response = await fetch("/api/humanizer/rewrite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -375,7 +420,7 @@ export default function HumanizerWorkshop() {
         body: JSON.stringify({
           text: source,
           provider: aiProseProvider,
-          instructions: customInstructions,
+          instructions,
           styleSample,
           styleInstructions,
           contentSample,
@@ -389,8 +434,9 @@ export default function HumanizerWorkshop() {
       }
       if (rewriteRequest.current !== controller) return;
       setOutputText(payload.text);
+      setPreviousAiScore(feedback?.aiScore);
       setRewriteMessage(
-        payload.fallbackReason || `Rewritten with ${String(payload.provider || aiProseProvider)}.`,
+        `${payload.fallbackReason || `Rewritten with ${String(payload.provider || aiProseProvider)}.`}${feedback ? ` Previous GPTZero result: ${feedback.aiScore !== undefined ? `${feedback.aiScore}% AI likelihood` : feedback.classification}. The new draft is being rescanned.` : ""}`,
       );
     } catch (error: any) {
       if (rewriteRequest.current === controller && error?.name !== "AbortError") {
@@ -500,6 +546,19 @@ export default function HumanizerWorkshop() {
                 </div>
               </div>
             </div>
+            <div className="flex items-center gap-2 border-b border-emerald-200 bg-emerald-50 px-5 py-3">
+              <Button
+                type="button"
+                onClick={() => void rewriteText(outputText, true)}
+                disabled={!outputText.trim() || isRewriting}
+                className="gap-2 bg-emerald-700 text-white hover:bg-emerald-800"
+                data-testid="button-rewrite-output"
+              >
+                {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+                {isRewriting ? "Rewriting…" : "Rewrite"}
+              </Button>
+              <span className="text-xs text-emerald-800">Rewrite the current Box B text using its GPTZero result.</span>
+            </div>
             {rewriteMessage ? (
               <p role="status" className="border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-semibold text-emerald-900">{rewriteMessage}</p>
             ) : null}
@@ -508,11 +567,17 @@ export default function HumanizerWorkshop() {
             ) : null}
             <Textarea
               value={outputText}
-              onChange={(event) => setOutputText(event.target.value)}
+              onChange={(event) => {
+                rewriteRequest.current?.abort();
+                setOutputText(event.target.value);
+                setPreviousAiScore(undefined);
+                setRewriteMessage("");
+                setRewriteError("");
+              }}
               placeholder="Humanized output will appear here…"
               className="min-h-0 flex-1 resize-none rounded-none border-0 bg-emerald-50/20 p-5 font-serif text-base leading-relaxed focus-visible:ring-0"
             />
-            <BoxFooter text={outputText} />
+            <BoxFooter text={outputText} detection={outputDetection} previousAiScore={previousAiScore} />
           </div>
         </section>
 
@@ -524,9 +589,36 @@ export default function HumanizerWorkshop() {
               <p className="text-xs text-violet-700">Specify exactly how the text should be humanized.</p>
             </div>
           </div>
+          <div className="border-b border-violet-200 bg-violet-50/50 px-5 py-3">
+            <Label htmlFor="humanizer-style-preset">Style preset</Label>
+            <Select
+              value={selectedStylePreset}
+              onValueChange={(id) => {
+                const preset = humanizerStylePresets.find((item) => item.id === id);
+                if (!preset) return;
+                setSelectedStylePreset(id);
+                setCustomInstructions(preset.instruction);
+              }}
+            >
+              <SelectTrigger id="humanizer-style-preset" className="mt-1 w-full bg-white sm:max-w-xl" data-testid="select-style-preset">
+                <SelectValue placeholder="Choose one of your supplied style presets…" />
+              </SelectTrigger>
+              <SelectContent className="max-h-80 w-[min(90vw,40rem)]">
+                {humanizerStylePresets.map((preset) => (
+                  <SelectItem key={preset.id} value={preset.id} className="[&>span:last-child]:whitespace-normal">
+                    {preset.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="mt-1 text-xs text-violet-700">Choosing a preset fills Box C. You can edit it before transforming.</p>
+          </div>
           <Textarea
             value={customInstructions}
-            onChange={(event) => setCustomInstructions(event.target.value)}
+            onChange={(event) => {
+              setCustomInstructions(event.target.value);
+              setSelectedStylePreset("");
+            }}
             placeholder="Enter your custom humanization instructions here…"
             className="min-h-[150px] flex-1 resize-y rounded-none border-0 p-5 text-base leading-relaxed focus-visible:ring-0"
           />
