@@ -44,6 +44,7 @@ const PROVIDERS = [
   ["grok", "Grok"],
   ["perplexity", "Perplexity"],
   ["deepseek", "DeepSeek"],
+  ["venice", "Venice AI"],
 ] as const;
 
 const INITIAL_RESULTS: DiagnosticResult[] = [

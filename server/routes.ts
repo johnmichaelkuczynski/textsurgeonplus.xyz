@@ -3770,7 +3770,7 @@ Return only the response.`;
   });
 
   const workshopProviders = new Set([
-    "gemini", "openai", "anthropic", "grok", "perplexity", "deepseek",
+    "gemini", "openai", "anthropic", "grok", "perplexity", "deepseek", "venice",
   ]);
 
   const callWorkshopProvider = async (

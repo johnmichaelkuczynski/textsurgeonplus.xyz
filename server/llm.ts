@@ -695,6 +695,7 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
     grok: process.env.GROK_API_KEY || "",
     perplexity: process.env.PERPLEXITY_API_KEY || "",
     deepseek: process.env.DEEPSEEK_API_KEY || "",
+    venice: process.env.VENICE_API_KEY || "",
   };
 
   const makeRequest = async (url: string, apiKey: string, model: string, maxTokens: number = 16384) => {
@@ -815,6 +816,19 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
     case "deepseek":
       if (!apiKeys.deepseek) throw new Error("DEEPSEEK_API_KEY not configured");
       return makeRequest("https://api.deepseek.com/chat/completions", apiKeys.deepseek, "deepseek-chat", 8192);
+
+    case "venice": {
+      if (!apiKeys.venice) throw new Error("VENICE_API_KEY not configured");
+      const text = await makeRequest(
+        "https://api.venice.ai/api/v1/chat/completions",
+        apiKeys.venice,
+        "venice-uncensored-1-2",
+      );
+      if (typeof text !== "string" || !text.trim()) {
+        throw new Error("Venice AI returned no text content");
+      }
+      return text.trim();
+    }
     
     default:
       throw new Error(`Unknown provider: ${provider}`);

@@ -44,7 +44,8 @@ type WorkshopProvider =
   | "anthropic"
   | "grok"
   | "perplexity"
-  | "deepseek";
+  | "deepseek"
+  | "venice";
 
 type GptZeroState =
   | { status: "waiting" }
@@ -470,6 +471,7 @@ export default function HumanizerWorkshop() {
                     <SelectItem value="grok">Grok</SelectItem>
                     <SelectItem value="perplexity">Perplexity</SelectItem>
                     <SelectItem value="deepseek">DeepSeek</SelectItem>
+                    <SelectItem value="venice">Venice AI</SelectItem>
                   </SelectContent>
                 </Select>
             </div>
