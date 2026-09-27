@@ -1,0 +1,309 @@
+The Concept of Natural Law in relation to the problem of induction
+  Given only that there is a causal connection of some kind between any two co-occupants of some single manifold, how does it follow that the causal connections between past (known) events will bear any resemblance to future (or otherwise unknown) events? How does it follow that the specific IBE s that we make are ever at all principled?[18]
+  We have seen that the integrity of the space-time manifold depends on the integrity of the causal connections hosted by that manifold. A universe of rogue events, none causative of the other, isn t a universe at all. To the extent that events are causally independent of each other, there is no sense in which they co-occupy some single manifold.
+  Hume s attempt to delegitimize induction presupposes that the laws of physics can just be suspended. That presupposition in its turn assumes that the laws of physics are separable from the space-time manifold; it assumes, in other words, that they are not constitutive of that manifold.
+  That assumption is erroneous. Suppose that one or more laws of physics were changed. First of all, it wouldn t be possible to change just one of these laws. Given a universe in which the speed of light were framework-relative, or in which the Inverse Cube Law were operative, or in which any single one of the laws operative in our universe were replaced by some other law, a number of other laws that are operative in our universe would also have to go.
+  Laws are not independent of one another. In actuality, gas-pressure is directly proportional to temperature. If it were inversely proportional to temperature, every one of the laws of mechanics would have to be jettisoned or heavily modified.
+  If the speed of light were framework-relative, then mass and energy would no longer be capable of being converted into each other, at least not in accordance with the same laws that govern such conversions in actuality.
+  Also, if light did not have a framework-constant velocity, all of our metrical conventions would be thrown off. There would be no principled ways of determining position or, therefore, velocity or, therefore, rates of growth or expansion.
+  Bearing in mind the interdependencies among natural laws, suppose that at time t* the laws of physics changed. This would have two consequences.
+  First, relative position, velocity, mass, temperature, and every other physics-relevant parameter, are ascertained by means of procedures that presuppose that certain laws are operative.
+  Second, the values of those parameters---not our ability to determine those values, but those values themselves---are defined in terms of the laws of physics that are operative.
+  Thus, if at time t* the laws of physics changed, then the positions, masses, velocities, temperatures, etc. of many, if not all, of the occupants of the post-t* universe (U2) would be discontinuous from their pre-t* (U1) positions, masses, etc. For already stated reasons, the state of the post-t* universe would not be a causal consequence of the pre-t* universe. (Pre-t universe=U1. Post-t* universe=U2.) This means that, if the laws of physics changed at time t*, the result would be the obliteration of the space-time manifold---the universe---in which those laws were operative.
+  Different laws, different spatiotemporal manifold. Different spatiotemporal manifold, different universe.
+  The space-time manifold isn t an empty vessel that can house different laws; it is defined by the laws that govern its occupants.
+
+  But for the moment, let us suppose arguendo that, even though the laws change at t*, the space-time manifold whose laws have been replaced continues to exist. In that case, we have to ask: What were the laws that governed the changes that happened during t*-inclusive intervals? Let s suppose that, at some pre-t* time T, a bowling ball starts rolling. Up until t*, the laws governing its motion are the standard laws of mechanics.
+  Granting these suppositions, imagine that, during some (short) t*-inclusive interval INT, the ball travels from A to C and that, at t*, it occupies point B.
+  What are the laws that govern the ball s motion during INT? What are the laws that govern the ball s motion when it is at B? In fact, at t* and after t*, what are the laws that bind together the various ball-constitutive molecules? If so much as a single law of physics has changed at t*, practically every other law of physics will have to change as well. If the Inverse Square Law (ISL) changes, then the mutual attractions of all of the ball s constituent particles change. Of course, the cohesive forces in question are largely non-gravitational; but, owing to the change in ISL, the relative masses of those particles would change, and the cohesive forces in question would have to change if the ball were to continue to exist in anything like its previous form, let alone continue rolling; and it is an open question, certainly, whether they changes would be such as to validate our desire that the ball continue to exist and, what s more, to continue to roll. And, of course, what is true of the ball would be true of the bowling alley and bowling facility and the streets leading to that facility.
+  Whatever the consequences would be if at a given time even one law of physics were modified, it can be assumed that the consequences would be so drastic that
+
+(i) Objects  pre-t* relative positions, masses, etc. would change discontinuously at t*---or, at least, that the likelihood that they would change continuously, or remain constant, at t* would be vanishingly close to zero;
+
+and
+
+(ii) That pre-t* objects would come to an end at t*, as the laws that kept together would no longer be operative.
+
+  We have already seen that, if post-t* events are discontinuous with pre-t* events, then there is no single space-time manifold that U1 and U2 jointly constitute.
+  We have also seen that in some cases it is a datum that each of two events, e and e*, both co- occupy some one such manifold. This is a datum, as we have seen, because, if a given person is to know of each of two events, each of those events must have affected him; and if each of two events affects a given thing, all three things are ipso facto part of some one space-time manifold.
+  Hence the justification for U (the Uniformity Principle). According to U, the laws of physics don t change. Hume says that any assurance we have as to U s veridicality is induction-based and, therefore, that we have no such assurance. But Hume is not right about that. We know that U is true because, if it weren t, nothing would persist---literally---include the very entities that make inductive inferences. U is a precondition for the making of inductive inferences; so as long as makers of inductive inferences, U holds and inductive inferences either go through or, if they fail, they fail for reasons of incompetence (failure to identify the relevant parameters, failure to compute the relevant sums, etc.), and because of anything having to do with the legitimacy of inductive inference per se.
+
+[19]
+Objects as causal series
+  Objects (rocks, trees, stars: stable, dynamically unified event-patterns) are systems of interacting parts. The laws governing such systems would cease to exist at t. The same is true of the laws in terms of which the concept of an electron is to be understood. If the laws of physics were different, there would be no electrons, since to be an electron is inter alia to be governed by certain laws. The same is therefore true of every one of the natural kinds in terms of which pre-t physics understands the world: proton, gravitational attraction, distance, solidity, etc.
+  Objects are constituted by the forces that govern them; those forces are instances of physical laws. Different laws, different forces; different forces, different objects.
+  What is true of objects is true of all cases of persistence and, therefore, of all instances of causation. Owing to the nomic changes occurring at t, there would be no sense in which anything happening before t could the cause of anything happening after t. Thus, if U1 is the universe before t and U2 is the universe after t, no occupant of U1 would exist in U2. (None of the laws that hold that object together would be operative. None of the laws on whose existence that of its parts depended would be operative after t. No event-series that begin before t would remain in existence after t. (The laws governing that event series would be gone. So would the laws governing its constituents. So would the laws in terms of which mass, velocity, temperature, conductivity, and every other relevant parameter.) It isn t that the series in question would be severed; it s that it would no longer even make sense to suppose that it continued to exist after t: there would no longer exist physical laws relative to which the very existence of that series could be coherently affirmed. This means that U2 would not follow U1. (For U2 to follow U1 would be for some pre-t event to cause some post-t event, which, as we have seen, is not possible.) Thus, given that the laws of physics change at t, then there would be no space-time manifold of which both U1 and U2 were constituents, and the supposition that the laws of physics change at t is therefore tantamount to the supposition that the space-time manifold ceases to exist at t.
+  This means that if there are physical laws, then, until time comes to an end, our inductive practices have a legitimate basis. It also means that, if there are physical laws, then inductive inferences that do not concern the future can have a legitimate basis. Many inductive inferences do not concern the future; they concern what is present or past but is unknown. If I inductively infer that, at this exact time, some object is still solid, that inference doesn t concern the future. If I inductively infer that, several thousand years ago, an asteroid hit a certain part of the Earth s surface, that inference obviously doesn t concern the future. So, provided that physical laws exist, many inductive inferences are unqualifiedly legitimate.
+
+Chapter 7 Determinism, implementation-indeterminism, and the nature of natural laws
+
+ Determinism  defined
+
+Determinism: The doctrine that how the world is at any point in time fixes how it will be at all later times.
+Indeterminism: The doctrine that determinism is false. Equivalently, the doctrine that there is some point in time t such that, for some later time t*, how the world is at fails to determine how the world is, in every respect, at t*.
+
+  The world is deterministic to the extent that it is law-governed. Supposing that the state of the universe at t determines the state of the universe at later time t*, that is because there are laws of nature L1 Ln such that, given the state of the universe at t, there is exactly one way the universe can be at t*.
+  The world is deterministic to the extent that it is predictable, but it is not predictable to the extent that it is deterministic.
+  If there are no laws, and thus no deterministic mechanisms, that link the present to the future, then the future is ipso facto open, i.e. there are many ways it can be, and predictions cannot be made.
+  But supposing arguendo the world is deterministic, it doesn t follow that it is completely predictable. Setting aside human fallibility, there are a two reasons why determinism doesn t entail complete predictability.
+
+  The first reason why determinism doesn't entail complete predictability: Interference effects
+  In order to learn about the world, one must interact with it. If I am to learn about another person s mental states, I must ask him questions. But if I am ask him questions, I will change his mental state. If I ask a non-paranoid person  are you paranoid? , he may well, for that very reason, become paranoid. If I want to learn about the bats that live in a certain cave, which is pitch black, I must enter the cave, which will disrupt the bats, and I must use a light, which will further disrupt the bats.
+    But aren t these problems capable of being sidestepped?", it will be asked. "Suppose you know when the bats sleep, and you know the layout of the cave, and are thus able to walk around in it without making too much of a ruckus. In that case, surely, you can observe the bats without bothering them or, in any case, without disrupting them in a way that prompts them to behave in ways that are not their natural wont? And suppose that I want to learn about a given person s feelings. If I establish an empathic rapport with him, so that he trusts me, I can ask him whether he s paranoid without inducing paranoia in him? 
+  The fact that such precautions must be taken shows that, at any given time, what one can learn about the world is quite circumscribed; that if it s impossible to know X at time t, it may be possible to learn about X at later time t*. But the thesis that the universe is completely predictable requires that, for any time t, it is possible, at t, to predict how, for any later time t*, the universe will be at t*.
+
+Laplace s Thesis
+
+    But Laplace s thesis," it will be objected, "is that a creature of infinite intelligence could predict how things will be. 
+  Prediction requires both intelligence and knowledge, and there is no conceivable being that acquire complete knowledge of the state of the universe at any point in time.
+  If one is to have a sense-perception of a given thing, there must be an information-bearing causal process linking that thing to oneself. I can hear you talking because the movements of your vocal chords create airwaves in which the structures of those movements are encoded and which then induce structure-similar disturbances in my eardrums. In order to learn about the subatomic world, one must irradiate it, i.e. flood it with light or otherwise bombard it with radiation of some kind or another. But because light is composed of particles (photons) whose masses are comparable to those of the particles that the microphysicist aspires to learn about, the effect of flooding the microphysical world with light is to change it utterly. If you use a flame thrower to learn about a school of rodents, you will succeed up to a point: their charred remains will give you tell you a lot about them: but it won t tell you everything. Where rodents are concerned, fortunately, we do not, in our efforts to learn about them, have to flood them with radiation that damages them so. But where microparticles are concerned, we are not so fortunate.
+  And if there were causal processes that were sufficiently fine-grained that we could learn about some of the microstructures of which the causal processes at our disposal leave us ignorant, it would still be impossible to learn about the microworld. The very existence of such fine-grained processes would guarantee that. For how would we learn about those processes? By hypothesis, the most fine-grained, least disruptive processes at our disposal would be those very processes. But if we would disrupt such processes if we tried to learn about them by using them.
+  The reason I can see you without changing you is that, compared to you, photons are very small. But photons are not small compared to photons; and, whatever parts this hypothetical, super-fine-grained causal process consists of, those parts are not small compared to themselves, limiting what could be learned about such parts. If, in order to see you, I had to flood you with objects that were as massive as you are, I couldn t learn much about you. By parity of reasoning, supposing R to be the most undisruptive, fine-grained sort of causal process in existing, there would only be so much one could learn about R by using R.
+  It being inherent in the nature of sensory knowledge that it involve a causal connection between subject and object, there is no conceivable being that could have complete knowledge of the microstructure of the world. Therefore, nothing could have complete knowledge of the conditions obtaining at t, for any time t, or, consequently, at any later time t*, given that knowledge of the future is necessarily based on the knowledge of the present.
+Knowledge of the future=
+Knowledge of initial conditions+knowledge of laws+
+  The knowledge yielded by making the inferences warranted by the first two kinds of knowledge.
+
+Why the existence of the unknown must be granted
+  George Berkeley, Ernst Mach, C.S. Peirce, A.J. Ayer, all make the following point: the following point:  Supposing that such and such facts are inherently unknowable, then why grant their existence? By supposition, they might as well not exist, even if they do. So why not redefine the term  the world  in such a way that what falls within its scope includes only what can be known after the operations by which knowledge of it is obtained have been carried out?
+  One fact which falls within the scope of science is that, in order to learn about the world, we must interact with it. Another such fact is that interactions have effects. These two facts entail that what we can learn about the world at time t doesn t correspond with perfect precision to the world at time. Given that two facts that do fall within the scope of science entail that there are things about the world that cannot be known, it follows that, for science no less than for metaphysics, the world is to some extent unknowable.
+  Also, we can know that situations of a given kind obtain without there being any one such situation of whose existence we are aware. There has never been a single photon of which any person was aware; but we know that photons exist, since, if they didn't, the photoelectric effect could not be explained.
+
+  Second reason why determinism doesn't entail complete predictability: No way to predict how knowledge will grow
+  No creature can possibly predict what it will come to know. Suppose you know now, at time t, that, during the next 20 years, you will learn truths t1 tn, and no other truths. In that case you now know t1 tn and they therefore aren t what you will learn in the next 20 years. If we replace t1 tn with any other list of truths, the result is the same. Therefore, it is possible to know now what you will know later. Given that what you know affects what you do, and thus affects how the world is, it follows that no creature can know exactly what it will do or, therefore, exactly how what it will do will affect the world.
+
+Supervenience
+  If x and y are identical in respect of their microphysical properties, then it is inconceivable that they should differ in respect of their biological properties.[20] Wherefore, the biological supervenes on the microphysical. In general, one class of facts supervenes on another class of facts exactly if there can t be a change in the former without there being a change in the latter but not vice versa.
+
+Supervenience?identity
+  Given two pieces of clay that are identical in respect of their strictly physical properties (e.g. their shapes, masses, etc.), it is inconceivable that they should differ in respect of their aesthetic properties. But aesthetic properties cannot be identified with physical (physics-related) properties.
+  First of all, two objects that are physically different can be aesthetically identical. Given only that x and y differ in their chemical composition, their masses, their degrees of conductivity, etc., it doesn t follow that they differ in their aesthetic properties. The aesthetic is thus multiply realizable with respect to the physical. The same is true, for the same reasons mutatis mutandis, of the biological.
+  The biological is thus variable with respect to the physical. A biological mechanism of a given kind can be implemented by entities that are physically very different from one another.
+  Software is variable with respect to hardware. Software-identical systems may be hardware- distinct. (But hardware-identical systems cannot be software distinct.) Software-realities therefore supervene on hardware realities.
+
+Psychological supervenience difference from other kinds of supervenience
+   It is said that the mental supervenes on the physiological: given two creatures that are physiologically identical, it is impossible that they should differ psychologically.
+  Supposing this true, the way in which it is true is very different from the way in which it s true that biological supervenes on the physical. It is incoherent to suppose that two entities that are microphysically identical should differ biologically.
+  By contrast, it is not incoherent, though it is counternomic, to suppose that two physiologically identical creatures should differ in respect of their psychological properties.
+
+Bound by physical law? explained by physical law
+  Nothing can violate the laws of physics. There are no mass-energy displacements that are not governed by the laws of physics. For this reason, many have thought that everything (everything spatiotemporal, that is) can be explained in terms of the laws of physics.
+  Spurious reasoning for a false conclusion. The statue is not identical with the clay of which it consists. They have different modal properties (one can destroy the statue without destroying the clay); so the clay isn t identical with the statue. (The clay constitutes the statue; constitution isn t identity.)
+  By parity of reasoning, computers aren t identical with heaps of atoms. The laws of physics tell you how those atoms behave. They don t tell you anything about the computer. The laws of physics don t say anything about computation, storage space, etc. Those concepts (computation, etc.) don t exist as far as those laws are concerned. So a physics-omniscient being does not in virtue of that fact have any computer-specific concepts and therefore does not have any computer-related knowledge.
+  Two software-identical units may be physically very different. So given only that x and y are software-identical, nothing can be said about their respective physical realizations. Consequently, there is no way to map software-truths onto hardware-truths.
+  But can t it be said that x and y will resemble each in certain abstract, functional respects? 
+  Yes, but physics is blind to such similarities. The similarities in question are to be understood in terms of concepts (e.g. computation, recursion, algorithm) for which the laws of physics make no provisions.[21]
+
+Software-determinism? statistical determinism
+  Suppose that a given computer x has a deterministic program. ( x has a deterministic program = there exists a set S of inputs such x, when not malfunctioning, assigns no more than output to any given member of S. ) Computers break down, and there is thus  machine error.  Should this happen to x---should x sometimes fail to say  4  when asked  what is twice two? --- the conclusion to draw is that x isn t implementing its program, not that its program is indeterministic. To the extent that x is a computer---to the extent that x is something that implements a program---x is a deterministic system. It is only to the extent that x is failing to implement a program that x is indeterministic. So it s only to the extent that x isn t a computer that x is indeterministic.
+
+Implementation-determinism? program-determinism
+Where higher-order laws are concerned, determinism?statistical determinism.
+  Given only that biologically identical inputs may be followed by biologically distinct outputs, it doesn t follow that the laws (if any there be) of biology are  indeterministic  or  probabilistic.  What follows is either that those laws are indeterministic or that organisms imperfectly operationalize their biological programs. Given only that economically identical situations may lead to economically distinct situations, it doesn t follow that the laws of economics are statistical. And so on.
+  Correlatively, lower-order indeterminism?higher-order indeterminism. Supposing that the laws of physics are indeterministic, it doesn t follow that higher-order laws are indeterministic. Supposing that x1 xn are indeterministic with respect to the laws of physics, it doesn t follow that they are indeterministic with respect to this or that biological/computational/etc. program.
+  Supposing arguendo that the laws of microphysics are indeterministic, it doesn t follow that aggregates of microparticles behave indeterministically, for the reason that the various norm- non-compliant behaviors on the part of individual particles cancel one another out.
+
+Probability in relation to higher-order mechanisms
+   Let W1 and W2 be two universes satisfying the following conditions. In each, the very same laws are operative. In each, the microphysical laws are indeterministic. In each, the fact that those laws are indeterministic has the consequence that it is very unlikely that computers (or cars or any other large-scale device) will always do what it is supposed to do: given those laws, it is unlikely, in either W1 or W2, that every computer will always comply with its program and will never, as a result of machine-error, produce an input-inappropriate output. But in W2, by sheer coincidence, every computer always does what it is supposed to do. Moreover, in W2, every computer does what it is supposed to do even though, inevitably, every computer eventually breaks down: those computers that break down simply happen, by sheer coincidence, to produce program-compliant results, even though, their hardware-conditions being what they are, it is unlikely that they should do so.
+  In W2, the likelihood that a given computer will behave in a program-compliant doesn t exceed the likelihood that a given computer in W1 will do so: the two probabilities coincide. But in W2 the previously-described rash of coincidences obscures the deterministic, and therefore that probabilistic, structure of events. In W2, it seems, in consequence of those coincidences, that computers are 100% likely to behave in a program-compliant fashion 100% of the time, even though, in fact, it is not 100% likely---even though in fact their always behaving in a program- compliant fashion is almost 100% unlikely (granting that their usually behaving in a program- compliant fashion is 100% likely).
+
+Statistical trends reflective of, but distinct from, probabilities
+  The Frequency Theory of Probability (FT) tells us that, in W2, the probability of a computer s never malfunctioning is 100%; in any case, the FT tells us that the W1-likelihood of computer- error exceeds the W2-likelihood.
+  This is plainly false. In each universe, the likelihood of computer-error is the same, even though, in W1 the likelihood seems high and, in W2, the likelihood seems low and even though, according to FT, the first likelihood in fact exceeds the second. What is going on is that, in W1, the statistics are consistent with the deterministic-probabilistic structure of the operative laws, whereas in W2 they are not; so that, in W1, the statistics lead one to the right result, whereas the statistics fail to do so in W2.
+
+Evidence of probabilities vs. actual probabilities
+  Statistics are evidence of probabilities; statistics are not themselves probabilities. According to FT, statistics are identical with probabilities; therefore, FT is false. Also, statistics are only as truth-conducive as they are consistent with the causal mechanisms that generate them. If, by coincidence, the statistics should be out of line with the underlying causal realities---if, by sheer coincidence, not one person who smokes gets cancer or emphysema---then the statistics simply aren t good evidence of the relevant mechanisms or, therefore, of the relevant probabilities.
+  In a world governed by the same biological---and non-biological laws as ours, but in which by sheer coincidence smokers never got cancer/emphysema, doctors would be no less wrong than they would in our world to tell their patients that smoking was harmless. In such a world, it would be understandable, given the available evidence, that doctors should take the view that smoking was harmless: but that view would be no less wrong than it is here, and the probability, in that world, that a given smoker would succumb to cancer/emphysema would coincide with the corresponding probability in our world.
+   Assume that M is brand-new and that it is well-constructed. Bearing this in mind, consider the statement that:
+
+(L) The likelihood that M will respond to a given input with an appropriate is high, but not 100%.
+
+  Let W be a world in which, by coincidence, computers always behave in a program-compliant manner but which, within the limits set by that qualification, is otherwise just like our universe. In our world, the likelihood that a brand-new PC will behave in a program-compliant manner is close to, but short of, 100%.
+  If FT is right, then the probability in W of a computer-malfunction is 0%, even though the actual probability is obviously the same as the corresponding probability in our universe and is therefore greater than 0%.
+
+Conclusion of Chapter 7
+  When it is said that that probability of a computer-malfunction is greater than 0%, the statement being made is to be interpreted causally, not statistically. What is being said is that, the laws of physics being what they are and the construction of the computer being what it is, it is a possibility, albeit one that may never be actualized, that brand-new/well-constructed/etc. computers malfunction.
+
+Chapter 8 Measurement
+
+Measurement vs. enumeration
+  Given any two lengths, there are intermediate lengths. There are therefore no minimal units of length. Consequently, given an object L, there is no class C of objects such that by counting C s members, one thereby determines L s length.
+  Even if L is known to be length identical with some object L* that consists of indivisible particles p1 pn arranged in a single file, it must be known that each such particle is length- identical with each other such particle if it can be legitimately said that either L* or L is n-units long. And given any such particle, there is no class C* such that the length of that particle can be determined by counting C* s members, since, by hypothesis, each such particle is non- composite.
+  Also, even if each such particle is length-identical with each other such particle, it must be known that length is strictly additive if it is to be known that the length of a p1 pn is n-units long. In other words, it must be known that, if a straight object consists of one segment that is x units long and another that is y units long, that object is x+y units long.
+  As it turns out, length is not additive. Length is approximately additive, when the lengths in question are small. It is not approximately additive when they are big.
+  The very fact that length is non-additive shows that, even if it were additive,  L is n units long  is not equivalent with  L consists of n unit-length segments : those statements have different meanings.
+  Also, supposing that length were additive, no act of enumeration would disclose that fact: enumeration results in principled length-determinations only if it s already known that length is additive.
+
+Relativization to a standard the essence of measurement
+  When it is said that L is longer than L*, L s relative length is being given---its length relative to L*.
+  When it is said that L is two meters long, it is still L s relative length that is being given---L s length relative to some standard.
+
+1.  Joe is as tall as Bill 
+
+tells you nothing about Joe s height, or Bill s height, unless you happen to have context-specific information.
+
+2.  Joe is 6 ft tall 
+
+tells you how tall Joe is, even if you lack context-specific information. Nonetheless, (1) is a comparative statement, just (1) and just like:
+(3)  Joe is taller than Mary. 
+
+ The difference between (2), on the one hand, and (1) and (3), on the other, is that (2) relativizes Joe s height to a universal standard, whereas the others relativize it to a context-specific standard.
+  The essence of measurement is comparison with respect to a standard. This is true of every kind of measurement.
+
+Relative vs. absolute length
+  There is no way to determine an object s length except in terms of the length of some other object. When an absolute length is assigned to some object L, it is being said that there is some object LS such that
+
+(a) LS is stipulated to have a length of one unit
+
+and such that
+
+(b) L s length compared to LS is n units.
+
+  Let LS be some object---e.g. a platinum bar in a temperature-controlled room---that is stipulated to be one meter long. If, when juxtaposed with L, in the way previously described, each of L s endpoints is contiguous with each of LS s endpoints, then L and LS are the same length. Otherwise, one of them is longer than the other.
+Let s suppose that L is longer than LS. In that case, there are two possible scenarios:
+
+(1) There are whole numbers p and q such that the ratio of L s length to LS s length is p/q, i.e. the ratio of L s length to LS s length is given by a rational number.
+(2) There are no such numbers, i.e. the ratio of L s length with respect to LS s length is not given by a rational number.
+
+  In case (1), there is some number n such that, if L is divided into n segments of equal length, L* being an arbitrary one of those segments, LS s exact length can be established by the method earlier described. That length will be an improper fraction n/m, such that L is m times the length of L*.
+  In case (2), if L is divided into n length-identical segments, L* being an arbitrary such segment, there is some integer m such that, the larger n is, the smaller the difference between LS s exact length, on the one hand, and the measurement yielded by the method just-described.
+
+Three axioms of measurement-theory
+(i) If L1 is longer than L2, and L2 is longer than L3, then L1 is longer than L3.
+(ii) If L1 and L2 are length-different, one is longer than the other.
+(iii) If L1 is the same length as L2, and L2 is the same length as L3, then L1 is the same length as L3.
+
+No viable system of length-determination is inconsistent with (i)-(iii).
+  Given any measurable magnitude m, what is true of length-determination is true of m- determination. In (i)-(iii), replace the references to length with references to temperature or mass or any other measurable magnitude: the resulting statement-set is true.
+  Measuring an object s length involves assigning a real number to its length: same length, same number; different lengths, different numbers. If any one of (i)-(iii) is violated, length- identical objects will be assigned different numbers and length-distinct objects will be assigned the same number. Number-assignments are therefore meaningless unless they are consistent with (i)-(iii).
+
+Scalar quantities vs. vector quantities
+  Length is a scalar quantity. A scalar quantity is one that is given by a single number, as opposed to an ordered n-tuple.
+  A vector quantity is one that is given by an ordered pair or, more generally, an ordered n- tuple. Velocity is a vector quantity; an object s velocity is given an ordered pair of numbers, one corresponding to speed, the other to direction.
+  In this context, we will focus only on scalar quantities. The principles underlying the determinations of vectors are obvious extensions of those involved determinations of scalar quantities.
+  Mass, temperature, density, viscosity, pressure, speed, conductivity, and malleability are all scalar quantities. Speed=distance/time. But speed is a scalar quantity. (Quotients are single numbers, not ordered n-tuples.) Density=mass/volume. But an object s density is a scalar quantity.
+
+Scalar magnitudes identical with one-dimensional manifolds
+  Even though a piece of paper is a four-dimensional object, it is a one-dimensional object qua thing that has a length. Any given length-determinate entity is, to that extent, a one-dimensional entity, even though any given occupant of space-time is four-dimensional.
+  Given a scalar magnitude m and any object x, qua m-determinate entity, x is one-dimensional, even though x per se cannot possibly be one-dimensional.
+
+Congruence
+  If length-determinations are to be made, it must be said what it is for two objects to have the same length. Two objects have the same length if they are length-congruent. Two objects are length-congruent if (but, given that there are many ways to establish length-congruence, not only if) two conditions are met, namely:
+
+(i) When juxtaposed, each endpoint of the one is contiguous one of the endpoints of the other,
+
+and
+
+(ii) The distance between those two objects is constant---it doesn t wax and wane.
+
+L is longer than L* if L* is congruent with a proper segment of L.
+  Absent a definition of congruence,  L is longer than L*  and  L and L* are length-identical  are devoid of meaning. It isn t that their truth-values cannot be known. It s that there are no truth-values to know.
+  Given any magnitude m,  x and y are m-identical  and  x m-exceeds y  are devoid of meaning. But for now, we will focus on length.
+  Absent a definition of length-congruence, no object L can be a length-standard. For L to be a length-standard, it must be said what it is for L* to be length-identical with L.
+  But given a definition of congruence, there is no object L such that  L* is one unit long  means  L* is length-identical with L  and thus no object L such that  L* is n units long  means  L* is n-times longer than L. 
+  Explanation: Let L be some specific meter-rod that is taken as a standard. Given some L- congruent object L*, L* is capable of serving as a length-standard. It may even be a better length standard than L. It may turn out that, if L* is assumed to be length-constant, conditions (i)-(iii) are satisfied, but that those same conditions are violated if L is assumed to be length-constant.
+
+n-dimensional congruence
+
+  Length-congruence holds between one-dimensional objects; triangle-congruence holds between two-dimensional objects; pyramid-congruence holds between three-dimensional objects. For any integer n, there are (hypothetical, if not actual) n-dimensional objects and, consequently, n-dimensional congruence.
+
+The use of provisional metrical standards and approximate physical laws
+A given object is provisionally taken as a length-standard. A congruence-relation is defined.
+On that basis, other objects are measured. Those measurements yield knowledge of physical laws. Those physical laws entail that, if an object of a certain type is taken as a standard, the result is a consistent set of measurements and also that an inconsistent set of measurements results if an object of some other type is taken as length-standard.
+  Given any magnitude m, if the references to length in the statements just made are replaced with references to m, the resulting statements are true.
+
+Triangulation and precisification
+  Small distances can be measured using meter rods, and they can also be measured using light rays. Large distances can be measured using light rays, but they cannot be measured using meter- rods. Within narrow horizons, meter-rod measurements and optical measurements yield the same results.
+  This is a contingent fact. Suppose it turned out---as it well might have---that the numbers yielded by meter-rod measurements could not be coordinated with the numbers yielded by optical measurements. In that case, there would be no one magnitude that was measured in both ways, and statements to the effect that the Sun is n meters from the Earth would be meaningless. But such statements are not meaningless, since, within the horizons within which both methods of measurement can be used, the results generated by the one method correspond to those yielded by the other.
+
+Precisification in relation to magnitudes other than length
+  One can use a thermometer to measure the temperature of bath water. One cannot use a thermometer to measure the temperature of magma, let alone the temperature of a star.
+  On the basis of thermometer-based measurements, one acquires knowledge of low-level physical laws (e.g. that such and such metals have such and such coefficients of expansion). On the basis of this knowledge, one acquires knowledge of higher-level physical laws (e.g. that radiation-intensity varies inversely with the square of the distance from the heat-source). On the basis of the totality of this information, one can compute very high temperatures.
+We know from personal experience that
+
+(i) A stronger flame is needed to boil a given amount of water in a short period of time than over a longer period of time;
+(ii) It is easier to hoist a given container when it's empty than when it's full; and
+(iii) Cars and computers that aren't maintained become dysfunctional more quickly than those that are maintained.
+
+On the basis of these facts, we know that
+
+(i*) An object's mass correlates with the amount of energy needed to heat it up;
+(ii*) An object's density correlates with the amount of energy needed to displace it; and (iii*) More energy is required to sustain a low-probability situation (e.g. an assemblage of objects that constitutes a working machine) than a high-probability situation (e.g. an assemblage of objects that serves no purpose).
+
+  On the basis of (i*)-(iii*), we can determine the sizes, masses, distances (from Earth and from each other), and the ages of celestial bodies. And on the basis of this knowledge, we can identify precise laws, to replace the approximate ones with which we began.
+
+Summary of findings
+   Day-to-day experience gives us approximate metrical knowledge, on the basis of which we can identify correlations on the basis of which we can obtain hitherto unobtainable metrical data. On the basis of this metrical data, we can identify precise laws, on the basis of which we can both add to and refine such metrical knowledge as we already have.
+
+Synchronic vs. diachronic measurements
+  Two meter-rods can be laid side by side. Non-simultaneous events cannot be laid side by side. If it is to be known how two such events compare in respect of duration, one must know of some periodic process (some event-sequence, each of whose members is of the same type as its successor: e.g. the round-trips made by a beam of light between two mirrors, rotations of the earth or of a cesium atom, somebody s heartbeat) that occurred during each event and, further, one must know how many installments of that processes occurred during each. If m installments of that process occur during the one event and n installments occur during the other, then, if that process is indeed a perfectly regular one, the length of the one relative to the other is n/m.
+
+Metrical Conventionalism
+
+    But it cannot be said," it will be objected, "that a given periodic process is regular unless there is already a way of determining duration. And there is no way of determining duration except in relation to some periodic process. Therefore, some periodic process must be stipulated to be perfectly regularity: it must be perfectly regular by convention. 
+This position, duly generalized, is known as conventionalism.
+  Conventionalism is false. This will be discussed below. Long story short: If duration is measured in terms of a process that is intuitively known to be erratic (e.g. somebody s heartbeat[22]), the resulting measurements aren t consistent with one another, but duration- measurements are consistent with one another if duration is measured in terms of a process that is intuitively known to be regular (e.g. the series of roundtrips made by a light beam between two mirrors whose distance from each other is fixed). Given that, relative to a given framework, an event cannot have distinct durations, it follows that conventionalism is false.
+
+Extensive vs. intensive magnitudes
+If 90  water is added to 70 water, the result is not 160  water. It is water that is n , 70?n?160.
+  If a one lb. object is put on top of a two lb. object, the result is an object whose weight exceeds the weight of either of the two original objects. (The resulting object weighs approximately three lbs.)
+The length of a straight object is (approximately) the sum of the lengths of its segments. Length and mass are extensive magnitudes. Temperature is an intensive magnitude.
+ Intensive  is synonymous with  non-extensive.  An extensive magnitude is one such that the degree to which a given object has that magnitude exceeds the degree to any given one of its parts has that magnitude. An additive magnitude is one such that the degree to which a given object has that magnitude is the arithmetical sum of the extent to which each of its parts has that magnitude.
+  Length and mass are extensive, and within limits they are both additive. Speed is extensive and, within limits, additive. Intelligence is intensive. So are temperature and density.
+  If two three ft. objects are laid side by side, the resulting object is not six ft. When it is said that length is extensive, what is meant is that there exists a non-contrived, knowledge-conducive way of conjoining objects such that the resulting object s length exceeds any given one of the objects conjoined. And when it is said that length is additive, what is meant is that there is exists a non-contrived, knowledge-conducive way of conjoining objects in such a way that the resulting object s length is the arithmetical sum of the lengths of the objects conjoined.[23]
+
+Relativity Theory and the non-additivity of scalar quantities
+  If you are at a train-station, your speed relative to that of a light-beam is 0 mph. If you get on a train traveling in the direction of that light-beam, your speed relative to it is still 0 mph. If you get on spaceship that is traveling in that direction at a rate of 150,000 miles/second, your speed relative to it is still 0 mph.
+  Given any framework F, the speed of light relative to F is c (?186,000 miles/second). A consequence---actually, the very essence of Special Relativity---is that there is no optical test by means of which one determine whether or not one is moving.
+  If speed were additive, these statements would be counterlogical. But speed, though extensive, is not additive. If you are moving at a rate of 30 mph on a train that is moving in the same direction at a rate of 30 mph, your speed relative to the train station is less than 60 mph.
+  A corollary is that length is non-additive. A corollary of this corollary is that volume is not additive.
+
+Direct measurements always yield rational numbers
+  Suppose that the ratio of L s length to LS s length is ?2. In that case, there is ipso facto no number n such that, if L is divided into n-equal parts, LS s length is some integral multiple of n. So if L s length, relative to LS, is ?2, that fact cannot be established by measuring L. If a given object s length is given by an irrational number, that object s length cannot be established by measuring that object.
+  Nonetheless, it can be known that a given object s length is given by such a number. If there is a triangle T such that
+
+(i) L is T s hypotenuse,
+(ii) LS is one of the other sides, and
+(iii) The third side is length-identical with LS, then L s length relative to L is ?2.
+
+  If there is a circle C such that L is length identical with C s circumference and LS is length- coincident with C s diameter, then L s length, relative to LS, is ?.
+
+Nomic Conventionalism
+  Suppose, as before, that LS is our length-standard, i.e. that it is stipulated to be length- constant, its length being one unit. It obviously isn t by comparing LS with some other object that we know LS to be length-constant. According to many (e.g. Russell, Poincar , Einstein), this entails that, in taking LS to be length-constant, we are simply adopting a convention, not registering a fact. Their argument:
+
+
+(CM) Since LS is our length-standard, there isn t some other object Ln such that LS s having a given length, or its being length-constant, was established by comparing LS with Ln. Given that length is comparative length, there is no other way to establish that LS is length-constant or that it has a given length. Therefore, in taking LS as a length-standard, we are simply adopting a convention: we are not acknowledging a fact about LS s length. Therefore, the statement  LS is one unit long  merely records a convention; it doesn t express a fact. The same is therefore true of  LS is length-constant (i.e. there is some length l----in this case one unit---- such that, at any given time LS s length is l).
+
+  For argument s sake, suppose that CM is cogent and that it cannot possibly be on the basis of known facts about LS s length that we take LS to be our length-standard. In that case, given any object L!, L! has just as much right as LS to be taken as a length-standard. L! can be an eel, a cylinder-shaped balloon, a sausage in a frying pan---anything at all. So far as there is any reason to take LS as a length-standard, and thus as length-constant, those advantages are of a purely practical nature. It may be that, by taking LS as length-constant and regard (cylinder-shaped balloon) L! as length-variable, the resulting system of physics is relatively simple; and it may be that if we take L! as length-constant and thus regard LS as length-variable, the resulting system of physics is prohibitively complex. If so, it doesn t follow that the first system of physics is more correct than the second. If L1 Ln are the laws constitutive of the LS-based system of physics and L*1 L*m are the laws constitutive of the L!-based system, L*1 L*m are no less real than L1 Ln. The question whether a given physical law exists has no meaning except in relation to objects that are taken as standards. Since it is entirely a matter of convention whether a given object is such a standard, the laws of nature are determined by our conventions.
+  This doctrine, though distinct from the one same-named doctrine previously considered, is known as conventionalism.
+  Thus,  conventionalism  is ambiguous. Sometimes it refers to metrical conventionalism, and sometimes it refers to nomic conventionalism.
+  Nomic conventionalism is seldom distinguished from nomic conventionalism. But those who do distinguish between them almost always take nomic conventionalism to be a consequence of metrical conventionalism. Their argument:
+
+If nomic conventionalism is correct, it is only relative to some arbitrary choice of standards that the so-called laws of physics (the Boyle-Charles Law, the Inverse- Square Law, the Parallelogram Law, e=mc2, and so on) are accurate. If balloon L! is taken as a length-standard, none of these so-called laws is even a truth, let alone a truth that expresses a law. These so-called laws are laws if optical standards of
+
+length (and length-related magnitudes: e.g. speed, distance, temperature) are adopted.
+
+This argument refuted
+
+  Supposing arguendo that conventionalism is correct, it doesn t follow that the laws of nature are entirely a matter of convention. What follows is that laws of nature are relations between convention-based standards, on the one hand, and empirical data, on the other.
+  Given only that LS is taken as a length-standard, nothing follows as to what the laws of nature are. But given that LS is taken as a length-standard, then supposing that LS-based measurements have yielded such and such results, it follows that, so far as those measurements were conducive of knowledge of natural law, there are thus and such laws of nature.
+  So supposing that conventionalism is correct, what follows is that the laws of nature describe non-conventional relations between metrical standards, on the one hand, and objects/events, on the other.
+
+Conventionalism vs. Strict Conventionalism
+  Let strict conventionalism be the position that the laws of nature are entirely a matter of convention. Strict conventionalism isn t a form of conventionalism. In fact, the two doctrines are incompatible. If the laws of nature were convention-determined, as opposed to merely convention-based, there would be no need to take measurements to identify those laws.
+  By the same token, so far as measurements are needed to identify them, they are, at most, convention-based, not convention-determined. The results of measurements are not determined by our metrical conventions. Given only that LS is stipulated to be one meter long, nothing follows as to how long a given car is: that car must be measured, and the outcome of that measurement is an empirical matter.
+  Supposing that strict conventionalism is false but that conventionalism is correct, magnitudes (e.g. lengths and distances) are properties non-conventional relations between events, on the one hand, and metrical conventions, on the other. In other words, if conventionalism is correct, then, even though the statement  the speed of light is framework invariant  doesn t describe a fact about light per se, it does describe a fact about the relationship between the behavior of light, on the one hand, and our metrical standards, on the other.
+  Given the fact that, if conventionalism is right, laws hold in virtue of non-conventional relations between conventions and events, it follows, for reasons now to be described, that conventionalism is a self-defeating doctrine.
+
+Conventionalism inconsistent with the desideratum that causal anomalies be eliminated
+  For argument s sake, let s suppose (probably correctly) that eels periodically increase and decrease in length, and let s suppose that we decide that we take some eel L! as our length- standard. Obviously L! per se can only be used in an extremely limited number of contexts. In order to use L! as a standard, there must be objects L!1 L!n such that, for each i (1?i?n), L!1 is congruent with L!n. Each series member must be D-congruent with each other such member.
+Further, there must be multiple such series: supposing that L!1 L!n mediates between L!, on the one hand, and some car x in Arizona, on the other, there will inevitably be some object y in Tibet (or on Mars) such that for no i (1?i?n) is L!i ever in a position to be juxtaposed with y. And each member of each such series must be D-congruent with each member of each other such series.
+  The empirical data being what it is, the likelihood is vanishingly close to zero that the length of a given object relative to a given such series-members will coincide with its length relative to every other such member or even any one such member.
+  A system of measurement must yield consistent results: if, relative to a given metrical standard, a given object (at a given time, relative to a given framework) both has, and does not have, a given length n, then that standard cannot coherently be used. For use of such a standard constitutes acceptance of the absurdity that n?n, for some number n.
+  It is an empirical fact that, when objects that we intuitively regard as length-variable (e.g. eels, cylinder-shaped balloons) that are used as length-standards, the resulting measurements are inconsistent with one another.
+  It is also an empirical fact that, when objects that we intuitively regard as length-constant are used as length-standards (e.g. platinum rods in temperature controlled rooms), the resulting measurements are consistent with each other to a high degree of approximation.
+  Finally, it is an empirical fact that, if an optical standard is used, there are fewer inconsistencies in the resulting measurement-set than if a non-optical standard is used.
+  Given that n=n, for any n, and given that use of an eel standard constitutes a rejection of this truism, whereas use of an optical standard constitutes acceptance of it, it must be said that, if eel- based measurements yield one set of physical laws and optics-based measurement yields a different set of laws, the latter are the laws that govern nature and the former are not.
+
+Conclusion of the present work
+  Causal series are continuous series. Information-bearing series are continuous structure- preserving series. To know explanations is to know causes. Scientific hypotheses are correct when they eliminate discontinuities, and they eliminate discontinuities when they themselves are constitutive of information-transmissive continuities.
