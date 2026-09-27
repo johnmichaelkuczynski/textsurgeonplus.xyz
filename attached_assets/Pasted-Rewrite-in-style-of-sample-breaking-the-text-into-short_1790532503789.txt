@@ -1,0 +1,50 @@
+Rewrite in style of sample, breaking the text into short sections, each under a terse header like "Natural law defined" or "Legal status ≠ moral authority."
+Rewrite in style of sample, opening with a formal definition of natural law and then a one-line definition of its denial.
+Rewrite in style of sample, using "Supposing arguendo" and "for argument's sake" to introduce the slavery example.
+Rewrite in style of sample, adding an objection in quotation marks introduced by "it will be objected" and then rebutting it.
+Rewrite in style of sample, using the construction "It isn't that X. It's that Y." at least twice.
+Rewrite in style of sample, stating the core claims as numbered theses (i), (ii), (iii).
+Rewrite in style of sample, replacing every smooth transition with abrupt declarative sentences.
+Rewrite in style of sample, using "ipso facto," "mutatis mutandis," and "by parity of reasoning" where they fit naturally.
+Rewrite in style of sample, adding a concrete, slightly odd analogy (comparable to the eel or flamethrower examples) to illustrate the legality/morality distinction.
+Rewrite in style of sample, formatting the distinction between legal status and moral authority as a header with "≠".
+Rewrite in style of sample, ending with a section titled "Conclusion" that restates the thesis in two or three flat sentences.
+Rewrite in style of sample, adding an "Explanation:" paragraph after the torture example.
+Rewrite in style of sample, adding a "Long story short:" sentence summarizing the argument.
+Rewrite in style of sample, using heavy colon and semicolon punctuation instead of short smooth sentences.
+Rewrite in style of sample, framing natural law as a "doctrine" and noting what "is known as" what.
+Rewrite in style of sample, distinguishing two senses of "law" the way the sample distinguishes two senses of "conventionalism."
+Rewrite in style of sample, introducing a counterfactual world (like W1/W2) in which a legislature legalizes torture.
+Rewrite in style of sample, stating a principle, then showing that its denial leads to absurdity.
+Rewrite in style of sample, using schematic variables (L, L*, x, y) to stand for laws and moral standards.
+Rewrite in style of sample, adding a short list of three everyday facts from which the general natural-law claim is inferred.
+Rewrite in style of sample, keeping sentences blunt and unhedged, with no rhetorical flourishes.
+Rewrite in style of sample, including a bracketed footnote marker like [1] after one claim.
+Rewrite in style of sample, repeating key terms instead of using synonyms, as the sample does.
+Rewrite in style of sample, using indented paragraph openings and uneven paragraph lengths.
+Rewrite in style of sample, including one parenthetical aside that clarifies a term mid-sentence.
+Rewrite in style of sample, adding a "Summary of findings" section.
+Rewrite in style of sample, recasting the text as a refutation of legal positivism.
+Rewrite in style of sample, using "Given only that X, it doesn't follow that Y" at least once.
+Rewrite in style of sample, using "the question whether" constructions instead of "whether or not."
+Rewrite in style of sample, keeping the original's content but reordering it into claim, objection, reply.
+Rewrite in style of sample, adding a two-case analysis: "there are two possible scenarios: (1)... (2)..."
+Rewrite in style of sample, preferring "x is such that" and "exactly if" phrasing for definitions.
+Rewrite in style of sample, using a triple dash (---) for interruptions and emphasis.
+Rewrite in style of sample, including one rhetorical question followed immediately by a flat answer.
+Rewrite in style of sample, putting a key technical term in quotation marks when it is first defined.
+Rewrite in style of sample, stating the torture example as a chain: "Different X, different Y; different Y, different Z."
+Rewrite in style of sample, attributing a view to a list of named thinkers, as the sample does with Berkeley, Mach, Peirce, and Ayer.
+Rewrite in style of sample, using "wherefore" or "therefore" to mark the main inference.
+Rewrite in style of sample, sounding like lecture notes rather than a polished essay.
+Rewrite in style of sample, allowing a few slightly awkward or clipped sentences instead of fully polished ones.
+Rewrite in style of sample, adding a section on what natural law does not entail.
+Rewrite in style of sample, contrasting "convention-based" and "convention-determined" as applied to statutes.
+Rewrite in style of sample, using a formula-like line, e.g. "Legal validity + moral authority = binding law."
+Rewrite in style of sample, citing a principle as a named item, e.g. "(NL) the principle that..."
+Rewrite in style of sample, making every paragraph begin with its thesis sentence.
+Rewrite in style of sample, adding a brief "Correlatively," paragraph drawing a converse point.
+Rewrite in style of sample, avoiding second-person address and using "one" or impersonal constructions.
+Rewrite in style of sample, expanding the speed-limit and tax examples into a contrast between conventional and non-conventional norms.
+Rewrite in style of sample, compressing the text by a third while keeping all claims.
+Rewrite in style of sample, expanding the text by half using additional arguments of the kind the sample makes.

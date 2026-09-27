@@ -6,27 +6,46 @@ id = "LpHERPpJU5NUt0xYLL8OE"
 uri = "file://promo/audio/vo.mp3"
 type = "audio"
 title = "textsurgeon promo vo2"
+logical_id = "80174b49-f253-4b79-9747-d0a92e307cc3"
 
 [[outputs]]
 id = "J9eXt0LdWBOw3ni-Qbpsk"
 uri = "file://promo/audio/music.mp3"
 type = "audio"
 title = "textsurgeon promo bed"
+logical_id = "d348055c-cc3d-41f3-bf1f-6326ee012f84"
 
 [[outputs]]
 id = "hYoWkliBld0krlJFJ9YYt"
 uri = "file://promo/out/TextSurgeon_promo.mp4"
 type = "video"
 title = "Text Surgeon — 47s Promo Video (1080p)"
+logical_id = "2204ecd2-dfb3-4eef-a570-f9738e7a8ef8"
 
 [[outputs]]
 id = "VQQKuaOP0TFlCzGBZOg5d"
 uri = "file://promo/out/youtube_description.txt"
 type = "text"
 title = "YouTube Description"
+logical_id = "1d5a3f86-2ddd-4e33-8387-cbaaa452d841"
 
 [[outputs]]
 id = "yr_b3rd5NHLZpcqxZHVHj"
 uri = "file://README.md"
 type = "text"
 title = "Text Surgeon — Marketing README"
+logical_id = "61b8dfa8-1c62-4fed-85fb-c6b2082de289"
+
+[[outputs]]
+id = "u97lzwQcKakScv7td4KBo"
+uri = "file://reports/humanizer-diagnostic.html"
+type = "html"
+title = "Humanizer diagnostic: 10 prompts"
+description = "Full output and result for each of ten live rewrite requests using the supplied Box A and Box D texts."
+logical_id = "bb5ae655-d080-4549-9658-eab9d4cb6d4a"
+content_hash = "sha256:578f105edc91c5ec9b583dc0c3c4ae4eba6b07524b78a54e0dbcd266f6bf3be8"
+size = 61703
+mtime_ms = 1790533260011
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:aca50f88-eb4e-4e00-a7a8-de88e0c95892/bb5ae655-d080-4549-9658-eab9d4cb6d4a/1be9e49b-b8c3-4929-98f8-b8f5d9999a0b"
+storage_version_token = "1790533337550820"
+content_type = "text/html"

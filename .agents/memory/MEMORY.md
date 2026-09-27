@@ -1,0 +1,1 @@
+- [Humanizer diagnostic fidelity](humanizer-diagnostic-fidelity.md) — style-sample topic can contaminate output even when length and source-keyword checks pass.

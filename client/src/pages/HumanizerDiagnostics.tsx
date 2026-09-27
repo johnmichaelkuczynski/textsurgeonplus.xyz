@@ -26,6 +26,17 @@ type DiagnosticResult = {
   error?: string;
 };
 
+type RewriteResult = {
+  number: number;
+  prompt: string;
+  status: DiagnosticStatus;
+  words?: number;
+  durationMs?: number;
+  provider?: string;
+  output?: string;
+  error?: string;
+};
+
 const PROVIDERS = [
   ["gemini", "Gemini"],
   ["openai", "OpenAI"],
@@ -63,6 +74,101 @@ export default function HumanizerDiagnostics() {
   const [results, setResults] = useState<DiagnosticResult[]>(INITIAL_RESULTS);
   const [isRunning, setIsRunning] = useState(false);
   const abortController = useRef<AbortController | null>(null);
+  const [rewriteResults, setRewriteResults] = useState<RewriteResult[]>([]);
+  const [rewriteRunning, setRewriteRunning] = useState(false);
+  const [rewriteError, setRewriteError] = useState("");
+  const rewriteController = useRef<AbortController | null>(null);
+
+  const runHumanizerDiagnostic = async () => {
+    if (rewriteController.current) return;
+    const controller = new AbortController();
+    rewriteController.current = controller;
+    setRewriteRunning(true);
+    setRewriteError("");
+    setRewriteResults([]);
+    try {
+      const fixtureResponse = await fetch("/api/humanizer/diagnostic-prompts", {
+        credentials: "include",
+        signal: controller.signal,
+      });
+      if (!fixtureResponse.headers.get("content-type")?.includes("application/json")) {
+        throw new Error("The server returned a webpage instead of diagnostic data. The new server route is not active.");
+      }
+      const fixture = await fixtureResponse.json();
+      if (!fixtureResponse.ok) throw new Error(fixture?.error || `HTTP ${fixtureResponse.status}`);
+      if (
+        !Array.isArray(fixture?.prompts) ||
+        fixture.prompts.length < 10
+      ) {
+        throw new Error("The diagnostic files are incomplete.");
+      }
+      const offset = Number(window.localStorage.getItem("humanizer-diagnostic-next-prompt") || 0);
+      const start = Number.isFinite(offset) ? offset % fixture.prompts.length : 0;
+      const cases: RewriteResult[] = Array.from({ length: 10 }, (_, index) => {
+        const number = (start + index) % fixture.prompts.length;
+        return { number: number + 1, prompt: fixture.prompts[number], status: "waiting" };
+      });
+      window.localStorage.setItem("humanizer-diagnostic-next-prompt", String((start + 10) % fixture.prompts.length));
+      setRewriteResults(cases);
+      for (const testCase of cases) {
+        if (controller.signal.aborted) break;
+        const started = performance.now();
+        setRewriteResults((current) => current.map((item) =>
+          item.number === testCase.number ? { ...item, status: "running" } : item,
+        ));
+        try {
+          const response = await fetch("/api/humanizer/diagnostic-rewrite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            signal: controller.signal,
+            body: JSON.stringify({ promptIndex: testCase.number - 1 }),
+          });
+          if (!response.headers.get("content-type")?.includes("application/json")) {
+            throw new Error("The server returned a webpage instead of a rewrite. The new server route is not active.");
+          }
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload?.error || `HTTP ${response.status}`);
+          if (typeof payload?.text !== "string" || !payload.text.trim()) {
+            throw new Error("No transformed text was returned.");
+          }
+          const output = payload.text.trim();
+          const words = output.split(/\s+/).length;
+          const sourceTerms = ["document", "chunk", "coherence", "tractatus"];
+          const retained = sourceTerms.filter((term) => output.toLowerCase().includes(term)).length;
+          const styleBleed = /\bnatural law\b|\bslavery\b|\blegal positivism\b|\btorture\b/i.test(output);
+          const error = words < 480 || words > 720
+            ? `Length check failed: ${words} words, expected approximately 600 (480–720 accepted).`
+            : styleBleed
+              ? "Source-fidelity check failed: the rewrite imported natural-law content not present in Box A."
+            : retained < 2
+              ? "Source-fidelity check failed: the rewrite does not retain at least two central Box A terms (document, chunk, coherence, tractatus)."
+              : undefined;
+          setRewriteResults((current) => current.map((item) =>
+            item.number === testCase.number ? {
+              ...item, status: error ? "failed" : "passed", words,
+              durationMs: Math.round(performance.now() - started),
+              provider: String(payload.provider || "unknown"), output, error,
+            } : item,
+          ));
+        } catch (error: any) {
+          setRewriteResults((current) => current.map((item) =>
+            item.number === testCase.number ? {
+              ...item, status: "failed",
+              durationMs: Math.round(performance.now() - started),
+              error: error?.name === "AbortError" ? "Stopped." : error?.message || "Rewrite failed.",
+            } : item,
+          ));
+          if (controller.signal.aborted) break;
+        }
+      }
+    } catch (error: any) {
+      if (error?.name !== "AbortError") setRewriteError(error?.message || "Diagnostic failed.");
+    } finally {
+      if (rewriteController.current === controller) rewriteController.current = null;
+      setRewriteRunning(false);
+    }
+  };
 
   const updateResult = (id: string, patch: Partial<DiagnosticResult>) => {
     setResults((current) =>
@@ -233,6 +339,53 @@ export default function HumanizerDiagnostics() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-5 p-5 lg:p-8">
+        <section className="rounded-xl border-2 border-blue-200 bg-white p-5 shadow-sm">
+          <h2 className="text-lg font-black">Humanizer transformation diagnostic</h2>
+          <p className="mt-1 text-sm text-slate-700">
+            Uses the supplied Box A text and full Box D style sample. Each click runs 10 different supplied instructions
+            through the real rewrite endpoint, requesting approximately 600 words per result. Prompts rotate through all 50.
+            These instructions refer to natural law, whereas the supplied Box A text concerns document processing;
+            the source-fidelity check flags results that abandon Box A.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            {rewriteRunning ? (
+              <Button type="button" variant="destructive" onClick={() => rewriteController.current?.abort()}>
+                <StopCircle className="mr-2 h-4 w-4" /> Stop transformation diagnostic
+              </Button>
+            ) : (
+              <Button type="button" onClick={() => void runHumanizerDiagnostic()} className="bg-blue-700 hover:bg-blue-800" data-testid="button-humanizer-diagnostic">
+                <Play className="mr-2 h-4 w-4" /> Test 10 transformations
+              </Button>
+            )}
+            <span role="status" className="text-sm text-slate-700">
+              {rewriteResults.filter((item) => item.status === "passed" || item.status === "failed").length}
+              /{rewriteResults.length} completed · {rewriteResults.filter((item) => item.status === "passed").length} passed
+            </span>
+          </div>
+          {rewriteError ? <p role="alert" className="mt-3 rounded bg-red-50 p-3 text-sm text-red-800">{rewriteError}</p> : null}
+          <div className="mt-4 space-y-3">
+            {rewriteResults.map((item) => (
+              <article key={item.number} className={`rounded-lg border p-4 ${item.status === "passed" ? "border-emerald-300" : item.status === "failed" ? "border-red-300" : "border-slate-200"}`}>
+                <div className="flex flex-wrap justify-between gap-2">
+                  <h3 className="font-bold">Prompt {item.number} · {item.status}</h3>
+                  <span className="text-xs text-slate-600">
+                    {item.words !== undefined ? `${item.words} words · ` : ""}
+                    {item.provider ? `${item.provider} · ` : ""}
+                    {item.durationMs !== undefined ? `${item.durationMs.toLocaleString()} ms` : ""}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm">{item.prompt}</p>
+                {item.error ? <p role="alert" className="mt-2 text-sm text-red-700">{item.error}</p> : null}
+                {item.output ? (
+                  <details className="mt-3 rounded border bg-slate-50 p-3">
+                    <summary className="cursor-pointer font-semibold">Inspect full transformed text</summary>
+                    <div className="mt-3 whitespace-pre-wrap font-serif text-sm leading-relaxed">{item.output}</div>
+                  </details>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
         <section className="rounded-xl border bg-white p-5 shadow-sm">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
