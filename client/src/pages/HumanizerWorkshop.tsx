@@ -4,6 +4,7 @@ import {
   AlertCircle,
   ArrowLeft,
   BookOpen,
+  Download,
   FileInput,
   Loader2,
   RotateCcw,
@@ -66,6 +67,8 @@ type RewriteJob = {
   contentInstructions: string;
   usedProviders: Set<string>;
   fallbackReasons: Set<string>;
+  minWords?: number;
+  sourceWords?: number;
 };
 
 type GptZeroState =
@@ -397,6 +400,7 @@ function SampleBox({
 export default function HumanizerWorkshop() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
+  const [isLoadingSupplied, setIsLoadingSupplied] = useState(false);
   const outputDetection = useAutomaticGptZero(outputText);
   const [previousAiScore, setPreviousAiScore] = useState<number | undefined>();
   const [customInstructions, setCustomInstructions] = useState("Rewrite in style of sample");
@@ -413,6 +417,7 @@ export default function HumanizerWorkshop() {
   const [canResume, setCanResume] = useState(false);
   const [isLoadingInputFile, setIsLoadingInputFile] = useState(false);
   const inputFile = useRef<HTMLInputElement>(null);
+  const outputFile = useRef<HTMLInputElement>(null);
   const rewriteRequest = useRef<AbortController | null>(null);
   const pendingRewrite = useRef<RewriteJob | null>(null);
 
@@ -436,7 +441,13 @@ export default function HumanizerWorkshop() {
           ? `The preceding rewritten part ends as follows (for continuity only; do not repeat it): ${job.outputs[index - 1].slice(-220)}`
           : "";
         const instructions = [job.baseInstructions, partInstruction, previousEnding].filter(Boolean).join("\n\n");
-        if (instructions.length > 3_000) throw new Error("Box C instructions are too long to process this document in parts.");
+        const partTarget = job.minWords && job.sourceWords
+          ? Math.min(1_950, Math.ceil(job.minWords * 1.08 * job.chunks[index].trim().split(/\s+/).length / job.sourceWords))
+          : undefined;
+        const effectiveInstructions = partTarget
+          ? `Produce approximately ${partTarget} words of rewritten prose for this part. The full document must be at least ${job.minWords!.toLocaleString()} words; this target applies to this part only.\n\n${instructions}`
+          : instructions;
+        if (effectiveInstructions.length > 3_000) throw new Error("Box C instructions are too long to process this document in parts.");
         const response = await fetch("/api/humanizer/rewrite", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -445,7 +456,7 @@ export default function HumanizerWorkshop() {
           body: JSON.stringify({
             text: job.chunks[index],
             provider: job.provider,
-            instructions,
+            instructions: effectiveInstructions,
             styleSample: job.styleSample,
             styleInstructions: job.styleInstructions,
             contentSample: job.contentSample,
@@ -464,17 +475,61 @@ export default function HumanizerWorkshop() {
           throw new Error(`Part ${index + 1} returned no rewritten prose.`);
         }
         if (controller.signal.aborted || pendingRewrite.current !== job) return;
-        job.outputs.push(payload.text.trim());
+        let partText = payload.text.trim();
+        if (typeof payload.provider === "string") job.usedProviders.add(payload.provider);
+        if (typeof payload.fallbackReason === "string") job.fallbackReasons.add(payload.fallbackReason);
+        for (let attempt = 0; partTarget && partText.split(/\s+/).length < Math.round(partTarget * 0.96) && attempt < 3; attempt++) {
+          setOutputText([...job.outputs, partText].join("\n\n"));
+          setRewriteMessage(`Box B is streaming part ${index + 1} of ${job.chunks.length}. Expanding this part to reach the 45,000-word minimum; ${partText.split(/\s+/).length} of approximately ${partTarget} words so far.`);
+          const remaining = partTarget - partText.split(/\s+/).length;
+          const sourceTail = job.chunks[index].slice(-Math.min(job.chunks[index].length, Math.max(2_000, remaining * 8)));
+          const continuationResponse = await fetch("/api/humanizer/rewrite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            signal: controller.signal,
+            body: JSON.stringify({
+              text: sourceTail,
+              provider: job.provider,
+              instructions: `Write approximately ${Math.min(1_950, Math.max(200, remaining))} words of additional prose to CONTINUE the existing rewrite of this section of On Certainty. Develop only the source's distinctions and examples that the preceding rewrite has not yet fully explained. Do not repeat the preceding text, invent claims, copy the style sample's subject, add a heading, or start a new section.`,
+              styleSample: job.styleSample,
+              styleInstructions: job.styleInstructions,
+              contentSample: partText.slice(-10_000),
+              contentInstructions: "The content sample is the preceding rewrite. Continue it without repeating it; the input passage is the only source of new content.",
+            }),
+          });
+          const continuation = await continuationResponse.json().catch(() => null);
+          if (!continuationResponse.ok || typeof continuation?.text !== "string" || !continuation.text.trim()) {
+            throw new Error(`Part ${index + 1} could not be expanded: ${continuation?.error || `HTTP ${continuationResponse.status}`}`);
+          }
+          if (controller.signal.aborted || pendingRewrite.current !== job) return;
+          partText += `\n\n${continuation.text.trim()}`;
+          if (typeof continuation.provider === "string") job.usedProviders.add(continuation.provider);
+          if (typeof continuation.fallbackReason === "string") job.fallbackReasons.add(continuation.fallbackReason);
+        }
+        const partWords = partText.split(/\s+/).length;
+        if (partTarget && partWords < Math.round(partTarget * 0.90)) {
+          setOutputText([...job.outputs, partText].join("\n\n"));
+          throw new Error(`Part ${index + 1} produced only ${partWords} of approximately ${partTarget} required words. Its short draft is visible in Box B; Resume retries this part.`);
+        }
+        job.outputs.push(partText);
         if (Array.isArray(payload.issues) && payload.issues.length) {
           job.issues.push(`Part ${index + 1}: ${payload.issues.join(" ")}`);
         }
         job.nextIndex++;
-        if (typeof payload.provider === "string") job.usedProviders.add(payload.provider);
-        if (typeof payload.fallbackReason === "string") job.fallbackReasons.add(payload.fallbackReason);
         setRewriteProgress({ done: job.nextIndex, total: job.chunks.length });
+        setOutputText(job.outputs.join("\n\n"));
+        setRewriteMessage(`Streaming into Box B: ${job.nextIndex} of ${job.chunks.length} parts · ${job.outputs.join("\n\n").trim().split(/\s+/).length.toLocaleString()} words so far. This is not the finished rewrite.`);
       }
       if (controller.signal.aborted || pendingRewrite.current !== job) return;
-      setOutputText(job.outputs.join("\n\n"));
+      const finalWords = job.outputs.join("\n\n").trim().split(/\s+/).length;
+      if (job.minWords && finalWords < job.minWords) {
+        setRewriteError(`Only ${finalWords.toLocaleString()} words were produced; the required minimum is ${job.minWords.toLocaleString()}. The draft is visible in Box B but is not a completed result.`);
+        setRewriteProgress(null);
+        setCanResume(false);
+        pendingRewrite.current = null;
+        return;
+      }
       setPreviousAiScore(job.previousAiScore);
       if (job.issues.length) {
         setRewriteError(`Draft available below, but the checks did not pass after correction: ${job.issues.join(" ")}`);
@@ -504,7 +559,10 @@ export default function HumanizerWorkshop() {
     }
   };
 
-  const rewriteText = async (source: string, fromOutput = false) => {
+  const rewriteText = async (
+    source: string, fromOutput = false,
+    supplied?: { instructions: string; sample: string; provider: WorkshopProvider; minWords: number },
+  ) => {
     const original = source.trim();
     if (!original) return;
     if (original.length > MAX_WORKSHOP_DOCUMENT_CHARS) {
@@ -530,22 +588,24 @@ export default function HumanizerWorkshop() {
       if (controller.signal.aborted) return;
       const baseInstructions = feedback
         ? `${customInstructions.trim()}\n\nRevise the current Box B draft using this GPTZero result ${original.length > 50_000 ? "from its first 50,000 characters" : "for this text"}: ${feedback.aiScore !== undefined ? `${feedback.aiScore}% AI likelihood` : `classification ${feedback.classification}`}${feedback.confidence ? ` (${feedback.confidence} confidence)` : ""}. Aim for a lower AI likelihood by improving natural variation and clarity, while preserving the draft's subject, facts, voice, and approximate length. Do not add unrelated content or claim any score is guaranteed.`
-        : customInstructions;
+        : supplied?.instructions ?? customInstructions;
       const job: RewriteJob = {
-        chunks: splitWorkshopDocument(original),
+        chunks: splitWorkshopDocument(original, supplied ? 7_500 : WORKSHOP_CHUNK_CHARS),
         outputs: [],
         issues: [],
         nextIndex: 0,
         baseInstructions,
         fromOutput,
         previousAiScore: feedback?.aiScore,
-        provider: aiProseProvider,
-        styleSample,
+        provider: supplied?.provider ?? aiProseProvider,
+        styleSample: supplied?.sample ?? styleSample,
         styleInstructions,
         contentSample,
         contentInstructions,
         usedProviders: new Set(),
         fallbackReasons: new Set(),
+        minWords: supplied?.minWords,
+        sourceWords: supplied ? original.split(/\s+/).length : undefined,
       };
       pendingRewrite.current = job;
       setRewriteProgress({ done: 0, total: job.chunks.length });
@@ -559,6 +619,34 @@ export default function HumanizerWorkshop() {
         rewriteRequest.current = null;
         setIsRewriting(false);
       }
+    }
+  };
+
+  const startSuppliedRewrite = async () => {
+    if (isLoadingSupplied || isRewriting) return;
+    setIsLoadingSupplied(true);
+    setRewriteError("");
+    try {
+      const [sourceResponse, styleResponse] = await Promise.all([
+        fetch("/@fs/home/runner/workspace/attached_assets/0_ON_CERTAINTY_BY_WITTGENSTEIN_1790542245825.txt"),
+        fetch("/@fs/home/runner/workspace/attached_assets/0_Theoretical_Knowledge___Inductive_Inference_1790542268948.txt"),
+      ]);
+      if (!sourceResponse.ok || !styleResponse.ok) throw new Error("The supplied source or style file is unavailable in this Preview.");
+      const [source, style] = await Promise.all([sourceResponse.text(), styleResponse.text()]);
+      if (!source.trim() || !style.trim()) throw new Error("The supplied source or style file is empty.");
+      const quarter = Math.floor(style.length / 4);
+      const sample = [style.slice(1_000, 11_000), style.slice(quarter, quarter + 10_000), style.slice(quarter * 2, quarter * 2 + 10_000), style.slice(quarter * 3, quarter * 3 + 10_000)].join("\n\n");
+      const instructions = "Rewrite On Certainty in the explanatory prose style of the supplied sample. Keep the source's argument, distinctions, examples, and sequence. Do not import the sample's subject. The complete rewrite must be no less than 45,000 words.";
+      setInputText(source);
+      setStyleSample(sample);
+      setCustomInstructions(instructions);
+      setAiProseProvider("gemini");
+      setOutputText("");
+      await rewriteText(source, false, { instructions, sample, provider: "gemini", minWords: 45_000 });
+    } catch (error: any) {
+      setRewriteError(error?.message || "Could not start the supplied rewrite.");
+    } finally {
+      setIsLoadingSupplied(false);
     }
   };
 
@@ -619,6 +707,38 @@ export default function HumanizerWorkshop() {
       setIsLoadingInputFile(false);
       if (inputFile.current) inputFile.current.value = "";
     }
+  };
+
+  const loadOutputFile = async (file: File) => {
+    if (!/\.(txt|md)$/i.test(file.name) || file.size > MAX_WORKSHOP_DOCUMENT_CHARS * 4) {
+      setRewriteError("Select a text or Markdown result file under 8 MB.");
+      return;
+    }
+    try {
+      const text = await file.text();
+      if (!text.trim() || text.length > MAX_WORKSHOP_DOCUMENT_CHARS) {
+        throw new Error("The result file is empty or exceeds the 2,000,000-character limit.");
+      }
+      cancelCurrentRewrite();
+      setOutputText(text);
+      setPreviousAiScore(undefined);
+      setRewriteError("");
+      setRewriteMessage(`${file.name.includes("PARTIAL") ? "Partial" : "Saved"} result loaded into Box B: ${text.trim().split(/\s+/).length.toLocaleString()} words. Box A is unchanged.`);
+    } catch (error: any) {
+      setRewriteError(error?.message || "Could not load the result file.");
+    } finally {
+      if (outputFile.current) outputFile.current.value = "";
+    }
+  };
+
+  const downloadOutput = () => {
+    if (!outputText.trim()) return;
+    const url = URL.createObjectURL(new Blob([outputText], { type: "text/plain;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "humanizer-box-b-result.txt";
+    anchor.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
   };
 
   return (
@@ -696,6 +816,12 @@ export default function HumanizerWorkshop() {
                   {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
                   {isRewriting ? "Transforming…" : "Transform Text"}
                 </Button>
+                {import.meta.env.DEV ? (
+                  <Button type="button" variant="outline" onClick={() => void startSuppliedRewrite()} disabled={isLoadingSupplied || isRewriting} className="gap-2 bg-white" data-testid="button-start-supplied-rewrite">
+                    {isLoadingSupplied ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+                    {isLoadingSupplied ? "Loading supplied files…" : "Start On Certainty — 45,000 words"}
+                  </Button>
+                ) : null}
                 <Button
                   type="button"
                   variant="outline"
@@ -753,6 +879,16 @@ export default function HumanizerWorkshop() {
               </div>
             </div>
             <div className="flex items-center gap-2 border-b border-emerald-200 bg-emerald-50 px-5 py-3">
+              <input
+                ref={outputFile}
+                type="file"
+                accept=".txt,.md"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void loadOutputFile(file);
+                }}
+              />
               <Button
                 type="button"
                 onClick={() => void rewriteText(outputText, true)}
@@ -762,6 +898,12 @@ export default function HumanizerWorkshop() {
               >
                 {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
                 {isRewriting ? "Rewriting…" : "Rewrite"}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => outputFile.current?.click()} disabled={isRewriting} className="gap-2 bg-white" data-testid="button-load-output">
+                <Upload className="h-4 w-4" /> Load saved result
+              </Button>
+              <Button type="button" variant="outline" onClick={downloadOutput} disabled={!outputText.trim()} className="gap-2 bg-white" data-testid="button-download-output">
+                <Download className="h-4 w-4" /> Download Box B
               </Button>
               <span className="text-xs text-emerald-800">Rewrite the current Box B text using its GPTZero result.</span>
             </div>

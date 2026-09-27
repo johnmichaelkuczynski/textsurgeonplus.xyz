@@ -49,3 +49,17 @@ mtime_ms = 1790536052068
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:aca50f88-eb4e-4e00-a7a8-de88e0c95892/bb5ae655-d080-4549-9658-eab9d4cb6d4a/54c42540-6720-4dfb-86f6-3c26c94de5fe"
 storage_version_token = "1790536106559494"
 content_type = "text/html"
+
+[[outputs]]
+id = "xt_Js1xjfLraP9J50OF6V"
+uri = "file://outputs/on-certainty-rewrite/On-Certainty-PARTIAL-4-of-30.txt"
+type = "text"
+title = "On Certainty — partial rewrite (8,015 words)"
+description = "First 4 of 30 sections only. Download this file, then use Load saved result in Box B to display it there; it is not the requested final 45,000-word document."
+logical_id = "5a8b13b9-722c-4fd8-b456-8e45b3e95d2e"
+content_hash = "sha256:923bc6c49fa1d0d4657bafff28f48d8ca0182f3573c3d424ccd1288e46cb5517"
+size = 48183
+mtime_ms = 1790543425474
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:aca50f88-eb4e-4e00-a7a8-de88e0c95892/5a8b13b9-722c-4fd8-b456-8e45b3e95d2e/a3da0c0f-8257-42a7-b91a-08bcd81657ea"
+storage_version_token = "1790543441225868"
+content_type = "text/plain"

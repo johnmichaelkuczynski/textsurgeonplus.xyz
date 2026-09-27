@@ -1,0 +1,53 @@
+The challenge here is not merely about which propositions require testing, but about the framework itself: what is to be tested by what? The very question points to a deeper puzzle. When we ask who decides what stands fast, we're not seeking the name of an authority. We're asking what it means for something to stand fast in the first place.
+
+**126.** Consider my certainty regarding the meaning of my words compared with my certainty about specific judgments. Am I more certain of the meaning of "blue" than I am certain that this color is called blue? The question reveals a peculiar structure in our certainties.
+
+The doubts I can coherently entertain form a system. They are not arbitrary or isolated. Each possible doubt has its place relative to what I hold fixed.
+
+**127.** Take the problem of recognizing doubt in another person. How do I know someone is genuinely in doubt? More fundamentally, how do I know that when he says "I doubt it," he means what I mean by those words? The very recognition of doubt in another presupposes shared criteria for doubt's expression.
+
+**128.** From childhood I learned to judge in certain ways. This is what judging is for me.
+
+**129.** I didn't first learn what judgment is in the abstract, then apply it. Rather, I learned to judge by judging in these particular ways. This is what I came to know as judgment.
+
+**130.** But doesn't experience teach us to judge in these ways? Doesn't experience show us that judging thus is correct? The question assumes a certain relationship between experience and judgment. Yet how exactly does experience teach us? We may derive our judging from experience in the sense that experience is its source, but experience doesn't instruct us to derive anything from experience. If experience grounds our judging in this manner—not merely as its cause but as its justification—still we lack a ground for regarding this grounding relation itself as justified. The regress threatens.
+
+**131.** Experience is not the ground for our game of judging. Neither is the fact that our judgments enjoy outstanding success. Success may accompany our practice without grounding it.
+
+**132.** Consider historical examples. People once judged that a king could make rain. We say this contradicts all experience. Yet today people judge that aeroplanes and radio are means for bringing peoples into closer contact and spreading culture. Each era has its judgments that seem to rest on experience.
+
+**133.** Under ordinary circumstances I don't verify that I have two hands by examining how things look. Why not? Has experience demonstrated such checking to be unnecessary? Or have we somehow learned a universal law of induction which we trust even in this case? But if we learned a universal inductive law, why would we learn that general principle first rather than the specific one directly? The appeal to a universal law makes the matter more puzzling, not less.
+
+**134.** After placing a book in a drawer, I assume it remains there unless certain circumstances obtain. "Experience always proves me right. No well-attested case exists of a book simply disappearing." True, books sometimes never turn up again despite our certainty about their location. But experience teaches that a book doesn't simply vanish away—gradually evaporate, for instance. Yet is it really this experience with books and similar objects that leads us to assume that a particular book hasn't vanished? Suppose we discovered that under particular novel circumstances books did vanish. Wouldn't we alter our assumption? Can we state the relationship between experience and our system of assumptions such that experience definitively contradicts them?
+
+**135.** Perhaps we simply follow the principle that what has always happened will happen again, or something similar. But what does following this principle amount to? Do we actually introduce it into our reasoning as a premise? Or is it merely the natural law our inferring apparently follows? The latter may be correct. It functions not as an item in our considerations but as their form.
+
+**136.** When Moore claims he knows such-and-such, he is enumerating empirical propositions we affirm without special testing. These are propositions having a peculiar logical role in the system of our empirical propositions. They don't function as ordinary empirical claims do.
+
+**137.** Even if the most trustworthy person assures me he knows things are thus and so, this alone cannot satisfy me that he does know. It satisfies me only that he believes he knows. This is why Moore's assurance that he knows various things doesn't interest us philosophically. The propositions Moore presents as examples of known truths are interesting for a different reason. Not because anyone knows them to be true, or believes he knows them, but because they all play a similar role in the system of our empirical judgments. Their interest lies in their logical role, not in the psychological fact of someone's certainty regarding them.
+
+**138.** We don't arrive at any of these propositions through investigation. Historical investigations exist, as do investigations into the earth's shape and age. But no investigation concerns whether the earth existed during the last hundred years. Many of us possess information about this period from our parents and grandparents. But might they be mistaken? "Nonsense!" one responds. "How could all these people be wrong?" Yet is that an argument? Or is it simply the rejection of an idea? Perhaps it's the determination of a concept. For if I speak of a possible mistake here, this changes the role "mistake" and "truth" play in our lives. To admit the possibility would restructure our epistemic practices.
+
+**139.** Establishing a practice requires not only rules but also examples. Our rules leave openings; the practice must speak for itself. Rules underdetermine practice.
+
+**140.** We don't learn the practice of making empirical judgments by learning rules, then applying them. We are taught judgments and their connections with other judgments. A totality of judgments is made plausible to us as a whole.
+
+**141.** When we first begin to believe anything, what we believe is not a single proposition but an entire system of propositions. Light dawns gradually over the whole. Understanding emerges systematically, not atomistically.
+
+**142.** Individual axioms don't strike me as obvious in isolation. Rather, a system strikes me as coherent, a system in which consequences and premises give one another mutual support. The support is reciprocal throughout the structure.
+
+**143.** I am told someone climbed this mountain many years ago. Do I always inquire into the reliability of the person telling me this story? Do I check whether the mountain existed years ago? A child learns that informants can be reliable or unreliable, but learns this much later than it learns facts told to it. The child doesn't learn at all that the mountain has existed for a long time. The question whether this is so doesn't arise. The child swallows this consequence down, so to speak, together with what it learns. The background assumptions come along with the explicit content.
+
+**144.** The child learns to believe numerous things. That is, it learns to act according to these beliefs. Gradually a system of beliefs forms. In that system some things stand unshakeably fast while others are more or less liable to shift. What stands fast does so not because it is intrinsically obvious or convincing. It is held fast by what lies around it. Its stability derives from its position in the system.
+
+**145.** One wants to say "All my experiences show that it is so." But how do experiences show that? The proposition to which they supposedly point itself belongs to a particular interpretation of them. That I regard this proposition as certainly true also characterizes my interpretation of experience. The certainty and the interpretation are not independent; they constitute each other.
+
+The question of testing and grounds thus circles back on itself. If I hold certain things fixed in order to test others, those fixed points derive their fixity not from having been tested more rigorously, but from their position in the system. The structure is not hierarchical in the way foundationalism requires.
+
+Consider the comparison again: certainty about word-meaning versus certainty about particular judgments employing those words. One might think meaning-certainty must be prior, must ground judgment-certainty. But the two are inseparable in practice. I cannot doubt what "blue" means while confidently judging that this is blue, nor can I be certain this is blue while genuinely doubting what "blue" means. The certainties stand or fall together.
+
+The systematic character of doubt follows from this. Doubts cannot be arbitrary precisely because doubt operates within a system where most propositions must remain fixed for any particular doubt to have content. To doubt everything simultaneously would not be radical skepticism but incoherence—the dissolution of doubt itself as a meaningful activity.
+
+Recognizing doubt in others presents the same systematic structure. I identify his doubt through his words and behavior, but this identification presupposes we share enough fixed points that his utterance "I doubt it" can register as expressing doubt rather than something else entirely. Radical divergence in our systems would make his mental states inaccessible to me, not through privacy but through unintelligibility.
+
+The child's learning to judge reveals this systematicity in its formation. The child is not first taught neutrally what judgment is, then taught which particular judgments to make. The child learns to judge by being inducted into specific judgments—these are correct, those incorrect. The practice precedes and grounds the concept, not the reverse.

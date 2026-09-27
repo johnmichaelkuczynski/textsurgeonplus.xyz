@@ -1,0 +1,40 @@
+PREFACE  
+The content we offer herein belongs to the final year and a half of Ludwig Wittgenstein's life. In 1949, Wittgenstein visited the United States at Norman Malcolm's invitation, residing in his home in Ithaca. Malcolm inspired Wittgenstein’s interest in Moore's 'defense of common sense', specifically Moore’s claim of knowing several propositions with certainty, such as "Here is one hand, and here is another", and broader statements like "The earth existed for a long time before my birth", and "I have never been far from the earth's surface". The first statement appears in Moore's 'Proof of the External World', while the other two feature in his 'Defence of Common Sense'. Wittgenstein had long admired these works, designating one as Moore's best article, with Moore concurring. This volume encompasses Wittgenstein's writings on the topic from then until his passing, consisting of initial drafts that he did not refine or excerpt during his lifetime.  
+
+The material divides into four segments, delineated at § 65, p. 10, § 192, p. 27, and § 299, p. 38. The presumed first part resides on twenty undated loose sheets, left in G. E. M. Anscombe's home in Oxford, where Wittgenstein lived from April 1950 to February 1951, excepting a brief sojourn in Norway. Although Anscombe (G. E. M. A.) believes these were penned in Vienna, from Christmas 1950 until March, the basis of this belief is unrecalled. The remaining text occupies small, dated notebooks, leading up to Wittgenstein's last entry just two days before his death on April 29, 1951. We have kept the dates as they appear in the manuscripts; the section numbering is editorial.  
+
+At that time, Wittgenstein also wrote on color concepts, meticulously condensing this material into a separate manuscript. A subsequent volume will encompass this alongside other post-Philosophical Investigations writings. It is appropriate to publish this treatise independently, as Wittgenstein marked it distinctly within his notebooks, revisiting it at four separate periods over eighteen months, forming a cohesive analysis of the topic.  
+
+G. E. M. Anscombe  
+G. H. von Wright  
+
+ACKNOWLEDGMENT  
+Gratitude is extended to Dr. Lotte Labowsky and Dr. Anselm Müller for their valuable advice on this translation.  
+
+---
+
+1. "If you know here is one hand", we concede to you all else. It is understood when a proposition is said to be unprovable, it merely means it cannot be derived from other propositions with greater certainty than the proposition itself. (Refer to an intriguing comment by H. Newman.)
+
+2. The appearance that something seems true to me—or to everyone—does not necessitate that it is true. We must question whether doubting it makes sense.
+
+3. Consider a scenario where someone states, "I don't know if there's a hand here," they might be advised, "Look more closely." This possibility of self-verification is integral to the language-game among its essential traits.
+
+4. Consider the proposition "I know that I am a human being". To elucidate its ambiguity, ponder its denial. At best, one might interpret it as "I know I possess human organs," such as a brain, which is unseen to me. Yet, can one doubt the proposition "I know I have a brain"? There is no foundation for doubt. Everything supports it, nothing opposes it. Nonetheless, it remains conceivable that an operation might find my skull vacant.
+
+5. The falsity of a proposition is contingent upon what is considered determinant for that claim.
+
+6. Can one, like Moore, enumerate one's knowledge? I think not, for doing so otherwise misuses the expression "I know". Such misuse suggests a bizarre and crucial mental state.
+
+7. My daily actions indicate certainty or knowledge that a chair exists over there, a door here, etc. For instance, I instruct a friend, "Take that chair," or "Close the door."
+
+8. The distinction between 'knowing' and 'being certain' holds minimal significance unless 'I know' conveys infallibility. In a courtroom, "I am certain" may replace "I know" in testimony. We could even imagine a prohibition against saying "I know" there. In 'Wilhelm Meister', "You know" or "You knew" signifies "You were certain," despite differing facts.
+
+9. In my life, do I ensure that I know this is my hand?
+
+10. "I know a sick man is lying here"? This stance lacks sense since I sit at his bedside, observing his face. Thus, do I not know a sick man lies here? Both the query and assertion are nonsensical. Similarly, the assertion "I am here", used in suitable contexts, is not obligatory nonsense. "2 x 2 = 4" is indeed a mathematical proposition, but only as uttered or written according to proper use does it bear sense. The proposition "2 x 2 = 4" in Chinese might hold different meaning or be outright nonsensical. "I know there is a sick man here," uttered in inappropriate settings, seems mundane because we can easily imagine fitting situations, wrongly assuming the phrase "I know..." is valid where doubt is absent or meaningless.
+
+11. We overlook how specialized the use of "I know" is.
+
+12. "I know" appears to depict a circumstance affirming the known as fact. We often dismiss the phrase "I thought I knew."
+
+13. The proposition "It is so" is not derivable from another's statement "I know it is so," nor from its truthfulness. Might we infer "It is so" from our own "I know etc."? Yes.

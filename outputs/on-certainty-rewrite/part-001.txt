@@ -1,0 +1,54 @@
+These materials derive from the final year and a half of Wittgenstein's life. During mid-1949, he accepted Norman Malcolm's invitation to visit the United States, residing at Malcolm's residence in Ithaca. Malcolm served as a catalyst for Wittgenstein's engagement with Moore's defense of common sense—specifically, Moore's assertion that he knows certain propositions with certainty, propositions such as "Here is one hand, and here is another," "The earth existed for a long time before my birth," and "I have never been far from the earth's surface." The first proposition appears in Moore's "Proof of the External World." The remaining two appear in his "Defence of Common Sense." Wittgenstein had maintained a longstanding interest in these claims and had informed Moore that this was his finest article. Moore had concurred with this assessment. This volume contains everything Wittgenstein wrote on this subject from that time until his death. The material is entirely first-draft, which he did not survive to select from and refine.
+
+The material divides into four parts. We have indicated the divisions at §65, page 10; §192, page 27; and §299, page 38. What we take to be the first part was written on twenty loose sheets of lined foolscap, bearing no dates. Wittgenstein left these sheets in his room at G. E. M. Anscombe's house in Oxford, where he lived from April 1950 to February 1951, apart from an autumn visit to Norway. I (G. E. M. A.) retain the impression that he had written them in Vienna, where he stayed from the previous Christmas until March, but I cannot now recall the basis for this impression. The remainder appears in small notebooks containing dates. Toward the end, the date of writing is consistently given. The final entry was made two days before his death on April 29th, 1951. We have preserved the dates exactly as they appear in the manuscripts. The numbering of the individual sections, however, is the work of the editors.
+
+These were not the only materials Wittgenstein wrote during this period. He wrote, among other things, a substantial amount on color-concepts, and this material he did excerpt and refine, reducing it to a small compass. We expect to publish a volume containing this material and other material written after the completion of Philosophical Investigations Part II. It seemed appropriate to publish this work separately. It is not a selection. Wittgenstein marked it off in his notebooks as a separate topic, which he apparently took up at four separate periods during these eighteen months. It constitutes a single sustained treatment of the subject.
+
+G. E. M. Anscombe
+G. H. von Wright
+
+Dr. Lotte Labowsky and Dr. Anselm Müller are to be sincerely thanked for advice about the translation of this work.
+
+1. If you know that here is one hand, we'll grant you all the rest. When one says that such and such a proposition cannot be proved, this does not mean that it cannot be derived from other propositions. Any proposition can be derived from other propositions. But the propositions from which it is derived may be no more certain than it is itself. (On this, a curious remark by H. Newman.)
+
+2. From its seeming to me—or to everyone—to be so, it does not follow that it is so. What we can ask is whether it can make sense to doubt it.
+
+3. Suppose someone says "I don't know if there's a hand here." He might be told "Look closer." This possibility of satisfying oneself is part of the language-game. It is one of the language-game's essential features.
+
+4. "I know that I am a human being." To see how unclear the sense of this proposition is, consider its negation. At most, it might be taken to mean "I know I have the organs of a human"—for example, a brain, which no one has ever yet seen. But what about such a proposition as "I know I have a brain"? Can I doubt it? Grounds for doubt are lacking. Everything speaks in its favor; nothing speaks against it. Nevertheless, it is imaginable that my skull should turn out empty when it was operated on.
+
+5. Whether a proposition can turn out false depends on what I make count as determinants for that proposition.
+
+6. Now, can one enumerate what one knows, in the way Moore does? Straight off like that, I believe not. For otherwise the expression "I know" gets misused. And through this misuse, a queer and extremely important mental state seems to be revealed.
+
+7. My life shows that I know or am certain that there is a chair over there, or a door, and so on. I tell a friend, for example, "Take that chair over there," "Shut the door," and so on.
+
+8. The difference between the concept of knowing and the concept of being certain is not of any great importance at all, except where "I know" is meant to mean: I cannot be wrong. In a law-court, for example, "I am certain" could replace "I know" in every piece of testimony. We might even imagine its being forbidden to say "I know" there. (A passage in Wilhelm Meister uses "You know" or "You knew" in the sense "You were certain," the facts being different from what he knew.)
+
+9. Now do I, in the course of my life, make sure I know that here is a hand—my own hand, that is?
+
+10. "I know that a sick man is lying here"? Nonsense! I am sitting at his bedside; I am looking attentively into his face. So I don't know, then, that there is a sick man lying here? Neither the question nor the assertion makes sense. Any more than the assertion "I am here" makes sense, though I might yet use it at any moment if suitable occasion presented itself. Then is "2 × 2 = 4" nonsense in the same way, and not a proposition of arithmetic, apart from particular occasions? "2 × 2 = 4" is a true proposition of arithmetic—not "on particular occasions" nor "always"—but the spoken or written sentence "2 × 2 = 4" in Chinese might have a different meaning or be outright nonsense. From this it is seen that it is only in use that the proposition has its sense. And "I know that there's a sick man lying here," used in an unsuitable situation, seems not to be nonsense but rather seems matter-of-course. This is only because one can fairly easily imagine a situation to fit it, and one thinks that the words "I know that..." are always in place where there is no doubt, and hence even where the expression of doubt would be unintelligible.
+
+11. We just do not see how very specialized the use of "I know" is.
+
+12. For "I know" seems to describe a state of affairs which guarantees what is known—guarantees it as a fact. One always forgets the expression "I thought I knew."
+
+13. For it is not as though the proposition "It is so" could be inferred from someone else's utterance: "I know it is so." Nor from the utterance together with its not being a lie. But can't I infer "It is so" from my own utterance "I know etc."? Yes; and also "There is a hand there" from the utterance "He knows that there's a hand there." But from his utterance "I know..." it does not follow that he does know it. The same holds for my own case. From what do we conclude that someone knows? From behavior and utterance together—and these do not yield certainty. The first-person case seems privileged because when I say "I know p" I am inclined to conclude p directly. But the warrant is the same: my utterance expresses belief, not fact.
+
+14. That I am a man and not a woman can be verified, but if I were to say I know it, that could only signify: I know what the word "man" means. And this: that I am a man among others who can verify it. Everything descriptive of a physical object can also serve as check on whether I am making an error.
+
+15. There are cases such that, if someone gives signs of doubt where we do not doubt, we cannot confidently understand his signs as signs of doubt. That is to say: if I am supposed to grant that a man can be in doubt about whether he has a body, then I must equally grant the same thing of everyone else, and must suppose they're frequently in doubt about it. If someone doubts whether he has a body, do we take this as genuine doubt? Or must we conclude he misunderstands the words? The language-game of doubting presupposes shared certainties. Where these are absent, interpretation cannot proceed.
+
+16. "If I don't trust this evidence why should I trust any evidence?"
+
+17. If I say "Of course I know that that's a towel" I am making an utterance. I have no thought of a verification. For me it is an immediate utterance. I don't think of past or future verification. The knowledge-claim functions as reaction, not as conclusion from evidence. This immediacy characterizes ordinary knowledge-claims. They are not based on anything in the sense of inference from grounds.
+
+18. Suppose someone doubted whether I have two hands? Must I grant at least this: that I need not be certain? That my knowledge here is of special kind? The doubt, if coherent, would force acknowledgment that my "knowledge" of my hands differs from knowledge of yesterday's weather. But differs how? Not in certainty-degree. Rather: grounds for doubt and verification operate differently. With hands: what would checking accomplish? What would count as discovering I was wrong? The language-game provides no purchase for these questions.
+
+19. My having two hands is, in normal circumstances, as certain as anything I could produce in evidence for it. That is why I am not able to take the sight of my hand as evidence for it. Evidence must be more certain than what it supports. If p is evidence for q, then certainty(p) > certainty(q). But nothing exceeds certainty of "Here is a hand" in relevant contexts. Therefore nothing can serve as evidence for it. The proposition sits at justification's terminus, not within chains of justification.
+
+20. So one might grant Moore was right, if he is interpreted like this: a proposition saying here is a physical object may have the same logical status as one saying here is a red patch.
+
+21. If someone were to contest my statement "That is red," I might examine the object more closely—but not to discover whether I was right or whether the object was red. I would examine it to find what it actually is. Two examination-purposes exist: (a) To verify whether the object has property F—this presupposes doubt is coherent. (b) To discover what the object is—this treats my initial statement as misidentification, not as potentially false while the identification holds. The latter does not grant sense to "I might be wrong that it's red while it is red."
+
+22. The same thing applies here as applies to the proposition "I know that that's a..."

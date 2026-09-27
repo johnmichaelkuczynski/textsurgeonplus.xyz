@@ -1,0 +1,53 @@
+The proposition "So there are physical objects" resembles the proposition "So there are colors." Both purport to be conclusions drawn from certain premises, but the logical character of such conclusions requires examination.
+
+58. Suppose we construe "I know etc." as a grammatical proposition. Given this construal, the "I" becomes inessential. The proposition signifies that doubt has no application in the relevant case—that is, "I do not know" fails to make sense in this context. And given that "I do not know" lacks sense here, it follows that "I know" likewise lacks sense. The affirmation and its negation both fail to function as they do in contexts where doubt is intelligible.
+
+59. The claim "I know" functions here as a logical insight rather than an empirical discovery. It articulates something about the role certain propositions play in our thought and language. But this logical character means that "I know" cannot serve as a proof of realism. Realism—the philosophical thesis that physical objects exist independently of our perceptions or beliefs—is not established by pointing to propositions that function as hinges in our system of beliefs.
+
+60. It would be wrong to say that the claim "this is a piece of paper" constitutes a hypothesis subject to empirical confirmation or disconfirmation through subsequent experience. When I say "I know that this is a piece of paper," the "I know" relates neither to an empirical hypothesis of the sort scientific investigation tests, nor to a logical determination of the sort deductive reasoning establishes.
+
+61. A word's meaning is a kind of employment of that word. What we learn when a word becomes incorporated into our language is how to employ it—in what contexts it occurs, what follows from its application, what contrasts govern its use, what role it plays in various language-games.
+
+62. This understanding explains the correspondence between the concepts "rule" and "meaning." To grasp a word's meaning is to grasp the rules governing its employment.
+
+63. Imagine facts otherwise than they are. Suppose humans lacked hands, or material objects regularly vanished and reappeared without cause, or the past continually rearranged itself. In such circumstances, certain language-games would lose their importance while others would gain importance. This would produce an alteration—gradual rather than sudden—in how we employ the vocabulary of our language.
+
+64. A word's meaning may be compared with an official's function. Just as different officials perform different functions within an institution, different words perform different functions within language. And just as a single term might designate officials who perform different functions in different contexts, a single word might have different meanings—different patterns of employment—in different language-games.
+
+65. When language-games change, concepts change. And when concepts change, the meanings of words change.
+
+66. I make assertions about reality, and these assertions carry different degrees of assurance. How does this difference in degree manifest itself? What consequences follow from it? We might be dealing with the certainty of memory, or with the certainty of perception. I may be certain of something while remaining cognizant of what sort of test might convince me of error. I am quite sure, for example, of the date of a particular battle. But should I discover a different date in a recognized historical work, I would alter my opinion. This alteration would not mean I had lost all confidence in my capacity for judgment.
+
+67. Could we imagine a person who continually makes mistakes where we regard mistakes as impossible? He states that he lives at such and such a place, has reached such and such an age, comes from such and such a city. He speaks with the same certainty—provides all the conventional tokens of certainty—that I do when making parallel statements about myself. But he is wrong. What is his relation to this error? What should we suppose about him? The question concerns what the logician should say about this case.
+
+69. I am inclined to say: "If I am wrong about this, I have no guarantee that anything I say is true." But others will not say this about me, nor will I say it about other people.
+
+70. For months I have lived at address A. I have read the street name and house number countless times, received countless letters at this address, given countless people this address. If I am wrong about it, the error is scarcely less significant than if I were to believe (wrongly) that I was writing Chinese rather than German.
+
+71. If my friend were to imagine one day that he had been living for a long time at some place other than where he has actually been living, I would not call this a mistake. I would call it a mental disturbance, perhaps a transient one.
+
+72. Not every false belief of this kind qualifies as a mistake.
+
+73. But what distinguishes mistake from mental disturbance? Or rather, what distinguishes my treating something as a mistake from my treating it as mental disturbance?
+
+74. Can we say that a mistake has not only a cause but also a ground? That is, roughly: when someone makes a mistake, this mistake can be fitted into what the person knows correctly.
+
+75. Consider two cases. First: I wrongly believe that there is a table here in front of me (perhaps sophisticated optical equipment has produced a convincing illusion). This might still be a mistake. Second: I wrongly believe that I have seen this table, or one like it, every day for several months, and have regularly used it. This is not a mistake in the same sense.
+
+76. My aim must be to articulate what the statements one would like to make here amount to, even though these statements cannot be made in ways that carry standard significance.
+
+77. Perhaps I perform a multiplication twice to ensure accuracy, or perhaps I ask someone else to check the calculation. But shall I perform it twenty times, or ask twenty people to verify it? And would declining to do so constitute negligence? Would the certainty really be greater for being checked twenty times? And can I give a reason why it would not be greater?
+
+79. That I am a man and not a woman can be verified. But if I were to say I was a woman, and then tried to explain the error by noting that I had not checked the statement, the explanation would not be accepted.
+
+80. The truth of my statements is the test of my understanding of these statements.
+
+81. That is to say: if I make certain false statements, it becomes uncertain whether I understand them.
+
+82. What counts as an adequate test of a statement belongs to logic. It belongs to the description of the language-game.
+
+83. The truth of certain empirical propositions belongs to our frame of reference.
+
+84. Moore says he knows that the earth existed long before his birth. Expressed thus, the claim seems to concern Moore personally—what this particular man knows. Now whether Moore knows this or that particular fact is philosophically uninteresting. But it is interesting that, and how, such things can be known. Had Moore informed us that he knew the distance separating certain stars, we might conclude that he had conducted specialized investigations, and we would want to know what these were. But Moore chooses precisely a case in which all of us seem to know the same thing he knows, and without being able to say how we know it. I believe, for example, that I know as much about this matter (the earth's existence before my birth) as Moore knows. And if he knows it as he says, then I know it too. For he has not arrived at his proposition through special investigation unavailable to others.
+
+The difference between Moore's case and the astronomical case reveals something essential. When we all claim to know that the earth existed long before our births, we do not claim to have conducted investigations or gathered evidence in the way someone learns the distance between stars. The knowledge is not personal in that sense, even though each of us says "I know." The philosophical interest lies not in Moore's relationship to this particular proposition, but in the proposition's relationship to our entire system of beliefs. It is not that Moore has verified something the rest of us have left unverified. Rather, this proposition occupies a peculiar position: it functions as something we all treat as beyond question, yet we cannot point to the process by which we arrived at it. We might say we learned it, but the learning was not like learning an empirical fact through observation or testimony. The proposition was incorporated into our understanding of how things are, not added to a list of facts we have verified. This incorporation happened not through individual investigation but through our initiation into a form of life, into language-games in which such propositions provide the scaffolding rather than the structure itself. They are not conclusions we have drawn but starting points we have inherited, not results of inquiry but preconditions for inquiry.

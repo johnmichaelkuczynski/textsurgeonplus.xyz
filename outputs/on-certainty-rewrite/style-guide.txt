@@ -1,0 +1,7 @@
+Employ terse, catalog-like syntax with frequent sentence fragments and abbreviated constructions. Use parenthetical labels and enumerated lists to organize complex logical sequences. Structure arguments through explicit signposting—"Explanation," "Summary," "Problems with"—that announces each analytical move. Maintain a clinical, pedagogical tone that prioritizes logical precision over readability, treating readers as students tracking intricate philosophical distinctions.
+
+Construct sentences that oscillate between compressed declarations and extended conditional chains. Deploy technical vocabulary without glossing, assuming familiarity with specialized terminology. Use rhetorical questions sparingly, primarily as section transitions. Favor "if-then" constructions and modal operators ("must," "would," "could") to trace logical implications.
+
+Build explanatory structures through incremental refinement: state a principle, demonstrate its insufficiency, then modify. Use concrete scenarios (pushing buttons, shooting birds) as logical test cases rather than illustrative color. Present counterexamples matter-of-factly as refutations.
+
+Employ parallel constructions when comparing alternatives. Use italics for emphasis on logical pivots. Maintain analytical distance through passive constructions and impersonal formulations. Create rhythm through repeated structural patterns—condition, consequence, qualification—rather than varied cadences.

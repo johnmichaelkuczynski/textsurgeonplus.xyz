@@ -1,0 +1,45 @@
+From the proposition "There is a hand there," one can derive "He knows that there's a hand there"—but only if the conditions for knowledge obtain. Conversely, "There is a hand there" follows from "He knows that there's a hand there." This reciprocal entailment holds because knowledge entails truth. But from his utterance "I know . . ." it does not follow that he does know it. The utterance itself, considered merely as utterance, does not guarantee the truth of what it purports to express.
+
+14. That he does know takes some showing. The utterance "I know" is not self-certifying.
+
+15. What is required is demonstration that no mistake was possible in the circumstances. Merely giving the assurance "I know" doesn't suffice. The assurance amounts to nothing more than the speaker's claim that he cannot be making a mistake. But it needs to be objectively established that the speaker is not making a mistake about his own incapacity for error.
+
+16. The formula "If I know something, then I also know that I know it, and so on" embodies a particular conception: "I know that" means "I am incapable of being wrong about that." But whether I am so immune needs to be established objectively—by reference to considerations independent of my subjective assurance.
+
+17. Suppose I say "I'm incapable of being wrong about this: that is a book" while pointing to an object. What would constitute a mistake in such a case? And do I have any clear conception of what such a mistake would be like? If I cannot specify what I am ruling out, the claim lacks determinate content.
+
+18. The statement "I know" often means: I have the proper grounds for my assertion. If the other person is acquainted with the language-game in question—if he understands the practice within which the claim is made—he would be in a position to admit that I know, provided the grounds are adequate. The other person, if he is acquainted with the language-game, must be able to imagine how one may know something of the kind in question. The intelligibility of knowledge-claims depends on shared understanding of what counts as grounds.
+
+19. The statement "I know that here is a hand" may be continued with "for it's my hand that I'm looking at." In such a case, a reasonable person will not doubt that I know. Nor will the idealist doubt this, at least not in the ordinary sense. Rather, he will say that he was not concerned with the practical doubt which is being dismissed by the appeal to grounds. He will insist that there is a further doubt behind that one—a philosophical doubt that persists even when practical grounds are adequate. That this further doubt is an illusion has to be shown in a different way. It cannot be shown by adducing further grounds of the same kind, since the idealist does not question the adequacy of such grounds within their own domain.
+
+20. "Doubting the existence of the external world" does not mean doubting the existence of some particular object in the way one might doubt, for example, the existence of a planet which later observations proved to exist. Or does Moore want to say that knowing that here is his hand is different in kind from knowing of the existence of the planet Saturn? If the knowledge-claims are of the same kind, then it would be possible to point out the discovery of the planet Saturn to those who doubt the external world and say that its existence has been proved, and hence the existence of the external world as well. But this is manifestly not possible.
+
+21. Moore's view comes down to this: the concept 'know' is analogous to the concepts 'believe', 'surmise', 'doubt', 'be convinced' in that the statement "I know . . ." cannot be a mistake. And if that is so—if "I know" is incorrigible in this way—then there can be an inference from such an utterance to the truth of the assertion made. But here the form "I thought I knew" is being overlooked. This form shows that "I know" is not incorrigible in the way Moore supposes. But if "I thought I knew" is inadmissible—if saying "I know" does preclude the possibility of mistake—then a mistake in the assertion must be logically impossible. And anyone who is acquainted with the language-game must realize this. If mistakes are logically impossible, no assurance from a reliable person that he knows can contribute anything beyond the assertion itself.
+
+22. It would surely be remarkable if we had to believe the reliable person who says "I can't be wrong," or who says "I am not wrong." The statement of one's own reliability or infallibility does not constitute evidence for it.
+
+23. If I don't know whether someone has two hands—if I don't know, say, whether they have been amputated or not—I shall believe his assurance that he has two hands, if he is trustworthy. And if he says he knows it, that can only signify to me that he has been able to make sure—that his arms are not still concealed by coverings and bandages, and so forth. My believing the trustworthy person stems from my admitting that it is possible for him to make sure. I understand what it would be for him to verify the claim, and I trust that he has done so. But someone who says that perhaps there are no physical objects makes no such admission. He does not admit the possibility of verification because he questions the very framework within which verification operates.
+
+24. The idealist's question would be something like: "What right have I not to doubt the existence of my hands?" And to that question, the answer cannot be: I know that they exist. But someone who asks such a question is overlooking the fact that a doubt about existence only works in a language-game. Doubt has application only within a context that provides criteria for what counts as doubt and what would resolve it. Hence, we should first have to ask: what would such a doubt be like? We would need to clarify what form this doubt takes, what would count as entertaining it, what would count as resolving it. And we don't understand this straight off.
+
+25. One may be wrong even about "there being a hand here." Only in particular circumstances is it impossible to be wrong. "Even in a calculation one can be wrong—only in certain circumstances one can't."
+
+26. But can it be seen from a rule what circumstances logically exclude a mistake in the employment of rules of calculation? What use is a rule to us here? Mightn't we go wrong in applying the second-order rule, just as we might go wrong in applying the first-order rule?
+
+27. If one wanted to give something like a rule here, then it would contain the expression "in normal circumstances." And we recognize normal circumstances but cannot precisely describe them. At most, we can describe a range of abnormal circumstances. The normal is understood by contrast with the specifiable abnormal, not through independent characterization.
+
+28. What is 'learning a rule'?—This. What is 'making a mistake in applying it'?—This. And what is pointed to here is something indeterminate. Learning and mistake-making are shown through examples, through training, through practice.
+
+29. Practice in the use of the rule also shows what is a mistake in its employment. Through repeated application, one comes to recognize errors as errors.
+
+30. When someone has made sure of something, he says: "Yes, the calculation is right." But he did not infer that from his condition of certainty. One does not infer how things are from one's own certainty. Certainty is, as it were, a tone of voice in which one declares how things are. It is the manner of assertion, not a premise from which the assertion is derived. But one does not infer from the tone of voice that one is justified.
+
+31. The propositions which one comes back to again and again as if bewitched—these I should like to expunge from philosophical language.
+
+32. It's not a matter of Moore's knowing that there's a hand there. Rather, we should not understand him if he were to say "Of course I may be wrong about this." We should ask "What is it like to make such a mistake as that?"—for example, what's it like to discover that it was a mistake? If no answer can be given, the supposed possibility of error is empty.
+
+33. Thus we expunge the sentences that don't get us any further.
+
+34. If someone is taught to calculate, is he also taught that he can rely on a calculation of his teacher's? But these explanations must after all sometime come to an end. Will the learner also be taught that he can trust his senses—since he is indeed told in many cases that in such and such a special case you cannot trust them? Rule and exception both figure in training.
+
+35. But can't it be imagined that there should be no physical objects? I don't know. And yet "There are physical objects" is nonsense if construed as an empirical proposition. Is it supposed to be an empirical proposition?

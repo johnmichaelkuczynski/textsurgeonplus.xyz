@@ -1,12 +1,12 @@
 export const MAX_WORKSHOP_DOCUMENT_CHARS = 2_000_000;
 export const WORKSHOP_CHUNK_CHARS = 3_000;
 
-export function splitWorkshopDocument(text: string): string[] {
+export function splitWorkshopDocument(text: string, maxChars = WORKSHOP_CHUNK_CHARS): string[] {
   const chunks: string[] = [];
   for (let start = 0; start < text.length;) {
-    let end = Math.min(start + WORKSHOP_CHUNK_CHARS, text.length);
+    let end = Math.min(start + maxChars, text.length);
     if (end < text.length) {
-      const earliest = start + Math.floor(WORKSHOP_CHUNK_CHARS / 2);
+      const earliest = start + Math.floor(maxChars / 2);
       const breaks = [
         text.lastIndexOf("\n\n", end - 1),
         text.lastIndexOf("\n", end - 1),

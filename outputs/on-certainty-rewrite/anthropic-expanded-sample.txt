@@ -1,0 +1,46 @@
+PREFACE
+
+The material we present in this publication derives from the final eighteen months of Wittgenstein's existence. During the middle portion of 1949, he traveled to the United States, accepting an invitation extended by Norman Malcolm. His stay occurred at Malcolm's residence in the town of Ithaca. Malcolm functioned as a stimulus to Wittgenstein's ongoing engagement with Moore's articulation of what Moore termed a 'defence of common sense'—that is to say, Moore's assertion that he possessed knowledge of certain propositions with complete certainty. Among these propositions were claims such as "Here is one hand, and here is another," "The earth existed for a long time before my birth," and "I have never been far from the earth's surface."
+
+The first of these propositions appears in Moore's essay entitled 'Proof of the External World'. The remaining two propositions occur in his essay 'Defence of Common Sense'. Wittgenstein had maintained a sustained interest in these works over an extended period, and he had conveyed to Moore his judgment that this constituted Moore's most accomplished article. Moore had concurred with this assessment. The present book comprises the entirety of what Wittgenstein composed on this particular topic from that moment until the time of his death. All of it constitutes first-draft material, which he did not survive to select from, refine, and bring to final form.
+
+The material divides into four distinct parts. We have indicated these divisions at section 65, located on page 10; at section 192, located on page 27; and at section 299, located on page 38. What we have reason to believe constitutes the first part was inscribed on twenty loose sheets of lined foolscap paper, bearing no dates. Wittgenstein left these sheets in his room at the house of G. E. M. Anscombe in Oxford, where he resided (except for a visit to Norway during the autumn) from April 1950 to February 1951. I (G. E. M. A.) retain the impression that he had written these pages in Vienna, where he remained from the preceding Christmas until March. However, I cannot at present reconstruct the foundation of this impression. The remainder exists in small notebooks, which contain dates. Toward the conclusion, indeed, the date of composition is invariably provided. The final entry was made two days prior to his death on April 29th, 1951. We have preserved the dates exactly as they appear in the manuscripts. The numbering of the individual sections, however, represents the work of the Editors.
+
+These were not the sole writings Wittgenstein produced during this period. Among other things, he wrote a substantial quantity of material on colour-concepts, and this material he did excerpt and refine, reducing it to a compact form. We anticipate publishing a volume containing this and other material written subsequent to the completion of Philosophical Investigations Part II. It appeared appropriate to publish this work independently. It does not constitute a selection. Wittgenstein marked it off in his notebooks as a separate topic, which he evidently took up at four distinct periods during these eighteen months. It constitutes a single sustained treatment of the topic.
+
+G. E. M. Anscombe
+G. H. von Wright
+
+ACKNOWLEDGMENT
+
+Dr. Lotte Labowsky and Dr. Anselm Müller deserve sincere thanks for their advice concerning the translation of this work.
+
+1. If you possess knowledge that here is one hand, we will concede to you all the remaining propositions.
+
+When one states that a given proposition cannot be proved, this does not mean, of course, that it cannot be derived from other propositions. Any proposition whatsoever can be derived from other ones. But these other propositions may possess no greater certainty than the proposition itself possesses. (Concerning this matter, there exists a curious remark by H. Newman.)
+
+2. From the fact that something seems to me—or to everyone—to be the case, it does not follow that it is the case.
+
+What we are in a position to ask is whether it can make sense to doubt it.
+
+3. If, for example, someone states "I don't know if there's a hand here," he might receive the instruction "Look closer." This possibility of satisfying oneself constitutes part of the language-game. It represents one of the essential features of that language-game.
+
+4. "I know that I am a human being." In order to perceive how unclear the sense of this proposition is, one should consider its negation. At most, one might take it to mean "I know I have the organs of a human being." (For example, a brain, which, after all, no one has ever yet seen.) But what about a proposition such as "I know I have a brain"? Can I doubt it? Grounds for doubt are lacking. Everything speaks in its favor; nothing speaks against it. Nevertheless, it remains imaginable that my skull should turn out empty when it was operated on.
+
+5. Whether a proposition can turn out false after all depends on what I make count as determinants for that proposition.
+
+6. Now, can one enumerate what one knows (in the manner Moore attempted)? Straight off like that, I believe not. For otherwise the expression "I know" gets misused. And through this misuse, a peculiar and extremely important mental state seems to be revealed.
+
+7. My life demonstrates that I know or am certain that there is a chair over there, or a door, and so on. I tell a friend, for example, "Take that chair over there," "Shut the door," and so forth, and so on.
+
+8. The difference between the concept of 'knowing' and the concept of 'being certain' is not of any great importance at all, except where "I know" is meant to convey: I cannot be wrong. In a law-court, for example, "I am certain" could replace "I know" in every piece of testimony. We might even imagine its being forbidden to say "I know" there. (A passage exists in Wilhelm Meister where "You know" or "You knew" is used in the sense "You were certain," the facts being different from what he knew.)
+
+9. Now do I, in the course of my life, make sure I know that here is a hand—my own hand, that is?
+
+10. I know that a sick man is lying here? Nonsense! I am sitting at his bedside; I am looking attentively into his face. So I don't know, then, that there is a sick man lying here? Neither the question nor the assertion makes sense. Any more than the assertion "I am here" makes sense, which I might yet use at any moment if suitable occasion presented itself. Then is "2 × 2 = 4" nonsense in the same way, and not a proposition of arithmetic, apart from particular occasions? "2 × 2 = 4" is a true proposition of arithmetic—not "on particular occasions" nor "always"—but the spoken or written sentence "2 × 2 = 4" in Chinese might have a different meaning or be out-and-out nonsense, and from this is seen that it is only in use that the proposition has its sense. And "I know that there's a sick man lying here," used in an unsuitable situation, seems not to be nonsense but rather seems matter-of-course, only because one can fairly easily imagine a situation to fit it, and one thinks that the words "I know that..." are always in place where there is no doubt, and hence even where the expression of doubt would be unintelligible.
+
+11. We simply do not see how very specialized the use of "I know" is.
+
+12. For "I know" seems to describe a state of affairs which guarantees what is known, guarantees it as a fact. One always forgets the expression "I thought I knew."
+
+13. For it is not as though the proposition "It is so" could be inferred from someone else's utterance: "I know it is so." Nor from the utterance together with its not being a lie. But can't I infer "It is so" from my own utterance "I know etc."? Yes.

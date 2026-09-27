@@ -1,0 +1,51 @@
+# Condensed Rewrite
+
+146. We construct a representation of the earth as a sphere suspended in space, undergoing no essential alteration over a century's span. The phrasing matters: "We construct a representation" indicates that this representation subsequently guides our assessments of diverse circumstances. One may calculate bridge dimensions, or determine through calculation whether conditions favor a bridge over a ferry, and so forth—but at some juncture one must commence with an assumption or a decision.
+
+147. The representation of the earth as a sphere proves serviceable; it validates itself across applications, and it exhibits simplicity—in brief, we employ it without subjecting it to doubt.
+
+148. Why don't I verify that I possess two feet before rising from a chair? There exists no reason. I simply refrain from doing so. This characterizes my action.
+
+149. My judgments themselves exhibit the manner in which I judge; they exhibit the nature of judgment itself.
+
+150. Through what means does one determine which hand is right and which is left? How do I establish that my judgment will accord with another's? How do I establish that this color is blue? If I withhold trust from myself in such matters, what grounds exist for trusting another's judgment? Is there a reason for trusting? Must I not commence trusting at some point? Put differently: at some juncture I must commence with not-doubting; and this is not hasty though excusable conduct—it constitutes part of what judging is.
+
+151. Moore does not possess knowledge of what he claims to know, but it stands firm for him as it does for me; treating it as unshakeable constitutes part of our methodology of doubt and investigation.
+
+152. I do not acquire through explicit instruction the propositions that stand firm for me. I can identify them retrospectively, analogous to discovering the axis around which a rotating body turns. This axis is not fixed in the sense that something secures it in place; rather, the rotation around it determines its immobility. The axis's fixity is not a matter of external constraint. The movement organized around it establishes its status as fixed point.
+
+153. No one instructed me that my hands fail to vanish when I cease attending to them. Nor can one claim that I presuppose this proposition's truth in my assertions (as though they rested upon it as foundation), given that this proposition acquires sense only from the remainder of our assertoric procedure. The proposition about my hands continuing to exist unobserved does not function as a premise for other judgments. Its status derives from its role within the total system of our judging and asserting.
+
+154. Cases exist where, if someone manifests doubt at a juncture where we do not doubt, we cannot with confidence interpret his manifestations as manifestations of doubt. That is: for us to interpret his manifestations of doubt as such, he may exhibit them only in particular cases while refraining from exhibiting them in others. Doubt possesses grammar. If someone appears to doubt everything indiscriminately, or to doubt at junctures where doubt makes no sense given our shared practices, we lose the capacity to recognize his behavior as doubting.
+
+155. Under certain circumstances a person cannot commit error. ("Cannot" functions logically here; the proposition does not mean that under those circumstances a person cannot utter anything false.) Were Moore to assert the opposites of those propositions he declares certain, we would not merely decline to share his view: we would regard him as deranged. The impossibility here is not empirical but logical. Given our shared framework of judgment, certain deviations do not register as alternative judgments but as breakdowns of judgment itself.
+
+156. To commit error, one must already judge in conformity with humankind. Error presupposes a standard against which deviation counts as error. That standard is not individual but communal. Judging correctly or incorrectly both require participating in shared practices of judgment.
+
+157. Suppose someone could not recall whether he had always possessed five fingers or two hands. Should we understand him? Could we be certain of understanding him? Such forgetting would not merely indicate poor memory. It would suggest disconnection from the basic framework within which memory-claims acquire sense.
+
+158. Can I be committing error in supposing that the words composing this sentence are English words whose meanings I know? This question exposes the limits of doubt. To doubt whether these are English words whose meanings I know requires deploying those very words with their meanings.
+
+159. As children we acquire facts—for instance, that every human possesses a brain—and we accept them on trust. I hold that there exists an island, Australia, of such-and-such configuration; I hold that I possessed great-grandparents; I hold that the persons who presented themselves as my parents genuinely were my parents; and so forth. This acceptance may never have received expression; even the thought that matters stood thus may never have been entertained. Much of what stands firm for us was never explicitly learned as a proposition. We were inducted into practices within which these propositions have their role.
+
+160. The child acquires knowledge by crediting the adult. Doubt arrives after trust. Epistemically, trust precedes doubt rather than requiring justification before doubt becomes possible. The child must accept much on authority before possessing sufficient framework to doubt anything.
+
+161. I acquired an enormous quantity of information and accepted it on human authority, subsequently finding certain elements confirmed or disconfirmed through my own experience. Personal verification plays a role, but only after a foundation of accepted-on-authority information has been established.
+
+162. Generally I treat as correct what appears in textbooks—geographical textbooks, for instance. Why? I answer: All these facts have received confirmation numerous times. But how do I establish that? What constitutes my evidence for it? I possess a world-picture. Is it correct or incorrect? It is, above all, the substratum of all my investigating and asserting. The propositions characterizing it are not uniformly subject to testing. The world-picture is not itself a hypothesis subject to confirmation. It constitutes the framework within which hypotheses get formulated and tested.
+
+163. Does anyone test whether this table continues existing when no one attends to it? We verify the historical account of Napoleon, but not whether all reports concerning him rest on sensory deception, forgery, and the like. For whenever we test anything, we already presuppose something untested. Now am I to claim that the experiment I perhaps conduct to test a proposition's truth presupposes the truth of the proposition that the apparatus I believe I perceive is genuinely present (and similar matters)? Testing requires fixed points. If everything were simultaneously subject to doubt, testing could gain no purchase.
+
+164. Doesn't testing reach termination? Testing cannot continue indefinitely. At some juncture we arrive at propositions or practices that we simply employ rather than test.
+
+165. One child might inform another: "I know the earth is already hundreds of years old," and this would mean: I have acquired this information. The child's "I know" functions differently from an adult's claim to knowledge after investigation.
+
+166. The difficulty consists in recognizing the groundlessness of our conviction. What stands firm for us lacks grounds in the sense of resting on further propositions that support it. This groundlessness is not a defect requiring remedy.
+
+167. Our empirical propositions clearly fail to possess uniform status, given that one can stipulate such a proposition and convert it from empirical proposition into norm of description. Consider chemical investigations. Lavoisier conducts experiments with substances in his laboratory and subsequently concludes that such-and-such occurs during combustion. He does not suggest it might proceed otherwise on another occasion. He possesses a definite world-picture—not one he invented but one acquired in childhood. I specify world-picture rather than hypothesis because it constitutes the unquestioned foundation for his research and as such receives no mention. Certain propositions can migrate in status. What functions at one stage as empirical claim subject to testing can become, through sustained confirmation and integration into practice, a norm against which other claims are measured.
+
+168. But what role is performed by the presupposition that substance A invariably reacts to substance B identically under identical circumstances? Or does that constitute part of the definition of substance? If it is definitional, then finding different reactions would mean we misdescribed the substances or the circumstances.
+
+169. One might suppose there exist propositions declaring chemistry possible, propositions belonging to natural science. But what would support them if not experience? Yet experience presupposes the very regularities these propositions would affirm. These propositions articulate the framework within which experience counts as confirming or disconfirming anything.
+
+170. I credit what people communicate to me in a certain manner. Thus I credit geographical, chemical, and historical facts. Human testimony constitutes a fundamental source of what stands firm for us. Most of what we know, we know through testimony, and this testimonial knowledge provides the framework within which verification itself operates.

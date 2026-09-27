@@ -1,0 +1,73 @@
+**102.** Do other people know this but refrain from mentioning it to me? Such a possibility cannot cohere with my other convictions. Not that I could articulate the system formed by these convictions in any explicit way. Yet my convictions plainly constitute a system, a structure.
+
+**103.** If I were to say "It is my unshakeable conviction that etc.," this signifies—in the present case as in others—that I did not arrive at the conviction by consciously tracing through some particular line of thought. Rather, the conviction is anchored in all my questions and answers, anchored so firmly that I cannot touch it.
+
+**104.** I am also convinced, for example, that the sun is not a hole in the vault of heaven.
+
+**105.** All testing, all confirmation and disconfirmation of a hypothesis, takes place already within a system. This system is not a more or less arbitrary or doubtful point of departure for our arguments. On the contrary, it belongs to the essence of what we call an argument. The system functions not so much as the point of departure, but rather as the element in which arguments have their life.
+
+**106.** Suppose some adult tells a child that he has been on the moon. The child recounts this story to me, and I reply that it was merely a joke, that the man has not been on the moon, that no one has ever been on the moon, that the moon is far away and it is impossible to climb up there or fly there. If the child insists, suggesting perhaps that there exists some way of getting there which I do not know, what reply could I make to him? What reply could I make to the adults of a tribe who believe that people sometimes go to the moon—perhaps interpreting their dreams in this manner—and who acknowledge that there are no ordinary means of climbing up to it or flying there? A child will not ordinarily persist in such a belief and will soon be convinced by what we tell him seriously.
+
+**107.** Is this not altogether like the way one can instruct a child to believe in a God, or that none exists, such that the child will accordingly be able to produce apparently telling grounds for the one position or the other?
+
+**108.** "But is there then no objective truth? Is it not true, or false, that someone has been on the moon?" If we are thinking within our system, then it is certain that no one has ever been on the moon. Not merely is nothing of the sort ever seriously reported to us by reasonable people, but our whole system of physics forbids us to believe it. For that system demands answers to questions such as "How did he overcome the force of gravity?" and "How could he live without an atmosphere?" along with a thousand others which could not be answered. But suppose that instead of all these answers we met the reply: "We don't know how one gets to the moon, but those who get there know at once that they are there; and even you can't explain everything." We should feel ourselves intellectually very distant from someone who said this.
+
+**109.** "An empirical proposition can be tested," we say. But how? And through what?
+
+**110.** What counts as its test? "But is this an adequate test? And, if so, must it not be recognizable as such in logic?" This assumes that giving grounds does not come to an end at some point. But the end is not an ungrounded presupposition: it is an ungrounded way of acting.
+
+**111.** "I know that I have never been on the moon." That sounds quite different in the circumstances which actually hold, compared to how it would sound if many men had been on the moon, perhaps some without knowing it. In this latter case one could give grounds for this knowledge. Is there not a relationship here similar to that between the general rule of multiplying and particular multiplications that have been carried out?
+
+I want to say: my not having been on the moon is as sure a thing for me as any grounds I could give for it.
+
+**112.** Is this not what Moore wants to say when he claims he knows all these things? But is his knowing it really what is in question, rather than the requirement that some of these propositions must be solid for us?
+
+**113.** When someone is trying to teach us mathematics, he will not begin by assuring us that he knows that a + b = b + a.
+
+**114.** If you are not certain of any fact, you cannot be certain of the meaning of your words either.
+
+**115.** If you tried to doubt everything, you would not get as far as doubting anything. The game of doubting itself presupposes certainty.
+
+**116.** Instead of "I know...," could Moore not have said: "It stands fast for me that..."? And further: "It stands fast for me and many others..."?
+
+**117.** Why is it not possible for me to doubt that I have never been on the moon? And how could I try to doubt it?
+
+First and foremost, the supposition that perhaps I have been there would strike me as idle. Nothing would follow from it; nothing would be explained by it. It would not tie in with anything in my life.
+
+When I say "Nothing speaks for it, everything against it," this presupposes a principle of speaking for and against. That is, I must be able to say what would speak for it.
+
+**118.** Would it be correct to say: So far no one has opened my skull in order to see whether there is a brain inside; but everything speaks for, and nothing against, its being what they would find there?
+
+**119.** But can it also be said: Everything speaks for, and nothing against, the table's still being there when no one sees it? For what does speak for it?
+
+**120.** But if anyone were to doubt it, how would his doubt manifest itself in practice? And could we not peacefully leave him to doubt it, given that it makes no difference at all?
+
+**121.** Can one say: "Where there is no doubt there is no knowledge either"?
+
+**122.** Does one not need grounds for doubt?
+
+**123.** Wherever I look, I find no ground for doubting that...
+
+**124.** I want to say: We use judgments as principles of judgment.
+
+**125.** If a blind man were to ask me "Have you got two hands?" I should not make sure by looking. If I were to have any doubt of it, then I don't know why I should trust my eyes. For why shouldn't I test my eyes by looking to find out whether I see my two hands?
+
+If doubt arises concerning whether I possess two hands, why would visual inspection settle the matter? The eyes themselves would require testing. This circularity reveals something about the structure of doubt itself.
+
+What can be tested and how? Any test presupposes something untested. If I doubt my eyes, visual inspection cannot furnish grounds for dispelling that doubt. The testing procedure must itself stand fast somewhere.
+
+One might object: but surely I could test my eyes by other means—by asking others what they see, by touching what I appear to see. Yet this merely shifts the problem. Now I must trust that these others exist, that touch reliably correlates with sight, that my memory of their testimony functions properly. Each test invokes further presuppositions.
+
+The blind man's question "Have you got two hands?" operates differently depending on context. If asked as genuine inquiry—he wishes to know whether I am disabled—I might answer by looking, and this would count as checking. But if the question targets my certainty itself, my capacity to know this fact at all, then looking accomplishes nothing. The question challenges the framework within which looking could serve as verification.
+
+Could I be in error about having hands? What form would such error take? Not the error of miscounting—thinking I have two when I have one—but radical error: possessing no hands while convinced I possess them. This possibility cannot be formulated coherently within my system of judgments. For what counts as having hands depends on capacities I exercise continually: grasping, writing, gesturing. The supposition that I lack hands while performing these actions dissolves into incoherence.
+
+Someone says: "You believe you have hands, but you are radically deceived." What response could dislodge this challenge? I might display my hands, move my fingers, point to them. But the challenger rejects sensory evidence wholesale. No particular piece of evidence, no particular test, addresses his doubt. His doubt refuses the framework within which evidence operates.
+
+This reveals that doubt requires circumscription. Doubt must target something specific while leaving other things fixed. The doubter who doubts everything has not achieved radical skepticism but rather rendered doubt unintelligible. For doubt is a move within a language-game, and the game requires stable rules.
+
+Certain propositions function as hinges. They are not themselves tested because they belong to the testing apparatus itself. The proposition "I have two hands" serves, in ordinary contexts, not as a candidate for verification but as part of the background against which verification proceeds.
+
+Can hinges be mistaken? The question misconstrues their role. Truth and falsehood apply to propositions functioning within the system. Hinges constitute the system. They stand fast not because we have verified them exhaustively but because they define what verification is.
+
+This does not render them arbitrary. I cannot simply decide to treat "I have no hands" as a hinge while continuing to write, grasp objects, gesture. The proposition must mesh with my practices, with the rest of what stands fast for me. Hinges cohere; they form a structure.
