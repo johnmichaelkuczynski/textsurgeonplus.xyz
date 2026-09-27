@@ -137,6 +137,11 @@ const HISTORICAL_THINKERS = [
 type ThinkerChatMessage = {
   role: "user" | "assistant";
   content: string;
+  grounding?: {
+    status: "grounded";
+    passageCount: number;
+    sources: Array<{ id: number; title: string; author: string; locator?: string | null; url?: string | null }>;
+  };
 };
 
 interface Chunk {
@@ -325,6 +330,8 @@ export default function Home() {
   const [thinkerChatInput, setThinkerChatInput] = useState("");
   const [thinkerChatMessages, setThinkerChatMessages] = useState<ThinkerChatMessage[]>([]);
   const [isThinkerChatResponding, setIsThinkerChatResponding] = useState(false);
+  const [thinkerCorpusStatus, setThinkerCorpusStatus] = useState<string>("Not checked");
+  const [isCheckingThinkerCorpus, setIsCheckingThinkerCorpus] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasResult, setHasResult] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -4239,7 +4246,7 @@ ${parsed.analyzer}`);
       }
       setThinkerChatMessages((current) => [
         ...current,
-        { role: "assistant", content: payload.response },
+        { role: "assistant", content: payload.response, grounding: payload.grounding },
       ]);
     } catch (error: any) {
       setThinkerChatMessages((current) => [
@@ -4251,6 +4258,30 @@ ${parsed.analyzer}`);
       ]);
     } finally {
       setIsThinkerChatResponding(false);
+    }
+  };
+
+  const checkThinkerCorpus = async () => {
+    if (!selectedThinker || isCheckingThinkerCorpus) return;
+    setIsCheckingThinkerCorpus(true);
+    setThinkerCorpusStatus("Checking source access…");
+    try {
+      const response = await fetch(
+        `/api/thinker-chat/corpus-status?thinker=${encodeURIComponent(selectedThinker)}&test=true`,
+        { credentials: "include" },
+      );
+      const payload = await response.json().catch(() => null);
+      if (payload?.access?.ok) {
+        setThinkerCorpusStatus(payload.access.message);
+      } else if (payload?.configuration?.missing?.length) {
+        setThinkerCorpusStatus(`Unavailable: missing ${payload.configuration.missing.join(", ")}`);
+      } else {
+        setThinkerCorpusStatus(`Unavailable: ${payload?.access?.message || payload?.error || "access check failed"}`);
+      }
+    } catch (error: any) {
+      setThinkerCorpusStatus(`Unavailable: ${error?.message || "access check failed"}`);
+    } finally {
+      setIsCheckingThinkerCorpus(false);
     }
   };
 
@@ -9632,7 +9663,7 @@ Freedom is the ratio essendi of the moral law."
                 Talk with {selectedThinker || "a historical thinker"}
               </ResizableDialogTitle>
               <ResizableDialogDescription>
-                Historically grounded AI conversation. Direct quotations are identified as quotations rather than invented.
+                Answers require relevant Genius 101 source passages. Direct quotations and source citations are identified.
               </ResizableDialogDescription>
             </ResizableDialogHeader>
 
@@ -9669,6 +9700,20 @@ Freedom is the ratio essendi of the moral law."
                 <Download className="mr-1 h-4 w-4" />
                 TXT
               </Button>
+              <div className="flex w-full items-center justify-between gap-3 border-t border-violet-200 pt-2 text-xs">
+                <span data-testid="text-thinker-corpus-status">Source access: {thinkerCorpusStatus}</span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void checkThinkerCorpus()}
+                  disabled={isCheckingThinkerCorpus || !selectedThinker}
+                  data-testid="button-check-thinker-corpus"
+                >
+                  {isCheckingThinkerCorpus ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                  Check access
+                </Button>
+              </div>
             </div>
 
             <ScrollArea className="min-h-0 flex-1 rounded-lg border bg-slate-50 p-4">
@@ -9693,6 +9738,18 @@ Freedom is the ratio essendi of the moral law."
                     <div className="whitespace-pre-wrap text-sm leading-relaxed">
                       {message.content}
                     </div>
+                    {message.grounding && (
+                      <div className="mt-3 border-t pt-2 text-xs text-slate-600">
+                        Grounded in {message.grounding.passageCount} Genius 101 passage{message.grounding.passageCount === 1 ? "" : "s"}.
+                        <ul className="mt-1 space-y-1">
+                          {message.grounding.sources.map((source) => (
+                            <li key={source.id}>
+                              [{source.id}] {source.title}{source.locator ? ` — ${source.locator}` : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 ))}
                 {isThinkerChatResponding && (

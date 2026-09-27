@@ -15,6 +15,11 @@ import {
   formatComparisonReport
 } from "./stylometrics";
 import { shouldUseCoherentProcessing, getWordCount } from "./services/coherent/router";
+import {
+  diagnoseGenius101,
+  getGenius101Status,
+  searchGenius101,
+} from "./services/genius101";
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -3633,6 +3638,16 @@ Otherwise return JSON array:
     }
   });
 
+  app.get("/api/thinker-chat/corpus-status", async (req, res) => {
+    const thinker = typeof req.query.thinker === "string" ? req.query.thinker.trim() : "";
+    if (!thinker) return res.status(400).json({ error: "A thinker must be selected" });
+    const testAccess = req.query.test === "true";
+    const status = testAccess
+      ? await diagnoseGenius101(thinker)
+      : getGenius101Status(thinker);
+    res.status(status.configuration.ready && (!testAccess || status.access?.ok) ? 200 : 503).json(status);
+  });
+
   app.post("/api/thinker-chat", async (req, res) => {
     const {
       thinker,
@@ -3674,6 +3689,31 @@ Otherwise return JSON array:
           }))
       : [];
 
+    let passages;
+    try {
+      passages = await searchGenius101(thinker.trim(), message.trim(), 8);
+    } catch (error: any) {
+      return res.status(503).json({
+        error: error?.message || "The Genius 101 corpus could not be reached",
+        code: "CORPUS_UNAVAILABLE",
+        corpusStatus: getGenius101Status(thinker.trim()),
+      });
+    }
+    if (passages.length === 0) {
+      return res.status(424).json({
+        error: `No relevant passages were found in the Genius 101 corpus for ${thinker.trim()}. No ungrounded answer was generated.`,
+        code: "CORPUS_NO_MATCHES",
+      });
+    }
+
+    const sourcePacket = passages.map((passage, index) => ({
+      sourceId: index + 1,
+      title: passage.title,
+      author: passage.author || thinker.trim(),
+      locator: passage.locator || null,
+      text: passage.text.slice(0, 6_000),
+    }));
+
     const prompt = `Conduct a historically grounded conversation in the intellectual voice of ${thinker}.
 
 ACCURACY RULES:
@@ -3683,6 +3723,10 @@ ACCURACY RULES:
 - When exact wording or attribution is uncertain, paraphrase openly instead of pretending to quote.
 - If the user asks about a topic outside ${thinker}'s documented work, explain the nearest relevant position and clearly mark any inference.
 - Do not claim to literally be ${thinker}; this is an educational reconstruction.
+- Base every substantive claim on the supplied Genius 101 passages. Do not use model knowledge as a substitute.
+- Put verbatim language from a passage in quotation marks and cite it inline as [Source N].
+- Cite paraphrases inline as [Source N]. Never cite a source that does not support the adjacent claim.
+- End with a "Sources" line listing each cited source number, title, and locator when available.
 
 FORMAT:
 ${lengthRule}
@@ -3691,6 +3735,9 @@ ${bullets ? "Present the response as concise bullet points while respecting the 
 RECENT CONVERSATION:
 ${JSON.stringify(safeHistory)}
 
+GENIUS 101 SOURCE PASSAGES:
+${JSON.stringify(sourcePacket)}
+
 USER MESSAGE:
 ${message.trim()}
 
@@ -3698,7 +3745,21 @@ Return only the response.`;
 
     try {
       const response = await callLLM(provider, prompt);
-      res.json({ response: response.trim(), thinker: thinker.trim() });
+      res.json({
+        response: response.trim(),
+        thinker: thinker.trim(),
+        grounding: {
+          status: "grounded",
+          passageCount: passages.length,
+          sources: passages.map((passage, index) => ({
+            id: index + 1,
+            title: passage.title,
+            author: passage.author || thinker.trim(),
+            locator: passage.locator || null,
+            url: passage.url || null,
+          })),
+        },
+      });
     } catch (error: any) {
       console.error("Thinker chat error:", error);
       res.status(502).json({
