@@ -50,3 +50,7 @@ waitForPort = 5000
 mockupState = "FULLSTACK"
 stack = "FULLSTACK_JS"
 expertMode = true
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 180000
