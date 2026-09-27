@@ -3715,20 +3715,27 @@ Return only the response.`;
     if (provider !== "gemini") {
       return { text: await callLLM(provider, prompt), provider };
     }
+    const fallback = async (reason: string) => ({
+      text: await callLLM("anthropic", prompt),
+      provider: "anthropic",
+      fallbackReason: `${reason} Anthropic produced this text instead.`,
+    });
     try {
       return { text: await callLLM("gemini", prompt), provider };
     } catch (firstError: any) {
+      if (firstError?.code === "GEMINI_EMPTY_TEXT") {
+        return fallback("Gemini returned no prose.");
+      }
       if (firstError?.providerStatus !== 503) throw firstError;
       await new Promise((resolve) => setTimeout(resolve, 1000));
       try {
         return { text: await callLLM("gemini", prompt), provider };
       } catch (retryError: any) {
+        if (retryError?.code === "GEMINI_EMPTY_TEXT") {
+          return fallback("Gemini returned no prose.");
+        }
         if (retryError?.providerStatus !== 503) throw retryError;
-        return {
-          text: await callLLM("anthropic", prompt),
-          provider: "anthropic",
-          fallbackReason: "Gemini was temporarily unavailable (HTTP 503). Anthropic produced this text instead.",
-        };
+        return fallback("Gemini was temporarily unavailable (HTTP 503).");
       }
     }
   };

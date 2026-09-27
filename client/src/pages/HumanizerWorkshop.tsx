@@ -352,11 +352,6 @@ export default function HumanizerWorkshop() {
   const [contentSample, setContentSample] = useState("");
   const [contentInstructions, setContentInstructions] = useState("");
   const [aiProseProvider, setAiProseProvider] = useState<WorkshopProvider>("gemini");
-  const [aiProseLengthMode, setAiProseLengthMode] = useState<"sentence" | "words">("words");
-  const [aiProseWordCount, setAiProseWordCount] = useState(500);
-  const [isGeneratingAiProse, setIsGeneratingAiProse] = useState(false);
-  const [generationMessage, setGenerationMessage] = useState("");
-  const [generationError, setGenerationError] = useState("");
   const [isRewriting, setIsRewriting] = useState(false);
   const [rewriteMessage, setRewriteMessage] = useState("");
   const [rewriteError, setRewriteError] = useState("");
@@ -408,46 +403,6 @@ export default function HumanizerWorkshop() {
     }
   };
 
-  const generateObviousAiProse = async () => {
-    if (isGeneratingAiProse) return;
-    setIsGeneratingAiProse(true);
-    setGenerationError("");
-    setGenerationMessage("");
-    try {
-      const response = await fetch("/api/humanizer/generate-ai-input", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          provider: aiProseProvider,
-          lengthMode: aiProseLengthMode,
-          wordCount: Math.max(1, Math.min(2_000, aiProseWordCount)),
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) {
-        throw new Error(payload?.error || "AI prose generation failed");
-      }
-      if (typeof payload?.text !== "string" || !payload.text.trim()) {
-        throw new Error("The provider returned no generated prose.");
-      }
-      rewriteRequest.current?.abort();
-      setOutputText("");
-      setRewriteMessage("");
-      setRewriteError("");
-      setInputText(payload.text);
-      setGenerationMessage(
-        payload.fallbackReason ||
-          `Generated with ${String(payload.provider || aiProseProvider)}.`,
-      );
-      await rewriteText(payload.text);
-    } catch (error: any) {
-      setGenerationError(error?.message || "Generation failed. Please try again.");
-    } finally {
-      setIsGeneratingAiProse(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-slate-50 text-slate-950">
       <header className="sticky top-0 z-40 border-b-4 border-cyan-600 bg-white shadow-md">
@@ -479,6 +434,40 @@ export default function HumanizerWorkshop() {
       </header>
 
       <main className="flex flex-col gap-5 p-5 lg:p-8">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4 shadow-sm">
+          <div>
+            <p className="font-black text-emerald-950">Transform Box A → Box B</p>
+            <p className="text-sm text-emerald-800">Transforms your Box A text using Box C instructions and any samples in Boxes D and E. The result goes in Box B.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select
+              value={aiProseProvider}
+              onValueChange={(value) => setAiProseProvider(value as WorkshopProvider)}
+            >
+              <SelectTrigger aria-label="AI model for generation and transformation" className="w-[150px] bg-white" data-testid="select-ai-prose-provider">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="gemini">Gemini</SelectItem>
+                <SelectItem value="openai">OpenAI</SelectItem>
+                <SelectItem value="anthropic">Anthropic</SelectItem>
+                <SelectItem value="grok">Grok</SelectItem>
+                <SelectItem value="perplexity">Perplexity</SelectItem>
+                <SelectItem value="deepseek">DeepSeek</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              onClick={() => void rewriteText(inputText)}
+              disabled={!inputText.trim() || isRewriting}
+              className="gap-2 bg-emerald-700 text-white hover:bg-emerald-800"
+              data-testid="button-rewrite-workshop"
+            >
+              {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+              {isRewriting ? "Transforming…" : "Transform Text"}
+            </Button>
+          </div>
+        </div>
         <section className="grid min-h-[58vh] grid-cols-1 gap-5 lg:grid-cols-2">
           <div className="flex min-h-[420px] flex-col overflow-hidden rounded-xl border-2 border-blue-300 bg-white shadow-lg">
             <div className="flex items-center gap-2 border-b border-blue-200 bg-blue-50 px-5 py-3">
@@ -487,85 +476,6 @@ export default function HumanizerWorkshop() {
                 <h2 className="font-black uppercase tracking-wide text-blue-950">Box A — Text Input</h2>
                 <p className="text-xs text-blue-700">Enter or paste the text to be humanized.</p>
               </div>
-            </div>
-            <div className="space-y-3 border-b border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 p-4">
-              <div className="flex items-center gap-2">
-                <WandSparkles className="h-4 w-4 text-blue-700" />
-                <span className="text-sm font-black uppercase tracking-wide text-blue-950">
-                  Generate deliberately obvious AI prose
-                </span>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-[minmax(120px,1fr)_minmax(150px,1.2fr)_90px_110px]">
-                <Select
-                  value={aiProseProvider}
-                  onValueChange={(value) => setAiProseProvider(value as WorkshopProvider)}
-                >
-                  <SelectTrigger aria-label="AI provider" data-testid="select-ai-prose-provider">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="gemini">Gemini</SelectItem>
-                    <SelectItem value="openai">OpenAI</SelectItem>
-                    <SelectItem value="anthropic">Anthropic</SelectItem>
-                    <SelectItem value="grok">Grok</SelectItem>
-                    <SelectItem value="perplexity">Perplexity</SelectItem>
-                    <SelectItem value="deepseek">DeepSeek</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select
-                  value={aiProseLengthMode}
-                  onValueChange={(value) => setAiProseLengthMode(value as "sentence" | "words")}
-                >
-                  <SelectTrigger data-testid="select-ai-prose-length-mode">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sentence">One sentence</SelectItem>
-                    <SelectItem value="words">Custom word count</SelectItem>
-                  </SelectContent>
-                </Select>
-                <input
-                  type="number"
-                  min={1}
-                  max={2_000}
-                  value={aiProseWordCount}
-                  onChange={(event) => {
-                    const value = Number.parseInt(event.target.value, 10);
-                    setAiProseWordCount(Number.isFinite(value) ? value : 1);
-                  }}
-                  disabled={aiProseLengthMode === "sentence"}
-                  aria-label="Requested word count"
-                  className="h-10 rounded-md border border-blue-300 bg-white px-3 text-sm outline-none disabled:bg-slate-100 disabled:text-slate-400"
-                  data-testid="input-ai-prose-word-count"
-                />
-                <Button
-                  type="button"
-                  onClick={() => void generateObviousAiProse()}
-                  disabled={isGeneratingAiProse}
-                  className="h-10 min-w-[110px] bg-blue-700 px-3 text-white hover:bg-blue-800"
-                  data-testid="button-generate-obvious-ai-prose"
-                >
-                  {isGeneratingAiProse ? (
-                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="mr-1 h-4 w-4" />
-                  )}
-                  Generate
-                </Button>
-              </div>
-              <p className="text-xs text-blue-800">
-                Creates intentionally formulaic AI-written material on a randomly selected subject.
-                Gemini is selected by default. Custom lengths may range from 1 to 2,000 words.
-                GPTZero evaluates generated text automatically.
-              </p>
-              {generationMessage ? (
-                <p role="status" className="text-xs font-semibold text-blue-900">{generationMessage}</p>
-              ) : null}
-              {generationError ? (
-                <p role="alert" className="rounded-md border border-red-300 bg-red-50 p-2 text-sm text-red-800">
-                  Generation failed: {generationError}
-                </p>
-              ) : null}
             </div>
             <Textarea
               value={inputText}
@@ -583,24 +493,14 @@ export default function HumanizerWorkshop() {
           </div>
 
           <div className="flex min-h-[420px] flex-col overflow-hidden rounded-xl border-2 border-emerald-300 bg-white shadow-lg">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-5 py-3">
+            <div className="flex items-center gap-2 border-b border-emerald-200 bg-emerald-50 px-5 py-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-emerald-700" />
                 <div>
                   <h2 className="font-black uppercase tracking-wide text-emerald-950">Box B — Text Output</h2>
-                  <p className="text-xs text-emerald-700">Generated or pasted Box A text is rewritten here.</p>
+                  <p className="text-xs text-emerald-700">Transformed text appears here after pressing Transform Text.</p>
                 </div>
               </div>
-              <Button
-                type="button"
-                onClick={() => void rewriteText(inputText)}
-                disabled={!inputText.trim() || isRewriting || isGeneratingAiProse}
-                className="gap-2 bg-emerald-700 text-white hover:bg-emerald-800"
-                data-testid="button-rewrite-workshop"
-              >
-                {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
-                {isRewriting ? "Rewriting…" : "Rewrite into Box B"}
-              </Button>
             </div>
             {rewriteMessage ? (
               <p role="status" className="border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-semibold text-emerald-900">{rewriteMessage}</p>

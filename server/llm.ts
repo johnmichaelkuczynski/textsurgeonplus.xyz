@@ -761,7 +761,10 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
             .trim()
         : "";
       if (!generatedText) {
-        throw new Error("Gemini returned no text content");
+        throw Object.assign(
+          new Error(`Gemini returned no prose (finish reason: ${String(geminiData?.candidates?.[0]?.finishReason || "unknown")}).`),
+          { code: "GEMINI_EMPTY_TEXT" },
+        );
       }
       return generatedText;
     }
