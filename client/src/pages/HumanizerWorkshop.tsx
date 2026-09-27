@@ -357,6 +357,56 @@ export default function HumanizerWorkshop() {
   const [isGeneratingAiProse, setIsGeneratingAiProse] = useState(false);
   const [generationMessage, setGenerationMessage] = useState("");
   const [generationError, setGenerationError] = useState("");
+  const [isRewriting, setIsRewriting] = useState(false);
+  const [rewriteMessage, setRewriteMessage] = useState("");
+  const [rewriteError, setRewriteError] = useState("");
+  const rewriteRequest = useRef<AbortController | null>(null);
+
+  const rewriteText = async (source: string) => {
+    if (!source.trim()) return;
+    rewriteRequest.current?.abort();
+    const controller = new AbortController();
+    rewriteRequest.current = controller;
+    setIsRewriting(true);
+    setRewriteError("");
+    setRewriteMessage("");
+    try {
+      const response = await fetch("/api/humanizer/rewrite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        signal: controller.signal,
+        body: JSON.stringify({
+          text: source,
+          provider: aiProseProvider,
+          instructions: customInstructions,
+          styleSample,
+          styleInstructions,
+          contentSample,
+          contentInstructions,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) throw new Error(payload?.error || "Rewrite failed.");
+      if (typeof payload?.text !== "string" || !payload.text.trim()) {
+        throw new Error("The provider returned no rewritten prose.");
+      }
+      if (rewriteRequest.current !== controller) return;
+      setOutputText(payload.text);
+      setRewriteMessage(
+        payload.fallbackReason || `Rewritten with ${String(payload.provider || aiProseProvider)}.`,
+      );
+    } catch (error: any) {
+      if (rewriteRequest.current === controller && error?.name !== "AbortError") {
+        setRewriteError(error?.message || "Rewrite failed.");
+      }
+    } finally {
+      if (rewriteRequest.current === controller) {
+        rewriteRequest.current = null;
+        setIsRewriting(false);
+      }
+    }
+  };
 
   const generateObviousAiProse = async () => {
     if (isGeneratingAiProse) return;
@@ -381,11 +431,16 @@ export default function HumanizerWorkshop() {
       if (typeof payload?.text !== "string" || !payload.text.trim()) {
         throw new Error("The provider returned no generated prose.");
       }
+      rewriteRequest.current?.abort();
+      setOutputText("");
+      setRewriteMessage("");
+      setRewriteError("");
       setInputText(payload.text);
       setGenerationMessage(
         payload.fallbackReason ||
           `Generated with ${String(payload.provider || aiProseProvider)}.`,
       );
+      await rewriteText(payload.text);
     } catch (error: any) {
       setGenerationError(error?.message || "Generation failed. Please try again.");
     } finally {
@@ -514,7 +569,13 @@ export default function HumanizerWorkshop() {
             </div>
             <Textarea
               value={inputText}
-              onChange={(event) => setInputText(event.target.value)}
+              onChange={(event) => {
+                rewriteRequest.current?.abort();
+                setInputText(event.target.value);
+                setOutputText("");
+                setRewriteMessage("");
+                setRewriteError("");
+              }}
               placeholder="Type or paste the original text here…"
               className="min-h-0 flex-1 resize-none rounded-none border-0 p-5 font-serif text-base leading-relaxed focus-visible:ring-0"
             />
@@ -522,13 +583,31 @@ export default function HumanizerWorkshop() {
           </div>
 
           <div className="flex min-h-[420px] flex-col overflow-hidden rounded-xl border-2 border-emerald-300 bg-white shadow-lg">
-            <div className="flex items-center gap-2 border-b border-emerald-200 bg-emerald-50 px-5 py-3">
-              <Sparkles className="h-5 w-5 text-emerald-700" />
-              <div>
-                <h2 className="font-black uppercase tracking-wide text-emerald-950">Box B — Text Output</h2>
-                <p className="text-xs text-emerald-700">The humanized text will appear here.</p>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200 bg-emerald-50 px-5 py-3">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-emerald-700" />
+                <div>
+                  <h2 className="font-black uppercase tracking-wide text-emerald-950">Box B — Text Output</h2>
+                  <p className="text-xs text-emerald-700">Generated or pasted Box A text is rewritten here.</p>
+                </div>
               </div>
+              <Button
+                type="button"
+                onClick={() => void rewriteText(inputText)}
+                disabled={!inputText.trim() || isRewriting || isGeneratingAiProse}
+                className="gap-2 bg-emerald-700 text-white hover:bg-emerald-800"
+                data-testid="button-rewrite-workshop"
+              >
+                {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+                {isRewriting ? "Rewriting…" : "Rewrite into Box B"}
+              </Button>
             </div>
+            {rewriteMessage ? (
+              <p role="status" className="border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-semibold text-emerald-900">{rewriteMessage}</p>
+            ) : null}
+            {rewriteError ? (
+              <p role="alert" className="border-b border-red-200 bg-red-50 px-5 py-2 text-sm text-red-800">Rewrite failed: {rewriteError}</p>
+            ) : null}
             <Textarea
               value={outputText}
               onChange={(event) => setOutputText(event.target.value)}
