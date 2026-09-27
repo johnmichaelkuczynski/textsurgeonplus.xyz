@@ -19,63 +19,8 @@ export type Genius101Status = {
   access?: { ok: boolean; message: string; passageCount?: number };
 };
 
-const THINKER_KEY_NAMES: Record<string, string> = {
-  "Adam Smith": "ADAM_SMITH_API_KEY",
-  Adler: "ADLER_API_KEY",
-  Aesop: "AESOP_API_KEY",
-  Allen: "ALLEN_API_KEY",
-  Aristotle: "ARISTOTLE_API_KEY",
-  Bacon: "BACON_API_KEY",
-  Bergler: "BERGLER_API_KEY",
-  Bergson: "BERGSON_API_KEY",
-  Berkeley: "BERKELEY_API_KEY",
-  Confucius: "CONFUCIUS_API_KEY",
-  Darwin: "DARWIN_API_KEY",
-  Descartes: "DESCARTES_API_KEY",
-  Dewey: "DEWEY_API_KEY",
-  Dworkin: "DWORKIN_API_KEY",
-  "Emma Goldman": "EMMA_GOLDMAN_API_KEY",
-  Engels: "ENGELS_API_KEY",
-  Freud: "FREUD_API_KEY",
-  Galileo: "GALILEO_API_KEY",
-  Gardner: "GARDNER_API_KEY",
-  Hegel: "HEGEL_API_KEY",
-  Hobbes: "HOBBES_API_KEY",
-  Hume: "HUME_API_KEY",
-  Jung: "JUNG_API_KEY",
-  Kant: "KANT_API_KEY",
-  Kernberg: "KERNBERG_API_KEY",
-  Kuczynski: "KUCZYNSKI_API_KEY",
-  "La Rochefoucauld": "LA_ROCHEFOUCAULD_API_KEY",
-  Laplace: "LAPLACE_API_KEY",
-  "Le Bon": "LEBON_API_KEY",
-  Leibniz: "LEIBNIZ_API_KEY",
-  Locke: "LOCKE_API_KEY",
-  Luther: "LUTHER_API_KEY",
-  Machiavelli: "MACHIAVELLI_API_KEY",
-  Maimonides: "MAIMONIDES_API_KEY",
-  Marden: "MARDEN_API_KEY",
-  Marx: "MARX_API_KEY",
-  Mill: "MILL_API_KEY",
-  Nietzsche: "NIETZSCHE_API_KEY",
-  Peirce: "PEIRCE_API_KEY",
-  Plato: "PLATO_API_KEY",
-  "Poincaré": "POINCARE_API_KEY",
-  Popper: "POPPER_API_KEY",
-  Rousseau: "ROUSSEAU_API_KEY",
-  Sartre: "SARTRE_API_KEY",
-  Schopenhauer: "SCHOPENHAUER_API_KEY",
-  Spencer: "SPENCER_API_KEY",
-  Stekel: "STEKEL_API_KEY",
-  Tocqueville: "TOCQUEVILLE_API_KEY",
-  Veblen: "VEBLEN_API_KEY",
-  Weyl: "WEYL_API_KEY",
-  Whewell: "WHEWELL_API_KEY",
-  "William James": "WILLIAM_JAMES_API_KEY",
-};
-
-function getConfiguration(thinker: string) {
-  const credentialName = THINKER_KEY_NAMES[thinker] || "GENIUS_API_KEY";
+function getConfiguration() {
+  const credentialName = "GENIUS_API_KEY";
   const credential = process.env[credentialName] || "";
   const baseUrl = (process.env.GENIUS_101_API_BASE_URL || "").trim();
   const searchPath = (process.env.GENIUS_101_SEARCH_PATH || "").trim();
@@ -134,7 +79,7 @@ function extractPassages(payload: any): CorpusPassage[] {
 }
 
 export function getGenius101Status(thinker: string): Genius101Status {
-  const config = getConfiguration(thinker);
+  const config = getConfiguration();
   return {
     thinker,
     credential: { configured: !!config.credential, name: config.credentialName },
@@ -153,7 +98,7 @@ export async function searchGenius101(
   query: string,
   limit = 8,
 ): Promise<CorpusPassage[]> {
-  const config = getConfiguration(thinker);
+  const config = getConfiguration();
   if (config.missing.length) {
     throw new Error(`Genius 101 corpus access is not configured: missing ${config.missing.join(", ")}`);
   }

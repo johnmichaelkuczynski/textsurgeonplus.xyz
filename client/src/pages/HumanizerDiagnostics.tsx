@@ -79,10 +79,10 @@ const INITIAL_RESULTS: DiagnosticResult[] = [
   { id: "tts", label: "ElevenLabs audio and API key", description: "Generates a short real audio clip; does not just check whether a key is present.", status: "waiting" },
   { id: "stripe-public", label: "Stripe public configuration", description: "Checks that a publishable key is available; does not validate Stripe secret credentials.", status: "waiting" },
   { id: "stripe-secret", label: "Stripe secret and webhook credentials", description: "A safe live credential probe does not exist on the running server; payment and webhook operations are not triggered by diagnostics.", status: "unverified" },
-  { id: "genius-generic", label: "Generic GENIUS_API_KEY", description: "The supported thinker routes use their own named keys. No running route uses the generic fallback key for a supported thinker, so it cannot be marked verified.", status: "unverified" },
+  { id: "genius-generic", label: "Shared corpus API key", description: "Makes a real corpus search using GENIUS_API_KEY. A stored key alone does not prove access; the corpus endpoint must also be configured.", status: "waiting" },
   ...diagnosticThinkers.map((thinker) => ({
-    id: `thinker:${thinker}`, label: `${thinker} corpus API key`,
-    description: "Makes a real corpus search with this thinker's own credential; configuration alone cannot pass.",
+    id: `thinker:${thinker}`, label: `${thinker} corpus access`,
+    description: "Makes a real corpus search for this thinker using the shared credential; configuration alone cannot pass.",
     status: "waiting" as const,
   })),
 ];
@@ -436,6 +436,22 @@ export default function HumanizerDiagnostics() {
         if (controller.signal.aborted) break;
         await runCheck(id, check, controller.signal);
       }
+      if (!controller.signal.aborted) {
+        await runCheck("genius-generic", async () => {
+          const response = await fetch("/api/thinker-chat/corpus-status?thinker=Plato&test=true", {
+            credentials: "include", signal: controller.signal,
+          });
+          const payload = await response.json().catch(() => null);
+          if (!response.ok || payload?.credential?.name !== "GENIUS_API_KEY" || !payload?.access?.ok) {
+            throw Object.assign(new Error(
+              payload?.configuration?.missing?.length
+                ? `Missing ${payload.configuration.missing.join(", ")}`
+                : payload?.access?.message || "The shared corpus credential was not verified by a live search.",
+            ), { httpStatus: response.status });
+          }
+          return { evidence: `${payload.access.message}; ${payload.access.passageCount} passage(s).`, httpStatus: response.status };
+        }, controller.signal);
+      }
       for (let i = 0; i < diagnosticThinkers.length && !controller.signal.aborted; i += 4) {
         await Promise.all(diagnosticThinkers.slice(i, i + 4).map((thinker) => runThinkerCheck(thinker, controller.signal)));
       }
@@ -641,7 +657,7 @@ export default function HumanizerDiagnostics() {
         </section>
         <details className="rounded-xl border bg-white p-4 shadow-sm">
           <summary className="cursor-pointer font-bold">
-            Individual thinker corpus credentials ({results.filter((result) => result.id.startsWith("thinker:") && result.status === "passed").length}/{diagnosticThinkers.length} verified)
+            Author corpus searches ({results.filter((result) => result.id.startsWith("thinker:") && result.status === "passed").length}/{diagnosticThinkers.length} verified)
           </summary>
           <div className="mt-3 space-y-2">
             {results.filter((result) => result.id.startsWith("thinker:")).map((result) => (
