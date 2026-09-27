@@ -3772,7 +3772,10 @@ Return only the response.`;
     "gemini", "openai", "anthropic", "grok", "perplexity", "deepseek",
   ]);
 
-  const callWorkshopProvider = async (provider: string, prompt: string) => {
+  const callWorkshopProvider = async (
+    provider: string,
+    prompt: string,
+  ): Promise<{ text: string; provider: string; fallbackReason?: string }> => {
     if (provider !== "gemini") {
       return { text: await callLLM(provider, prompt), provider };
     }

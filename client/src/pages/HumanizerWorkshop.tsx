@@ -434,48 +434,44 @@ export default function HumanizerWorkshop() {
       </header>
 
       <main className="flex flex-col gap-5 p-5 lg:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 p-4 shadow-sm">
-          <div>
-            <p className="font-black text-emerald-950">Transform Box A → Box B</p>
-            <p className="text-sm text-emerald-800">Transforms your Box A text using Box C instructions and any samples in Boxes D and E. The result goes in Box B.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={aiProseProvider}
-              onValueChange={(value) => setAiProseProvider(value as WorkshopProvider)}
-            >
-              <SelectTrigger aria-label="AI model for generation and transformation" className="w-[150px] bg-white" data-testid="select-ai-prose-provider">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="gemini">Gemini</SelectItem>
-                <SelectItem value="openai">OpenAI</SelectItem>
-                <SelectItem value="anthropic">Anthropic</SelectItem>
-                <SelectItem value="grok">Grok</SelectItem>
-                <SelectItem value="perplexity">Perplexity</SelectItem>
-                <SelectItem value="deepseek">DeepSeek</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              onClick={() => void rewriteText(inputText)}
-              disabled={!inputText.trim() || isRewriting}
-              className="gap-2 bg-emerald-700 text-white hover:bg-emerald-800"
-              data-testid="button-rewrite-workshop"
-            >
-              {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
-              {isRewriting ? "Transforming…" : "Transform Text"}
-            </Button>
-          </div>
-        </div>
         <section className="grid min-h-[58vh] grid-cols-1 gap-5 lg:grid-cols-2">
           <div className="flex min-h-[420px] flex-col overflow-hidden rounded-xl border-2 border-blue-300 bg-white shadow-lg">
             <div className="flex items-center gap-2 border-b border-blue-200 bg-blue-50 px-5 py-3">
-              <FileInput className="h-5 w-5 text-blue-700" />
-              <div>
-                <h2 className="font-black uppercase tracking-wide text-blue-950">Box A — Text Input</h2>
-                <p className="text-xs text-blue-700">Enter or paste the text to be humanized.</p>
+              <div className="flex items-center gap-2">
+                <FileInput className="h-5 w-5 text-blue-700" />
+                <div>
+                  <h2 className="font-black uppercase tracking-wide text-blue-950">Box A — Text Input</h2>
+                  <p className="text-xs text-blue-700">Paste your text here; put the target style sample in Box D.</p>
+                </div>
               </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 border-b border-blue-200 bg-blue-50 px-5 py-3">
+                <Button
+                  type="button"
+                  onClick={() => void rewriteText(inputText)}
+                  disabled={!inputText.trim() || isRewriting}
+                  className="gap-2 bg-blue-700 text-white hover:bg-blue-800"
+                  data-testid="button-rewrite-workshop"
+                >
+                  {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
+                  {isRewriting ? "Transforming…" : "Transform Text"}
+                </Button>
+                <Select
+                  value={aiProseProvider}
+                  onValueChange={(value) => setAiProseProvider(value as WorkshopProvider)}
+                >
+                  <SelectTrigger aria-label="Transformation model" className="w-[125px] bg-white" data-testid="select-ai-prose-provider">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gemini">Gemini</SelectItem>
+                    <SelectItem value="openai">OpenAI</SelectItem>
+                    <SelectItem value="anthropic">Anthropic</SelectItem>
+                    <SelectItem value="grok">Grok</SelectItem>
+                    <SelectItem value="perplexity">Perplexity</SelectItem>
+                    <SelectItem value="deepseek">DeepSeek</SelectItem>
+                  </SelectContent>
+                </Select>
             </div>
             <Textarea
               value={inputText}
