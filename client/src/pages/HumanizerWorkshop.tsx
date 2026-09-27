@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "wouter";
 import {
   AlertCircle,
@@ -6,6 +6,7 @@ import {
   BookOpen,
   FileInput,
   Loader2,
+  RotateCcw,
   ShieldCheck,
   Sparkles,
   Stethoscope,
@@ -25,8 +26,10 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { humanizerStylePresets } from "@/data/humanizerStylePresets";
+import { MAX_WORKSHOP_DOCUMENT_CHARS, splitWorkshopDocument } from "@/lib/humanizerChunks";
 
 const WORKSHOP_FILE_LIMIT = 2 * 1024 * 1024;
+const SOURCE_FILE_LIMIT = 50 * 1024 * 1024;
 const AUTHORS = [
   "Adam Smith", "Adler", "Aesop", "Allen", "Aristotle", "Bacon", "Bergler",
   "Bergson", "Berkeley", "Confucius", "Darwin", "Descartes", "Dewey",
@@ -47,6 +50,22 @@ type WorkshopProvider =
   | "perplexity"
   | "deepseek"
   | "venice";
+
+type RewriteJob = {
+  chunks: string[];
+  outputs: string[];
+  nextIndex: number;
+  baseInstructions: string;
+  fromOutput: boolean;
+  previousAiScore?: number;
+  provider: WorkshopProvider;
+  styleSample: string;
+  styleInstructions: string;
+  contentSample: string;
+  contentInstructions: string;
+  usedProviders: Set<string>;
+  fallbackReasons: Set<string>;
+};
 
 type GptZeroState =
   | { status: "waiting" }
@@ -77,12 +96,13 @@ function getWorkshopVisitorId() {
 
 async function detectWorkshopText(text: string, signal?: AbortSignal): Promise<Extract<GptZeroState, { status: "complete" }>> {
   const normalized = text.trim();
+  const scannedText = normalized.slice(0, 50_000);
   const response = await fetch("/api/gptzero/detect", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     signal,
-    body: JSON.stringify({ text: normalized, visitorId: getWorkshopVisitorId() }),
+    body: JSON.stringify({ text: scannedText, visitorId: getWorkshopVisitorId() }),
   });
   const payload = await response.json().catch(() => null);
   if (!response.ok) throw new Error(payload?.error || "GPTZero scan failed");
@@ -160,6 +180,7 @@ function GptZeroReadout({ state, previousAiScore }: { state: GptZeroState; previ
       GPTZero: {state.aiScore !== undefined ? `${state.aiScore}% AI likelihood · ` : ""}
       {state.classification.replaceAll("_", " ")}
       {state.confidence ? ` · ${state.confidence}` : ""}
+      {state.text.length > 50_000 ? " · first 50,000 characters only" : ""}
       {previousAiScore !== undefined && state.aiScore !== undefined ? ` · previous ${previousAiScore}%` : ""}
     </span>
   );
@@ -170,7 +191,7 @@ function AutomaticGptZeroReadout({ text }: { text: string }) {
 }
 
 function BoxFooter({ text, detection, previousAiScore }: { text: string; detection?: GptZeroState; previousAiScore?: number }) {
-  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const words = useMemo(() => text.trim() ? text.trim().split(/\s+/).length : 0, [text]);
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 border-t bg-white px-4 py-2">
       {detection ? <GptZeroReadout state={detection} previousAiScore={previousAiScore} /> : <AutomaticGptZeroReadout text={text} />}
@@ -387,15 +408,100 @@ export default function HumanizerWorkshop() {
   const [isRewriting, setIsRewriting] = useState(false);
   const [rewriteMessage, setRewriteMessage] = useState("");
   const [rewriteError, setRewriteError] = useState("");
+  const [rewriteProgress, setRewriteProgress] = useState<{ done: number; total: number } | null>(null);
+  const [canResume, setCanResume] = useState(false);
+  const [isLoadingInputFile, setIsLoadingInputFile] = useState(false);
+  const inputFile = useRef<HTMLInputElement>(null);
   const rewriteRequest = useRef<AbortController | null>(null);
+  const pendingRewrite = useRef<RewriteJob | null>(null);
+
+  const cancelCurrentRewrite = () => {
+    rewriteRequest.current?.abort();
+    rewriteRequest.current = null;
+    pendingRewrite.current = null;
+    setCanResume(false);
+    setRewriteProgress(null);
+    setIsRewriting(false);
+  };
+
+  const runRewriteJob = async (job: RewriteJob, controller: AbortController) => {
+    try {
+      while (job.nextIndex < job.chunks.length) {
+        const index = job.nextIndex;
+        const partInstruction = job.chunks.length > 1
+          ? `This is part ${index + 1} of ${job.chunks.length} of one continuous document. Rewrite only this part. Keep its meaning and approximate length; do not add a new introduction, conclusion, or summary at the part boundary. Any requested total output length applies to the whole document, not to each part; give this part a proportional share.`
+          : "";
+        const previousEnding = index > 0
+          ? `The preceding rewritten part ends as follows (for continuity only; do not repeat it): ${job.outputs[index - 1].slice(-220)}`
+          : "";
+        const instructions = [job.baseInstructions, partInstruction, previousEnding].filter(Boolean).join("\n\n");
+        if (instructions.length > 3_000) throw new Error("Box C instructions are too long to process this document in parts.");
+        const response = await fetch("/api/humanizer/rewrite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          signal: controller.signal,
+          body: JSON.stringify({
+            text: job.chunks[index],
+            provider: job.provider,
+            instructions,
+            styleSample: job.styleSample,
+            styleInstructions: job.styleInstructions,
+            contentSample: job.contentSample,
+            contentInstructions: job.contentInstructions,
+          }),
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(payload?.error || `Part ${index + 1} could not be rewritten.`);
+        if (typeof payload?.text !== "string" || !payload.text.trim()) {
+          throw new Error(`Part ${index + 1} returned no rewritten prose.`);
+        }
+        if (controller.signal.aborted || pendingRewrite.current !== job) return;
+        job.outputs.push(payload.text.trim());
+        job.nextIndex++;
+        if (typeof payload.provider === "string") job.usedProviders.add(payload.provider);
+        if (typeof payload.fallbackReason === "string") job.fallbackReasons.add(payload.fallbackReason);
+        setRewriteProgress({ done: job.nextIndex, total: job.chunks.length });
+      }
+      if (controller.signal.aborted || pendingRewrite.current !== job) return;
+      setOutputText(job.outputs.join("\n\n"));
+      setPreviousAiScore(job.previousAiScore);
+      setRewriteMessage(
+        `Rewritten ${job.chunks.length === 1 ? "in one part" : `in ${job.chunks.length} parts`} with ${Array.from(job.usedProviders).join(", ")}.` +
+        (job.fallbackReasons.size ? ` ${Array.from(job.fallbackReasons).join(" ")}` : "") +
+        (job.fromOutput ? " The new draft is being rescanned by GPTZero." : ""),
+      );
+      setRewriteProgress(null);
+      setCanResume(false);
+      pendingRewrite.current = null;
+    } catch (error: any) {
+      if (rewriteRequest.current === controller && error?.name !== "AbortError") {
+        setRewriteError(
+          `Part ${job.nextIndex + 1} of ${job.chunks.length} failed: ${error?.message || "Rewrite failed."} ` +
+          "The existing Box B text is unchanged. Press Resume to retry this part.",
+        );
+        setCanResume(true);
+      }
+    } finally {
+      if (rewriteRequest.current === controller) {
+        rewriteRequest.current = null;
+        setIsRewriting(false);
+      }
+    }
+  };
 
   const rewriteText = async (source: string, fromOutput = false) => {
-    if (!source.trim()) return;
-    if (fromOutput && source.trim().length < 50) {
+    const original = source.trim();
+    if (!original) return;
+    if (original.length > MAX_WORKSHOP_DOCUMENT_CHARS) {
+      setRewriteError("This document exceeds the workshop's 2,000,000-character limit.");
+      return;
+    }
+    if (fromOutput && original.length < 50) {
       setRewriteError("Box B needs at least 50 characters for an AI score before a score-guided rewrite.");
       return;
     }
-    rewriteRequest.current?.abort();
+    cancelCurrentRewrite();
     const controller = new AbortController();
     rewriteRequest.current = controller;
     setIsRewriting(true);
@@ -403,41 +509,32 @@ export default function HumanizerWorkshop() {
     setRewriteMessage("");
     try {
       const feedback = fromOutput
-        ? outputDetection.status === "complete" && outputDetection.text === source.trim()
+        ? outputDetection.status === "complete" && outputDetection.text === original
           ? outputDetection
-          : await detectWorkshopText(source, controller.signal)
+          : await detectWorkshopText(original, controller.signal)
         : null;
       if (controller.signal.aborted) return;
-      const instructions = feedback
-        ? `${customInstructions.trim()}\n\nRevise the current Box B draft using this GPTZero result for this exact text: ${feedback.aiScore !== undefined ? `${feedback.aiScore}% AI likelihood` : `classification ${feedback.classification}`}${feedback.confidence ? ` (${feedback.confidence} confidence)` : ""}. Aim for a lower AI likelihood by improving natural variation and clarity, while preserving the draft's subject, facts, voice, and approximate length. Do not add unrelated content or claim any score is guaranteed.`
+      const baseInstructions = feedback
+        ? `${customInstructions.trim()}\n\nRevise the current Box B draft using this GPTZero result ${original.length > 50_000 ? "from its first 50,000 characters" : "for this text"}: ${feedback.aiScore !== undefined ? `${feedback.aiScore}% AI likelihood` : `classification ${feedback.classification}`}${feedback.confidence ? ` (${feedback.confidence} confidence)` : ""}. Aim for a lower AI likelihood by improving natural variation and clarity, while preserving the draft's subject, facts, voice, and approximate length. Do not add unrelated content or claim any score is guaranteed.`
         : customInstructions;
-      if (instructions.length > 3_000) throw new Error("Box C instructions are too long for a score-guided rewrite.");
-      const response = await fetch("/api/humanizer/rewrite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        signal: controller.signal,
-        body: JSON.stringify({
-          text: source,
-          provider: aiProseProvider,
-          instructions,
-          styleSample,
-          styleInstructions,
-          contentSample,
-          contentInstructions,
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(payload?.error || "Rewrite failed.");
-      if (typeof payload?.text !== "string" || !payload.text.trim()) {
-        throw new Error("The provider returned no rewritten prose.");
-      }
-      if (rewriteRequest.current !== controller) return;
-      setOutputText(payload.text);
-      setPreviousAiScore(feedback?.aiScore);
-      setRewriteMessage(
-        `${payload.fallbackReason || `Rewritten with ${String(payload.provider || aiProseProvider)}.`}${feedback ? ` Previous GPTZero result: ${feedback.aiScore !== undefined ? `${feedback.aiScore}% AI likelihood` : feedback.classification}. The new draft is being rescanned.` : ""}`,
-      );
+      const job: RewriteJob = {
+        chunks: splitWorkshopDocument(original),
+        outputs: [],
+        nextIndex: 0,
+        baseInstructions,
+        fromOutput,
+        previousAiScore: feedback?.aiScore,
+        provider: aiProseProvider,
+        styleSample,
+        styleInstructions,
+        contentSample,
+        contentInstructions,
+        usedProviders: new Set(),
+        fallbackReasons: new Set(),
+      };
+      pendingRewrite.current = job;
+      setRewriteProgress({ done: 0, total: job.chunks.length });
+      await runRewriteJob(job, controller);
     } catch (error: any) {
       if (rewriteRequest.current === controller && error?.name !== "AbortError") {
         setRewriteError(error?.message || "Rewrite failed.");
@@ -447,6 +544,61 @@ export default function HumanizerWorkshop() {
         rewriteRequest.current = null;
         setIsRewriting(false);
       }
+    }
+  };
+
+  const resumeRewrite = async () => {
+    const job = pendingRewrite.current;
+    if (!job || isRewriting) return;
+    const controller = new AbortController();
+    rewriteRequest.current = controller;
+    setIsRewriting(true);
+    setCanResume(false);
+    setRewriteError("");
+    await runRewriteJob(job, controller);
+  };
+
+  const loadInputFile = async (file: File) => {
+    if (!/\.(txt|md|pdf|doc|docx)$/i.test(file.name)) {
+      setRewriteError("Upload a PDF, Word, text, or Markdown document.");
+      return;
+    }
+    if (file.size > SOURCE_FILE_LIMIT) {
+      setRewriteError("Source files are limited to 50 MB.");
+      return;
+    }
+    setIsLoadingInputFile(true);
+    try {
+      let text: string;
+      if (/\.(txt|md)$/i.test(file.name)) {
+        text = await file.text();
+      } else {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await fetch("/api/parse-file", {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(payload?.error || payload?.message || "Could not read this document.");
+        text = payload?.text;
+      }
+      if (typeof text !== "string" || !text.trim()) throw new Error("The document contained no readable text.");
+      if (text.length > MAX_WORKSHOP_DOCUMENT_CHARS) {
+        throw new Error("This document exceeds the workshop's 2,000,000-character limit.");
+      }
+      cancelCurrentRewrite();
+      setInputText(text);
+      setOutputText("");
+      setPreviousAiScore(undefined);
+      setRewriteError("");
+      setRewriteMessage("");
+    } catch (error: any) {
+      setRewriteError(error?.message || "Could not load this document.");
+    } finally {
+      setIsLoadingInputFile(false);
+      if (inputFile.current) inputFile.current.value = "";
     }
   };
 
@@ -466,6 +618,18 @@ export default function HumanizerWorkshop() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="gap-2"
+              onClick={() => {
+                rewriteRequest.current?.abort();
+                window.location.reload();
+              }}
+              data-testid="button-clear-all-workshop"
+            >
+              <RotateCcw className="h-4 w-4" /> Clear All
+            </Button>
             <Link href="/humanizer-workshop/diagnostics">
               <Button variant="outline" className="gap-2">
                 <Stethoscope className="h-4 w-4" /> Diagnostics
@@ -493,6 +657,16 @@ export default function HumanizerWorkshop() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 border-b border-blue-200 bg-blue-50 px-5 py-3">
+                <input
+                  ref={inputFile}
+                  type="file"
+                  accept=".txt,.md,.pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (file) void loadInputFile(file);
+                  }}
+                />
                 <Button
                   type="button"
                   onClick={() => void rewriteText(inputText)}
@@ -502,6 +676,17 @@ export default function HumanizerWorkshop() {
                 >
                   {isRewriting ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />}
                   {isRewriting ? "Transforming…" : "Transform Text"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => inputFile.current?.click()}
+                  disabled={isLoadingInputFile || isRewriting}
+                  className="gap-2 bg-white"
+                  data-testid="button-upload-source"
+                >
+                  {isLoadingInputFile ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                  {isLoadingInputFile ? "Reading…" : "Upload document"}
                 </Button>
                 <Select
                   value={aiProseProvider}
@@ -520,13 +705,15 @@ export default function HumanizerWorkshop() {
                     <SelectItem value="venice">Venice AI</SelectItem>
                   </SelectContent>
                 </Select>
+                <span className="text-xs text-blue-700">Up to 2,000,000 characters; large documents run in parts. Keep this page open.</span>
             </div>
             <Textarea
               value={inputText}
               onChange={(event) => {
-                rewriteRequest.current?.abort();
+                cancelCurrentRewrite();
                 setInputText(event.target.value);
                 setOutputText("");
+                setPreviousAiScore(undefined);
                 setRewriteMessage("");
                 setRewriteError("");
               }}
@@ -559,6 +746,23 @@ export default function HumanizerWorkshop() {
               </Button>
               <span className="text-xs text-emerald-800">Rewrite the current Box B text using its GPTZero result.</span>
             </div>
+            {rewriteProgress && rewriteProgress.total > 1 ? (
+              <div role="status" className="flex flex-wrap items-center gap-3 border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-semibold text-emerald-900">
+                Completed {rewriteProgress.done} of {rewriteProgress.total} parts.
+                {canResume ? (
+                  <Button type="button" variant="outline" size="sm" onClick={() => void resumeRewrite()} data-testid="button-resume-rewrite">
+                    Resume
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+            {canResume && rewriteProgress?.total === 1 ? (
+              <div className="border-b border-emerald-200 bg-emerald-50 px-5 py-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => void resumeRewrite()} data-testid="button-resume-rewrite">
+                  Retry rewrite
+                </Button>
+              </div>
+            ) : null}
             {rewriteMessage ? (
               <p role="status" className="border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-semibold text-emerald-900">{rewriteMessage}</p>
             ) : null}
@@ -568,7 +772,7 @@ export default function HumanizerWorkshop() {
             <Textarea
               value={outputText}
               onChange={(event) => {
-                rewriteRequest.current?.abort();
+                cancelCurrentRewrite();
                 setOutputText(event.target.value);
                 setPreviousAiScore(undefined);
                 setRewriteMessage("");
