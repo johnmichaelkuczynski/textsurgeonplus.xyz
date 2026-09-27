@@ -403,7 +403,7 @@ export default function HumanizerWorkshop() {
   const [isLoadingSupplied, setIsLoadingSupplied] = useState(false);
   const outputDetection = useAutomaticGptZero(outputText);
   const [previousAiScore, setPreviousAiScore] = useState<number | undefined>();
-  const [customInstructions, setCustomInstructions] = useState("Rewrite in style of sample");
+  const [customInstructions, setCustomInstructions] = useState("Make every idea as clear as possible. Include numerous rich, original, clearly hypothetical examples that illuminate the source's actual claims and distinctions. Do not present invented examples as facts or borrow the style sample's subject. If a style sample is supplied, follow its prose style only.");
   const [selectedStylePreset, setSelectedStylePreset] = useState("");
   const [styleSample, setStyleSample] = useState("");
   const [styleInstructions, setStyleInstructions] = useState("");
