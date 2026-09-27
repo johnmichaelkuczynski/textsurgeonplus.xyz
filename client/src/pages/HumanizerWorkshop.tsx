@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { humanizerStylePresets } from "@/data/humanizerStylePresets";
-import { MAX_WORKSHOP_DOCUMENT_CHARS, splitWorkshopDocument } from "@/lib/humanizerChunks";
+import { MAX_WORKSHOP_DOCUMENT_CHARS, WORKSHOP_CHUNK_CHARS, splitWorkshopDocument } from "@/lib/humanizerChunks";
 
 const WORKSHOP_FILE_LIMIT = 2 * 1024 * 1024;
 const SOURCE_FILE_LIMIT = 50 * 1024 * 1024;
@@ -452,7 +452,13 @@ export default function HumanizerWorkshop() {
           }),
         });
         const payload = await response.json().catch(() => null);
-        if (!response.ok) throw new Error(payload?.error || `Part ${index + 1} could not be rewritten.`);
+        if (!response.ok) {
+          const reason = typeof payload?.error === "string" ? payload.error
+            : typeof payload?.message === "string" ? payload.message
+            : response.status === 504 ? "The server timed out while generating this part."
+            : `The server returned HTTP ${response.status}${response.statusText ? ` ${response.statusText}` : ""} without a rewrite.`;
+          throw new Error(`${reason} (HTTP ${response.status}).`);
+        }
         if (typeof payload?.text !== "string" || !payload.text.trim()) {
           throw new Error(`Part ${index + 1} returned no rewritten prose.`);
         }
@@ -550,6 +556,10 @@ export default function HumanizerWorkshop() {
   const resumeRewrite = async () => {
     const job = pendingRewrite.current;
     if (!job || isRewriting) return;
+    if (job.chunks[job.nextIndex]?.length > WORKSHOP_CHUNK_CHARS) {
+      job.chunks.splice(job.nextIndex, 1, ...splitWorkshopDocument(job.chunks[job.nextIndex]));
+      setRewriteProgress({ done: job.nextIndex, total: job.chunks.length });
+    }
     const controller = new AbortController();
     rewriteRequest.current = controller;
     setIsRewriting(true);

@@ -1,5 +1,5 @@
 export const MAX_WORKSHOP_DOCUMENT_CHARS = 2_000_000;
-export const WORKSHOP_CHUNK_CHARS = 12_000;
+export const WORKSHOP_CHUNK_CHARS = 3_000;
 
 export function splitWorkshopDocument(text: string): string[] {
   const chunks: string[] = [];
