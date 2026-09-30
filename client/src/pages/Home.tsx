@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { FreshTreeDialog } from "@/components/FreshTreeDialog";
+import { ProsifyDialog } from "@/components/ProsifyDialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -462,6 +463,8 @@ export default function Home() {
   const [showTractatusTree, setShowTractatusTree] = useState(false);
   const [showFreshTree, setShowFreshTree] = useState(false);
   const [freshTreeSelection, setFreshTreeSelection] = useState("");
+  const [showProsify, setShowProsify] = useState(false);
+  const [prosifyTree, setProsifyTree] = useState("");
   const [tractatusTreeProgress, setTractatusTreeProgress] = useState<{current: number, total: number, message: string} | null>(null);
   const [tractatusTreeColumns, setTractatusTreeColumns] = useState<{number: string, text: string, depth: number}[][]>([]);
   const [tractatusTreeMaxDepth, setTractatusTreeMaxDepth] = useState(0);
@@ -5270,6 +5273,14 @@ ${parsed.analyzer}`);
                       </>
                     )}
                   </Button>
+                  <Button
+                    onClick={() => setShowProsify(true)}
+                    className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-rose-600 to-orange-500 text-white hover:shadow-lg transition-all hover:scale-105"
+                    data-testid="button-prosify"
+                  >
+                    <Sparkles className="w-5 h-5 mr-2" />
+                    PROSIFY
+                  </Button>
                 </div>
 
                 {/* 2.0 Functions */}
@@ -7749,7 +7760,12 @@ Freedom is the ratio essendi of the moral law."
 
       {/* Tractatus Tree Dialog */}
       <FreshTreeDialog open={showFreshTree} onOpenChange={setShowFreshTree}
-        text={text} selection={freshTreeSelection} />
+        text={text} selection={freshTreeSelection} onSendToProsify={(tree) => {
+          setProsifyTree(tree);
+          setShowProsify(true);
+        }} />
+      <ProsifyDialog open={showProsify} onOpenChange={setShowProsify}
+        tree={prosifyTree} onTreeChange={setProsifyTree} />
       <ResizableDialog open={showTractatusTree} onOpenChange={(open) => {
         setShowTractatusTree(open);
         if (!open) {

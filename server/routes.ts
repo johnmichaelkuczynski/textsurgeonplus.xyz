@@ -1333,6 +1333,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/prosify", async (req, res) => {
+    const { tree, instructions = "" } = req.body || {};
+    if (typeof tree !== "string" || !tree.trim()) return res.status(400).json({ error: "Send a tree from FRESH TREE or paste one here" });
+    if (typeof instructions !== "string") return res.status(400).json({ error: "Instructions must be text." });
+    const { splitProsifyTree } = await import("./services/prosify");
+    const units = splitProsifyTree(tree);
+    if (!units.length) return res.status(400).json({ error: "The Tree box contains no numbered tree nodes." });
+
+    const controller = new AbortController();
+    req.once("aborted", () => controller.abort());
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+    const send = (event: unknown) => { if (!controller.signal.aborted && !res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`); };
+    try {
+      const { prosifyUnit } = await import("./services/prosify");
+      let previousChapter: string | undefined;
+      const warnings: string[] = [];
+      for (let index = 0; index < units.length; index++) {
+        const unit = units[index];
+        send({ type: "progress", message: `Prosifying… thesis ${index + 1} of ${units.length}` });
+        try {
+          const result = await prosifyUnit(unit, instructions, controller.signal);
+          const header = unit.chapter && unit.chapter !== previousChapter ? unit.chapter : undefined;
+          previousChapter = unit.chapter;
+          if (result.missing.length) warnings.push(`${unit.chapter ? `${unit.chapter}, ` : ""}thesis ${unit.thesis}: missing nodes ${result.missing.join(", ")}`);
+          send({ type: "paragraph", index, header, prose: result.prose });
+        } catch (error: any) {
+          throw new Error(`${unit.chapter ? `${unit.chapter}, ` : ""}thesis ${unit.thesis} failed: ${error?.message || "Prosification failed"}`);
+        }
+      }
+      send({ type: "complete", warnings });
+    } catch (error: any) {
+      if (!controller.signal.aborted) send({ type: "error", error: error?.message || "Prosification failed." });
+    } finally {
+      if (!res.writableEnded) res.end();
+    }
+  });
+
   app.post("/api/summary", async (req, res) => {
     const { text, resolution, recognizeContentSections, provider } = req.body;
 
