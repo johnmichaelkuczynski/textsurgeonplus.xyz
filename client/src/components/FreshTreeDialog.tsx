@@ -29,6 +29,7 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
   const [trees, setTrees] = useState<Tree[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
+  const [providerStatuses, setProviderStatuses] = useState<string[]>([]);
   const [progress, setProgress] = useState("");
   const [instructions, setInstructions] = useState(DEFAULT_INSTRUCTIONS);
   const [depthInput, setDepthInput] = useState("");
@@ -112,7 +113,7 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
     setConfirmDepth(null);
     const controller = new AbortController();
     const id = crypto.randomUUID();
-    request.current = controller; runId.current = id; setRunning(true); setStopping(false); setErrors([]); setProgress("");
+    request.current = controller; runId.current = id; setRunning(true); setStopping(false); setErrors([]); setProgress(""); setProviderStatuses([]);
     if (action === "generate") { setTrees([]); setWarnings([]); setGeneratedFor(inputKey); }
     try {
       const response = await fetch("/api/fresh-tree", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", cache: "no-store", signal: controller.signal,
@@ -134,6 +135,7 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
           if (!line) continue;
           const data = JSON.parse(line.slice(6));
           if (data.type === "progress") setProgress(data.message);
+           else if (data.type === "provider-status") setProviderStatuses((old) => [...old, data.message]);
           else if (data.type === "chapter-error") setErrors((old) => [...old, `${data.title}: ${data.error}`]);
           else if (data.type === "node-warning") setWarnings((old) => [...old, data.message]);
           else if (data.type === "stopped") setProgress("Stopped. Completed tiers have been kept.");
@@ -217,6 +219,7 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
         </div>
       </div>}
       {progress && <p className="text-sm" role="status">{progress}</p>}
+      {providerStatuses.map((status, index) => <p key={`${index}-${status}`} className="text-amber-900 text-sm" role="status">{status}</p>)}
       {errors.map((error, index) => <p key={`${index}-${error}`} className="text-red-700 text-sm" role="alert">{error}</p>)}
       {trees.length > 0 && <div className="rounded border border-yellow-300 bg-yellow-50 p-3" data-testid="fresh-tree-results">
         <pre className="whitespace-pre-wrap break-words text-sm">{output}</pre>

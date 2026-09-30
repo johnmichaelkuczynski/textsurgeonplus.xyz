@@ -1,4 +1,4 @@
-import { callLLM } from "../llm";
+import { callFreshTreeLLM, freshTreeProviderUnavailable, markFreshTreeProviderUnavailable } from "./freshTreeProvider";
 import type { TractatusStatement } from "./tractatusTree";
 
 export type FreshTreeStatement = TractatusStatement;
@@ -66,7 +66,7 @@ export async function generateFreshTree(source: string, signal: AbortSignal): Pr
   let previous = "";
   for (let attempt = 0; attempt < 2; attempt++) {
     const correction = attempt ? `\nThe previous response was not a valid two-tier tree. Correct the format: each thesis must be numbered 1.0, 2.0, etc., followed by at least one child numbered 1.1, 2.1, etc. No deeper lines. Recheck every line against the source.\n<previous-response>\n${previous}\n</previous-response>` : "";
-    const raw = await callLLM("openai", `Build a plain numbered tree. ${required}\nEvery thesis must have at least one direct sub-claim. Output numbered lines only, with one sentence per line. Do not use Markdown.${correction}\n\n<source>\n${source}\n</source>`, signal);
+    const raw = await callFreshTreeLLM(`Build a plain numbered tree. ${required}\nEvery thesis must have at least one direct sub-claim. Output numbered lines only, with one sentence per line. Do not use Markdown.${correction}\n\n<source>\n${source}\n</source>`, signal);
     assertNotAborted(signal);
     const statements = parseTreeLines(raw, 2);
     const roots = statements.filter((item) => item.number.endsWith(".0"));
@@ -87,21 +87,24 @@ function responseText(data: any): string {
 
 async function research(prompt: string, signal: AbortSignal, shouldStop?: () => boolean): Promise<{ text: string; searched: boolean }> {
   const key = process.env.OPENAI_API_KEY;
-  if (!key) return { text: await callLLM("openai", prompt, signal), searched: false };
+  if (!key || freshTreeProviderUnavailable(signal, "openai")) {
+    return { text: await callFreshTreeLLM(prompt, signal), searched: false };
+  }
   try {
     const response = await fetch("https://api.openai.com/v1/responses", {
       method: "POST", signal,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({ model: "gpt-4o", tools: [{ type: "web_search_preview" }], input: prompt }),
     });
-    if (!response.ok) throw new Error(`web search returned ${response.status}`);
+    if (!response.ok) throw new Error(`OpenAI web search returned ${response.status}`);
     const text = responseText(await response.json());
     if (!text.trim()) throw new Error("web search returned no text");
     return { text, searched: true };
   } catch (error) {
     if (signal.aborted) throw error;
     if (shouldStop?.()) return { text: "", searched: false };
-    return { text: await callLLM("openai", prompt, signal), searched: false };
+    markFreshTreeProviderUnavailable(signal, "openai", error);
+    return { text: await callFreshTreeLLM(prompt, signal), searched: false };
   }
 }
 
@@ -206,7 +209,7 @@ ${researchResult}
 
 SOURCE TEXT (freshness exclusion list):
 ${source}`;
-  const reviewedRaw = await callLLM("openai", prompt, signal);
+  const reviewedRaw = await callFreshTreeLLM(prompt, signal);
   const start = reviewedRaw.indexOf("{");
   const end = reviewedRaw.lastIndexOf("}");
   if (start < 0 || end < start) throw new Error("Fresh-tier review returned invalid structured output.");
@@ -274,7 +277,7 @@ ${NODE_LEGITIMACY_RULE}
 
 PARENTS AND NODES:
 ${candidates.map((item) => `${item.parent} ${existing.find((line) => line.number === item.parent)?.text}\n${item.number} ${item.text}`).join("\n")}`;
-  const raw = await callLLM("openai", prompt, signal);
+  const raw = await callFreshTreeLLM(prompt, signal);
   return parseClassifications(raw, candidates);
 }
 
@@ -304,7 +307,7 @@ ${candidates.map((item) => `${item.parent} ${existing.find((line) => line.number
 
 FULL EXISTING TREE:
 ${existing.map((item) => `${item.number} ${item.text}`).join("\n")}`;
-  const raw = await callLLM("openai", prompt, signal);
+  const raw = await callFreshTreeLLM(prompt, signal);
   const start = raw.indexOf("{");
   const end = raw.lastIndexOf("}");
   if (start < 0 || end < start) throw new Error("Fresh-tier regenerated-node review returned invalid structured output.");
@@ -340,7 +343,7 @@ PARENT ${candidate.parent}: ${existing.find((line) => line.number === candidate.
 REJECTED NODE ${candidate.number}: ${candidate.text}
 WEB RESEARCH RESULT: ${researchResult}
 SOURCE TEXT (freshness exclusion list): ${source}`;
-    const replacement = await callLLM("openai", prompt, signal);
+    const replacement = await callFreshTreeLLM(prompt, signal);
     assertNotAborted(signal);
     if (shouldStop?.()) return [];
     const text = replacement.trim().replace(/^\s*\d+(?:\.\d+)+\s+/, "").split("\n")[0].trim();
@@ -440,14 +443,14 @@ ${source}
       const parsed = parseAvailable(answer.text, group);
       let missing = group.filter((parent) => !parsed.some((child) => child.parent === parent.number));
       if (missing.length) {
-        const repaired = await callLLM("openai", `The prior tier response omitted or misnumbered a required parent. Return ONLY a JSON object with exactly these parent keys: ${missing.map((item) => item.number).join(", ")}. Under each key put ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} child objects shaped {"text":"one concrete sentence establishing this exact parent","url":"direct reputable supporting source URL"}. Use facts from the research response below; do not invent claims or cite someone merely saying something.\n\n${NODE_LEGITIMACY_RULE}\n\nPARENTS:\n${missing.map((item) => `${item.number} ${item.text}`).join("\n")}\n\nRESEARCH RESPONSE:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
+        const repaired = await callFreshTreeLLM(`The prior tier response omitted or misnumbered a required parent. Return ONLY a JSON object with exactly these parent keys: ${missing.map((item) => item.number).join(", ")}. Under each key put ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} child objects shaped {"text":"one concrete sentence establishing this exact parent","url":"direct reputable supporting source URL"}. Use facts from the research response below; do not invent claims or cite someone merely saying something.\n\n${NODE_LEGITIMACY_RULE}\n\nPARENTS:\n${missing.map((item) => `${item.number} ${item.text}`).join("\n")}\n\nRESEARCH RESPONSE:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
         assertNotAborted(signal);
         if (options.shouldStop?.()) return true;
         parsed.push(...parseAvailable(repaired, missing));
         missing = missing.filter((parent) => !parsed.some((child) => child.parent === parent.number));
         for (const parent of missing) {
           try {
-            const individual = await callLLM("openai", `Return ONLY a JSON array of ${count.min} ${count.min === 1 ? "child" : "children"} for parent ${parent.number}: ${parent.text}. Each child is {"text":"one sentence establishing the exact parent by a concrete fact or full logical counterexample","url":"direct reputable source URL if factual"}. Use only facts supported by the research below, no examples from the source, no authority assertions.\n\n${NODE_LEGITIMACY_RULE}\n\nRESEARCH:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
+            const individual = await callFreshTreeLLM(`Return ONLY a JSON array of ${count.min} ${count.min === 1 ? "child" : "children"} for parent ${parent.number}: ${parent.text}. Each child is {"text":"one sentence establishing the exact parent by a concrete fact or full logical counterexample","url":"direct reputable source URL if factual"}. Use only facts supported by the research below, no examples from the source, no authority assertions.\n\n${NODE_LEGITIMACY_RULE}\n\nRESEARCH:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
             assertNotAborted(signal);
             if (options.shouldStop?.()) return true;
             const opening = individual.indexOf("[");

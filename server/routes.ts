@@ -1335,6 +1335,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const send = (event: unknown) => { if (!controller.signal.aborted && !res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`); };
     try {
       const { generateFreshTree, addNextTier } = await import("./services/freshTree");
+      const { reportFreshTreeProviders } = await import("./services/freshTreeProvider");
+      reportFreshTreeProviders(controller.signal, (message) => send({ type: "provider-status", message }));
       let stopped = false;
       for (let position = 0; position < units.length; position++) {
         const unit = units[position];
