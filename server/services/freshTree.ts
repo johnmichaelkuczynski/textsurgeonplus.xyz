@@ -400,8 +400,14 @@ export async function addNextTier(source: string, existing: FreshTreeStatement[]
       : DEFAULT_FRESH_INSTRUCTIONS)
     : instructions.trim();
   const allowCitationNodes = /\ballow citation nodes\b/i.test(instructions);
-  const allCandidates: TierCandidate[] = [];
-  const results: string[] = [];
+  let markerNumber = existing.reduce((max, statement) => {
+    const trailingMarker = /([⁰¹²³⁴⁵⁶⁷⁸⁹]+)$/.exec(statement.text.trim())?.[1];
+    if (!trailingMarker) return max;
+    const numeric = Number(trailingMarker.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (digit) =>
+      String("⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit))));
+    return Number.isFinite(numeric) ? Math.max(max, numeric) : max;
+  }, 0);
+  let emitted = 0;
   for (let rootIndex = 0; rootIndex < roots.length; rootIndex++) {
     const root = roots[rootIndex];
     assertNotAborted(signal);
@@ -467,49 +473,40 @@ ${source}
       const accepted = await reviewAndDeduplicate(parsed, existing, answer.text, source, signal);
       assertNotAborted(signal);
       if (options.shouldStop?.()) return true;
-      allCandidates.push(...accepted.map((candidate) => ({ ...candidate, searched: answer.searched })));
-      results.push(answer.text);
+      const supported = await enforceLegitimacy(
+        accepted.map((candidate) => ({ ...candidate, searched: answer.searched })),
+        existing, source, answer.text, instructions, signal,
+        (message) => options.onWarning?.(message), options.shouldStop,
+      );
+      assertNotAborted(signal);
+      if (options.shouldStop?.()) return true;
+      const parentNumbers = new Set(supported.map((item) => item.parent));
+      for (const parent of group) if (!parentNumbers.has(parent.number)) {
+        options.onWarning?.(`Node ${parent.number} has no legitimate support.`);
+      }
+      const statements: FreshTreeStatement[] = [];
+      const sources: FreshTreeSource[] = [];
+      for (const { parent: _parent, url, searched, legitimacyLabel, reviewFailure: _reviewFailure, ...statement } of supported) {
+        const factualText = statement.text.replace(/[¹²³⁴⁵⁶⁷⁸⁹⁰]/g, "").trim();
+        if (url && searched && legitimacyLabel === "EMPIRICAL") {
+          markerNumber++;
+          const marker = superscript(markerNumber);
+          statements.push({ ...statement, text: `${factualText}${marker}` });
+          sources.push({ node: statement.number, marker, url });
+        } else {
+          statements.push({ ...statement, text: factualText });
+        }
+      }
+      if (statements.length) {
+        onTier(statements, sources);
+        emitted += statements.length;
+      }
     } catch (error: any) {
       throw new Error(`Tier ${tierNumber}, thesis ${root.number}: ${error?.message || "generation failed"}`);
     }
   }
-  const allResearch = results.join("\n");
-  let supported: TierCandidate[];
-  try {
-    supported = await enforceLegitimacy(allCandidates, existing, source, allResearch, instructions, signal,
-      (message) => options.onWarning?.(message), options.shouldStop);
-  } catch (error: any) {
-    throw new Error(`Tier ${tierNumber}, thesis ${roots[0]?.number || "unknown"}: ${error?.message || "legitimacy review failed"}`);
-  }
-  assertNotAborted(signal);
-  if (options.shouldStop?.()) return true;
-  const parentNumbers = new Set(supported.map((item) => item.parent));
-  for (const parent of parents) if (!parentNumbers.has(parent.number)) {
-    options.onWarning?.(`Node ${parent.number} has no legitimate support.`);
-  }
-  if (!supported.length) {
+  if (!emitted) {
     throw new Error(`Tier ${tierNumber}, thesis ${roots[0]?.number || "unknown"}: no legitimate children remained after review.`);
   }
-  let markerNumber = existing.reduce((max, statement) => {
-    const trailingMarker = /([⁰¹²³⁴⁵⁶⁷⁸⁹]+)$/.exec(statement.text.trim())?.[1];
-    if (!trailingMarker) return max;
-    const numeric = Number(trailingMarker.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (digit) =>
-      String("⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit))));
-    return Number.isFinite(numeric) ? Math.max(max, numeric) : max;
-  }, 0);
-  const statements: FreshTreeStatement[] = [];
-  const sources: FreshTreeSource[] = [];
-  for (const { parent: _parent, url, searched, legitimacyLabel, reviewFailure: _reviewFailure, ...statement } of supported) {
-    const factualText = statement.text.replace(/[¹²³⁴⁵⁶⁷⁸⁹⁰]/g, "").trim();
-    if (url && searched && legitimacyLabel === "EMPIRICAL") {
-      markerNumber++;
-      const marker = superscript(markerNumber);
-      statements.push({ ...statement, text: `${factualText}${marker}` });
-      sources.push({ node: statement.number, marker, url });
-    } else {
-      statements.push({ ...statement, text: factualText });
-    }
-  }
-  onTier(statements, sources);
   return false;
 }

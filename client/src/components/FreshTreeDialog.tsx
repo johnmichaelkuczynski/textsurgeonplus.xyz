@@ -39,12 +39,19 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
   const [generatedFor, setGeneratedFor] = useState("");
   const [loadingChapters, setLoadingChapters] = useState(false);
   const [running, setRunning] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
   const request = useRef<AbortController | null>(null);
   const runId = useRef<string | null>(null);
   const wasOpen = useRef(false);
   const treesRef = useRef<Tree[]>([]);
+  const outputRef = useRef<HTMLPreElement | null>(null);
 
   useEffect(() => { treesRef.current = trees; }, [trees]);
+  useEffect(() => {
+    if (!running) return;
+    const timer = window.setInterval(() => setElapsed((seconds) => seconds + 1), 1000);
+    return () => window.clearInterval(timer);
+  }, [running]);
 
   useEffect(() => {
     if (open && !wasOpen.current) {
@@ -113,7 +120,7 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
     setConfirmDepth(null);
     const controller = new AbortController();
     const id = crypto.randomUUID();
-    request.current = controller; runId.current = id; setRunning(true); setStopping(false); setErrors([]); setProgress(""); setProviderStatuses([]);
+    request.current = controller; runId.current = id; setRunning(true); setElapsed(0); setStopping(false); setErrors([]); setProgress(""); setProviderStatuses([]);
     if (action === "generate") { setTrees([]); setWarnings([]); setGeneratedFor(inputKey); }
     try {
       const response = await fetch("/api/fresh-tree", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", cache: "no-store", signal: controller.signal,
@@ -138,7 +145,7 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
            else if (data.type === "provider-status") setProviderStatuses((old) => [...old, data.message]);
           else if (data.type === "chapter-error") setErrors((old) => [...old, `${data.title}: ${data.error}`]);
           else if (data.type === "node-warning") setWarnings((old) => [...old, data.message]);
-          else if (data.type === "stopped") setProgress("Stopped. Completed tiers have been kept.");
+          else if (data.type === "stopped") setProgress("Stopped. All output shown so far has been kept; use Download .txt to save it.");
           else if (data.type === "error") throw new Error(data.error);
           else if (data.type === "complete") completed = true;
           else if (data.type === "tree" || data.type === "tier" || data.type === "chapter-complete") setTrees((old) => {
@@ -148,6 +155,7 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
               : { index: data.index, title: data.title, statements: [], sources: [], complete: false };
             if (data.type === "tree" && !updated.statements.length) updated.statements = data.statements;
             if (data.type === "tier") {
+              updated.complete = false;
               const existingNumbers = new Set(updated.statements.map((statement) => statement.number));
               updated.statements.push(...data.statements.filter((statement: Statement) => !existingNumbers.has(statement.number)));
               const existingSources = new Set(updated.sources.map((source) => `${source.node}\n${source.url}`));
@@ -176,6 +184,15 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
     const sources = tree.sources.length ? `\n\nSources\n${tree.sources.map((item) => `${item.marker ? `${item.marker} ` : ""}(${item.node}) — ${item.url}`).join("\n")}` : "";
     return heading + body + sources;
   }).join("\n\n");
+  useEffect(() => {
+    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
+  }, [output]);
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([output], { type: "text/plain" }));
+    const link = document.createElement("a");
+    link.href = url; link.download = "fresh-tree.txt"; link.click();
+    URL.revokeObjectURL(url);
+  };
   const depth = trees.length ? Math.max(...trees.flatMap((tree) => tree.statements.map((item) => item.depth + 1))) : 0;
 
   return <Dialog open={open} onOpenChange={(next) => next ? onOpenChange(true) : close()}>
@@ -218,14 +235,26 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToP
           <Button type="button" variant="outline" onClick={() => setConfirmDepth(null)}>Cancel</Button>
         </div>
       </div>}
-      {progress && <p className="text-sm" role="status">{progress}</p>}
+      {running && <div className="sticky top-0 z-10 rounded border border-blue-200 bg-blue-50 p-2 text-sm" role="status" aria-live="polite">
+        <span className="inline-block size-2 rounded-full bg-blue-600 animate-pulse mr-2" aria-hidden="true" />
+        {stopping ? "Stopping…" : "Fresh Tree is running"} · {Math.floor(elapsed / 60)}:{String(elapsed % 60).padStart(2, "0")} elapsed
+        {progress && <span className="block mt-1">{progress}</span>}
+        <span className="block mt-1">{trees.filter((tree) => tree.complete).length} of {expectedUnits} chapters finished · {trees.reduce((sum, tree) => sum + tree.statements.length, 0)} nodes received</span>
+        <div className="flex gap-2 mt-2">
+          {output && <Button type="button" size="sm" variant="outline" onClick={download}>Save output so far</Button>}
+          <Button type="button" size="sm" variant="destructive" disabled={stopping} onClick={() => void stop()}>{stopping ? "STOPPING…" : "STOP"}</Button>
+        </div>
+      </div>}
+      {!running && progress && <p className="text-sm" role="status">{progress}</p>}
       {providerStatuses.map((status, index) => <p key={`${index}-${status}`} className="text-amber-900 text-sm" role="status">{status}</p>)}
       {errors.map((error, index) => <p key={`${index}-${error}`} className="text-red-700 text-sm" role="alert">{error}</p>)}
       {trees.length > 0 && <div className="rounded border border-yellow-300 bg-yellow-50 p-3" data-testid="fresh-tree-results">
-        <pre className="whitespace-pre-wrap break-words text-sm">{output}</pre>
-        {warnings.map((warning, index) => <p key={`${index}-${warning}`} className="text-amber-900 text-sm mt-2" role="status">{warning}</p>)}
+        <pre ref={outputRef} className="whitespace-pre-wrap break-words text-sm max-h-[45vh] overflow-y-auto" aria-live="polite">{output}</pre>
+        {warnings.length > 0 && <div className="max-h-32 overflow-y-auto mt-2" aria-label={`${warnings.length} node warnings`}>
+          {warnings.map((warning, index) => <p key={`${index}-${warning}`} className="text-amber-900 text-sm mt-2">{warning}</p>)}
+        </div>}
         <div className="flex gap-2 mt-3"><Button variant="outline" onClick={() => void navigator.clipboard.writeText(output).catch(() => setErrors((old) => [...old, "Copy failed."]))}>Copy</Button>
-          <Button variant="outline" onClick={() => { const url = URL.createObjectURL(new Blob([output], { type: "text/plain" })); const link = document.createElement("a"); link.href = url; link.download = "fresh-tree.txt"; link.click(); URL.revokeObjectURL(url); }}>Download .txt</Button></div>
+          <Button variant="outline" onClick={download}>Download .txt</Button></div>
         <p className="mt-4 font-medium">Current depth: {depth} tiers</p>
         <Label htmlFor="fresh-tree-instructions">Instructions for the new nodes</Label>
         <Textarea id="fresh-tree-instructions" className="mt-1 min-h-28 bg-white" value={instructions} onChange={(event) => setInstructions(event.target.value)} disabled={running} />

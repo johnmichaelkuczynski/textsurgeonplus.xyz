@@ -1328,6 +1328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const runState = { stopRequested: false };
     freshTreeRuns.set(runId, runState);
     req.once("aborted", () => controller.abort());
+    res.once("close", () => { if (!res.writableEnded) controller.abort(); });
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Connection", "keep-alive");
@@ -1342,7 +1343,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const unit = units[position];
         if (controller.signal.aborted) break;
         if (runState.stopRequested) { stopped = true; break; }
-        let treeEmitted = false;
         try {
           if (action === "generate") {
             const chapterLabel = mode === "B" || mode === "C" ? ` — chapter ${position + 1} of ${units.length}` : "";
@@ -1354,9 +1354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               throw new Error(`Tier 1–2, thesis 1: ${error?.message || "generation failed"}`);
             }
             send({ type: "tree", index: unit.index, title: unit.title, statements });
-            treeEmitted = true;
             if (runState.stopRequested) {
-              send({ type: "chapter-complete", index: unit.index, title: unit.title });
               stopped = true;
               break;
             }
@@ -1380,7 +1378,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               if (current.length === statements.length) break;
             }
             if (stopped) {
-              send({ type: "chapter-complete", index: unit.index, title: unit.title });
               break;
             }
           } else {
@@ -1404,7 +1401,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (error: any) {
           if (!controller.signal.aborted) {
             send({ type: "chapter-error", index: unit.index, title: unit.title, error: error?.message || "Generation failed" });
-            if (treeEmitted) send({ type: "chapter-complete", index: unit.index, title: unit.title });
             break;
           }
         }

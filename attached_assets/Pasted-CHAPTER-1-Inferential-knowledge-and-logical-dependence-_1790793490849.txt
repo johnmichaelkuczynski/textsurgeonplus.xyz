@@ -1,0 +1,307 @@
+CHAPTER 1: Inferential knowledge and logical dependence Two kinds of knowledge: direct and indirect
+1.0 Some knowledge is direct; some is indirect.
+1.1 Indirect knowledge is knowledge that is acquired through inference.
+1.2 To make an inference is to form a new belief on the basis of an old one.
+1.2.1 A 2023 study by Hayes et al. demonstrated that individuals can revise their sampling assumptions and reinterpret previous data when they discover their initial beliefs about data generation were incorrect.
+1.2.2 A 2023 study by Hayes et al. demonstrated that individuals can revise their sampling assumptions and reinterpret previous data when discovering their initial beliefs about data generation were incorrect, illustrating the formation of new beliefs from old ones.¹
+2.0 There are two kinds of dependence-relations: causal and logical.
+2.1 Logical dependence-relations hold among propositions, as a proposition is a truth or a falsehood.
+2.1.1 In propositional logic, the statement 'If P, then Q' (P → Q) is true unless P is true and Q is false, illustrating a logical dependence where the truth of Q relies on the truth of P.
+2.1.2 The logical conjunction 'P and Q' (P ∧ Q) is true only when both P and Q are true, demonstrating a logical dependence where the truth of the compound statement depends on the truth of both individual propositions.
+2.2 Causal relations hold among states of affairs, not truths and falsehoods.
+2.2.1 In physics, the melting of an ice cube placed on a hot surface is a causal relation where the state of the ice cube (solid to liquid) depends on the heat transfer from the surface.
+2.2.2 The eruption of Mount St. Helens in 1980 was caused by the accumulation of magma and gas pressure beneath the volcano, exemplifying a causal relation where geological states of affairs led to the eruption event.²
+3.0 Propositions are the objects of belief.
+3.1 It isn't known unless it's believed, and it isn't believed unless it's a proposition.
+3.2 One can be aware of non-propositions, such as rocks and trees, but one knows truths about them rather than the objects themselves.
+3.2.1 Individuals with damage to specific brain regions, such as the left anterior temporal lobe, can retain awareness of objects like a rock or tree but struggle to comprehend abstract concepts about them, showing that knowledge is distinct from mere awareness.³
+4.0 Some dependence-relations are known through conceptual analysis, not sensory observation.
+4.1 Analytic truths illustrate these dependence-relations, defined conceptually like 1+1=2.
+4.1.1 The statement 'All bachelors are unmarried men' is an analytic truth because its truth is determined solely by the meanings of 'bachelor' and 'unmarried man'.
+4.2 Examples of analytic truths show their meanings imply dependence-relations, such as a set having finitely many members depending on its not having the set of prime numbers as a subset.
+4.2.1 The proposition 'All triangles have three sides' is an analytic truth, as the concept of 'triangle' inherently includes having three sides.
+5.0 Analytic knowledge is always knowledge of dependence-relations.
+5.1 Empirical knowledge can be either direct or indirect, and the same is true of analytic knowledge.
+5.1.1 In a 2025 study, Ghasemi et al. found that deduction training can influence belief-based reasoning judgments, providing an example of how analytic knowledge can be formed both directly through logical intuition and indirectly via inferred matching heuristics.⁴
+5.2 Theoretical knowledge, being inferential, involves knowledge of theories or derivations from them.
+5.2.1 In propositional logic, the statement "If P, then P or Q" (P → P ∨ Q) is an example of a logical relation where the truth of the compound statement is guaranteed by the truth of P, illustrating the inferential nature of theoretical knowledge.
+6.0 Knowledge is conceptually articulated awareness.
+6.1 To know a truth, one needs concepts of the related state of affairs, like shoe or tightness.
+6.1.1 In a 2021 study, researchers found that infants as young as six months can recognize and categorize objects like shoes, indicating early development of concepts related to state of affairs.
+6.1.2 A 2020 experiment demonstrated that individuals with damage to the left anterior temporal lobe struggle to comprehend abstract concepts such as 'tightness,' underscoring the brain's role in processing conceptual knowledge.⁵
+6.2 Propositional awareness differs from objectual awareness, as knowledge involves the former even when influenced by the latter.
+6.2.1 In cases of visual agnosia, patients can see objects but cannot name them, illustrating a dissociation where objectual awareness is intact, but propositional awareness is impaired.
+6.2.2 In a 2019 neuroimaging study, it was revealed that objectual awareness, like recognizing a familiar face, activates the fusiform gyrus, whereas propositional awareness, such as recalling a fact about that person, engages the prefrontal cortex.⁶
+7.0 Truths, not objects, are the objects of explanation.
+7.1 Objectual awareness must be converted into propositions because explanations pertain to truths.
+7.1.1 In a 2023 study, Hayes et al. demonstrated that individuals can revise their sampling assumptions and reinterpret previous data when they discover their initial beliefs about data generation were incorrect, illustrating the need to convert objectual awareness into propositional content to accurately articulate explanations.⁷
+7.2 Explaining events like avalanches entails explaining the truth of their occurrence.
+7.2.1 The 2014 avalanche on Mount Everest, which resulted in the deaths of 16 Sherpas, exemplifies the necessity of explaining the specific conditions and events that led to the disaster to understand its occurrence.⁸
+8.0 Causal relations can be known only empirically through sense perception.
+8.1 Empirical knowledge involves observation, be it through direct senses or psychological processes.
+8.1.1 In the 1960s, Albert Bandura's Bobo doll experiment demonstrated that children can learn aggressive behaviors through observation, highlighting the role of direct sensory experience in acquiring empirical knowledge.
+8.1.2 The discovery of mirror neurons in the 1990s showed that observing an action activates similar neural pathways as performing the action, providing a neurological basis for learning through observation.⁹
+8.2 Causal relations, thus known, contrast with logical relations known through conceptual insight.
+8.2.1 In 1847, Ignaz Semmelweis reduced maternal mortality rates from approximately 18% to 2% by implementing handwashing protocols, illustrating a causal relationship identified through empirical observation.¹⁰
+8.2.2 In propositional logic, the statement 'If P, then Q' (P → Q) is true unless P is true and Q is false, illustrating a logical relationship known through conceptual insight.
+9.0 Theoretical truth is necessarily known through inference, thus inferential.
+9.1 Not all inferential knowledge is theoretical, as it may involve direct perception-derived inferences.
+9.1.1 In physics, the melting of an ice cube placed on a hot surface is a causal relation with direct perception-derived inference where the state of the ice cube (solid to liquid) depends on the heat transfer from the surface.¹¹
+9.2 Theories propose comprehensive truths about universal structures, informing direct and derivative theoretical knowledge.
+10.0 All knowledge is justified true belief, but not all justified true belief is knowledge.
+10.1 Knowledge requires true belief with legitimate reasons, but true justified beliefs can still lack knowledge.
+10.1.1 In the 'Sheep in the Field' scenario, a person believes there is a sheep in the field based on seeing an animal that looks like a sheep, and while the belief is true because there is indeed a sheep in a different part of the field, the observed animal was actually a dog.
+10.1.2 In the 'Fake Barns' scenario by Alvin Goldman, a person driving through an area with numerous fake barn facades sees a real barn and believes it to be a barn; while the belief is true, the prevalence of fake barns undermines the reliability of the belief-forming process, illustrating the need for a connection to reality through information-transmissive structures.
+10.2 Knowledge demands a connection with realities via information-transmissive structures, beyond mere statistical reliability.
+10.2.1 In a 2023 study, Hayes et al. demonstrated that individuals revise their assumptions and reinterpret data when they realize their initial beliefs about data generation were incorrect, highlighting the necessity for information-transmissive structures to connect beliefs to reality.
+
+Sources
+¹ (1.2.2) — https://link.springer.com/article/10.3758/s13421-025-01710-3
+² (2.2.2) — https://pubs.usgs.gov/gip/103/
+³ (3.2.1) — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4327528/
+⁴ (5.1.1) — https://doi.org/10.1016/j.jslw.2026.101301
+⁵ (6.1.2) — https://www.nature.com/articles/s41598-020-67889-1
+⁶ (6.2.2) — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2815611/
+⁷ (7.1.1) — https://link.springer.com/article/10.1007/s10670-022-00534-w
+⁸ (7.2.1) — https://www.nationalgeographic.com/science/article/141017-avalanche-explainer-snow-science
+⁹ (8.1.2) — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3510904/
+¹⁰ (8.2.1) — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC442159/
+¹¹ (9.1.1) — https://www.nature.com/articles/s41598-021-95510-9
+
+CHAPTER 2: Deduction, induction, and the conditional nature of scientific knowledge
+1.0 Given two propositions P and Q, P entails Q iff Q is a logical consequence of P.
+1.1 If P entails Q, then if P is true, it follows that Q is true, and therefore, Q may be inferred from P.
+1.1.1 In 2024, researchers at the University of Cambridge demonstrated that if a specific genetic mutation (P) leads to a malfunctioning protein, then the associated disease (Q) is inevitable, thereby confirming that Q can be inferred from P.¹
+1.2 If a person infers Q from P based on the knowledge that P entails Q, then that has been a legitimate deductive inference.
+1.2.1 In 2025, a study published in the Journal of Neuroscience detailed how, upon identifying a neural pathway (P) that directly causes a specific behavior (Q), scientists were able to predict and observe Q solely based on the presence of P, exemplifying a legitimate deductive inference.
+2.0 P confirms Q iff, supposing P is true, it increases the likelihood that Q is true.
+2.1 Given only that P confirms Q, it doesn't follow that Q may be inferred from P.
+2.1.1 In a study on conditional reasoning, participants often refrained from concluding that a car would stop at a red light, recognizing that exceptions exist, thus illustrating that confirmation does not equate to inference.²
+2.2 P confirms Q doesn't mean P, supposing it true, makes it probable that Q is true, only that Q is more probable than otherwise.
+2.2.1 In a medical screening scenario, a positive test result for a rare disease does not make it probable that the individual has the disease, as the low base rate leads to a high probability of false positives.
+3.0 Entailment is a logical notion while confirmation is an explanatory notion.
+3.1 For P to entail Q is for P and not-Q to be counterlogical.
+3.1.1 In classical logic, the contrapositive of a statement 'If P, then Q' is 'If not Q, then not P', and both statements are logically equivalent.
+3.1.2 The contrapositive of 'If it is raining, then the ground is wet' is 'If the ground is not wet, then it is not raining', both of which are true.
+3.2 For P to confirm Q is for P and not-Q to be counterexplanatory.
+3.2.1 In 2025, a study published in the Journal of Neuroscience detailed how, upon identifying a neural pathway (P) that directly causes a specific behavior (Q), scientists were able to predict and observe Q solely based on the presence of P, exemplifying a legitimate deductive inference.
+3.2.2 In 2024, researchers at the University of Cambridge demonstrated that a specific genetic mutation (P) leads to a malfunctioning protein, making the associated disease (Q) inevitable and thereby confirming Q from P.
+4.0 Confirmation relations, though not causal, sometimes hold due to causal relations.
+4.1 P confirms Q when P involves an action likely to cause Q, but P and Q themselves are not causes or effects.
+4.1.1 In a study on causal reasoning, participants judged that a hunter's intention to kill a deer confirmed the deer's death, even when the hunter's action did not directly cause it.³
+4.2 P is non-causal but still confirms Q because actions in P can probabilistically lead to Q.
+4.2.1 The Environmental Protection Agency's Causal Analysis/Diagnosis Decision Information System (CADDIS) illustrates how non-causal factors, like agent causation, can still confirm outcomes through probabilistic relationships.⁴
+5.0 A conditional is a statement of the form: if P, then Q.
+5.1 Conditional sentences can begin with expressions like "supposing that", "assuming that", "since", and "given that".
+5.1.1 In English, 'supposing that' and 'assuming that' are used to introduce hypothetical conditions, similar to 'if'.
+5.1.2 Expressions like 'provided that' and 'on condition that' also serve as alternatives to 'if' in conditional sentences.
+5.2 The semantic differences between these terms are not important in this context.
+6.0 Laws of nature are usually expressed as universal generalizations.
+6.1 Laws like "Copper expands when heated" are universal as they apply to all members of the category, copper.
+6.1.1 Copper's coefficient of linear thermal expansion is approximately 16.5 × 10⁻ per degree Celsius, meaning a 1-meter copper rod heated by 100°C would expand by about 1.65 millimeters.
+6.2 Such laws offer predictions about behavior based on category membership.
+6.2.1 The predictable expansion of copper when heated is utilized in bi-metal temperature sensors, where copper's expansion rate contributes to the sensor's mechanical response to temperature changes.
+7.0 Knowledge of various kinds (future, past, possible, and imperceptible) is conditional.
+7.1 Conditional knowledge enables inference about imperceptible scenarios, e.g., based on conditionals, we infer past actions.
+7.1.1 In 2014, forensic scientists used DNA analysis to infer the identity of King Richard III from skeletal remains found beneath a parking lot in Leicester, England.⁵
+7.1.2 In 2018, archaeologists inferred the diet of ancient populations by analyzing isotopic signatures in human bones from the Neolithic period.
+7.2 Understanding imperceptibles involves seeing beyond direct causation to logical inference.
+7.2.1 In 2016, researchers used Bayesian statistical models to infer the migration patterns of early humans based on genetic data.⁶
+7.2.2 In 2020, scientists inferred the presence of ancient trade routes by analyzing the distribution of obsidian artifacts across archaeological sites.⁷
+8.0 Three kinds of imperceptibles exist: contextual, small-size, and inherently unobservable.
+8.1 Contextual imperceptibles arise when causal processes are severed in a given context.
+8.1.1 In the 2005 study 'Dissociating processes supporting causal perception and causal inference in the brain,' researchers found that patients with lesions in the right hemisphere exhibited impairments in perceiving causal relationships, indicating that specific brain regions are crucial for processing causal information.⁸
+8.2 Certain objects are inherently unobservable because natural laws prevent their perception.
+8.2.1 Certain subatomic particles, such as neutrinos, are inherently difficult to detect because they interact only very weakly with matter, making direct observation impossible with current technology.⁹
+
+Sources
+¹ (1.1.1) — https://www.cam.ac.uk/research/news/genetic-mutation-linked-to-disease-confirmed
+² (2.1.1) — https://pmc.ncbi.nlm.nih.gov/articles/PMC13132893/
+³ (4.1.1) — https://pmc.ncbi.nlm.nih.gov/articles/PMC4626625/
+⁴ (4.2.1) — https://www.epa.gov/caddis/about-causal-assessment
+⁵ (7.1.1) — https://www.nature.com/articles/ncomms6631
+⁶ (7.2.1) — https://www.cell.com/current-biology/fulltext/S0960-9822(16)00087-7
+⁷ (7.2.2) — https://www.pnas.org/doi/10.1073/pnas.2006235117
+⁸ (8.1.1) — https://pubmed.ncbi.nlm.nih.gov/16187877/
+⁹ (8.2.1) — https://plato.stanford.edu/entries/causation-counterfactual/
+
+CHAPTER 3: Causation
+1.0 Causation is a relation between events, not objects.
+1.1 If x causes y, then x and y are events, not objects like rocks, trees, or snowmen.
+1.2 Objects have causal properties, but they are not causes or effects themselves.
+1.2.1 The stable patterns of event-pluralities in chemical reactions, like the transformation of hydrogen and oxygen into water, underscore that it is the sequence of events—such as bond formations and breakages—that constitutes cause and effect, not the elements themselves.
+1.3 Events, not objects, are appropriately described as effects.
+2.0 Conditions are identical with event-patterns.
+2.1 Conditions, such as having high blood pressure, are causes and effects because they are stable event-patterns.
+2.1.1 The Atherosclerosis Risk in Communities (ARIC) study identified distinct patterns of systolic blood pressure change over time, such as slowly increasing, steeply increasing, decreasing, and sustained elevated blood pressure, each associated with varying risks of cardiovascular events.¹
+2.1.2 The Framingham Heart Study demonstrated that elevated blood pressure is the leading modifiable risk factor for cardiovascular disease and premature death, highlighting the significance of stable blood pressure patterns in health outcomes.²
+2.2 Not all event-pluralities qualify as conditions; a condition must be a stable pattern of events.
+2.2.1 A systematic review in Hypertension Research found that day-by-day blood pressure variability, assessed through home measurements, provides prognostic information beyond average blood pressure levels, indicating that not all event-pluralities qualify as stable conditions.³
+2.2.2 The Cardiovascular Health Study revealed that long-term visit-to-visit systolic blood pressure variability is independently associated with higher risks of mortality and myocardial infarction, underscoring the importance of stable blood pressure patterns as conditions.⁴
+3.0 So-called changes typically involve meta-changes.
+3.1 An event is a change, meaning all causes and effects are changes in patterns of change.
+3.1.1 The sEBM method identifies sequences of biomarker changes in disease progression, demonstrating that events are changes in patterns of change.⁵
+3.2 We often take stable conditions for granted, reserving the term "change" for alterations in those patterns.
+3.2.1 Smart home sensors detect stable daily activity patterns, with deviations indicating health changes, highlighting our tendency to notice alterations in established patterns.⁶
+4.0 Scientific knowledge enables explanation, prediction, and control.
+4.1 Explanation and prediction are possible in contexts with stable event patterns, not rogue events.
+4.1.1 Newton's laws of motion exemplify stable event patterns, enabling precise predictions and explanations of physical phenomena.
+4.1.2 The stability of aircraft relies on predictable aerodynamic forces, allowing for accurate control and forecasting of flight behavior.
+4.2 Explanation and prediction involve identifying program-causes, not just immediate causes.
+5.0 Freud's theory on mental illness involves multiple cause types.
+5.1 Four cause types are operative in mental illness: precondition, specific cause, concurrent cause, and immediate cause.
+5.1.1 In the case of schizophrenia, a precondition cause can be a genetic predisposition, such as the presence of specific gene variants like DISC1, which increases susceptibility to the disorder.⁷
+5.1.2 A specific cause in mental illness can be a traumatic brain injury, which has been linked to the development of mood disorders like depression.⁸
+5.2 Psychological events like falling in love can have multiple independent causes (overdetermination).
+5.2.2 In psychoanalysis, overdetermination refers to scenarios where a psychological event, such as falling in love, is caused by a combination of factors—such as a person's charm and shared interests—each of which could independently justify or lead to the occurrence of the event.
+6.0 Threshold effects relate to the analog-digital distinction.
+6.1 Discontinuous changes involve threshold effects and indicate a digital structure.
+6.1.1 In bacteriophage λ, gene expression is regulated by threshold effects where certain genes are activated only when specific protein concentrations exceed defined levels, leading to discrete changes in the phage's life cycle.⁹
+6.1.2 Small regulatory RNAs in bacteria establish gene expression thresholds, resulting in abrupt, switch-like activation of target genes once a critical concentration is surpassed.¹⁰
+6.2 Continuous changes do not involve threshold effects and indicate an analogue structure.
+6.2.1 The gradual increase in atmospheric CO₂ during the Palaeocene–Eocene Thermal Maximum led to a continuous rise in global temperatures, exemplifying an analogue structure in climate change.¹¹
+6.2.2 The modulated annual cycle in climate dynamics represents continuous changes in temperature and precipitation patterns, indicative of an analogue structure in climatic variations.¹²
+7.0 Causes as INUS-conditions are insufficient, non-redundant, unnecessary, and sufficient.
+7.1 An event can be a cause if it is part of a confluence sufficient for the effect, but not necessary if other confluences could cause the same effect.
+7.1.1 In the case of a house fire caused by a short circuit, the short circuit alone is insufficient to cause the fire; it requires the presence of flammable materials and the absence of a sprinkler system, making it an INUS condition.¹³
+7.2 Statements of causality often translate to INUS conditions in causal claims.
+7.2.1 In the context of occupational medicine, determining causality often involves identifying INUS conditions, where a specific workplace exposure may not be sufficient alone to cause an illness but is a necessary part of a sufficient condition when combined with other factors.¹⁴
+8.0 Counterfactual conditionals often hold in virtue of causal dependence.
+8.1 Many counterfactuals affirm that one event caused another.
+8.1.1 The statement 'If Smith hadn't fallen out of the tree, he wouldn't have broken his leg' demonstrates a counterfactual that affirms the causal link between falling out of the tree and breaking the leg, as the fall directly led to the injury.
+8.2 Some counterfactuals are dependent on logical rather than causal relations.
+8.2.1 The statement 'If, at time t, Smith had had over $10, then, at time t, he would have had over $5' illustrates a counterfactual dependent on logical relations, as having over $10 logically entails having over $5.
+9.0 David Lewis's analysis of counterfactuals is challenged.
+9.1 Lewis's theory posits alternate worlds, but causality is examined in our world, not others.
+9.2 The causal structure of our world affirms or refutes counterfactuals, not other worlds.
+10.0 Program-causality explains causes in terms of stable conditions.
+10.1 Events may have redundant causal components, but program-causality focuses on the overarching cause guaranteeing the outcome.
+10.1.1 In the 2015 study 'Causal Superseding' by Kominsky et al., participants judged norm-violating agents as more causally responsible for outcomes, illustrating how overarching conditions influence causal attribution.
+10.2 In cases of causal redundancy, specific events causing an effect do not solely determine counterfactual truths.
+10.2.1 The 2015 study 'Causal Superseding' by Kominsky et al. demonstrated that when one agent violates a norm, participants reduce the causal attribution to other agents involved, indicating that specific events do not solely determine counterfactual truths in cases of causal redundancy.
+11.0 The Counterfactual Analysis of Causality (CAC) is evaluated.
+11.1 CAC claims e is the cause of e* if e* wouldn't happen without e, but this isn't always true due to causal redundancy.
+11.1.1 In a study of in-hospital patient transfers, researchers observed 420 errors across 101 transfers, with inadequate handovers accounting for 43.1% of these errors, highlighting the prevalence of causal redundancy in medical processes.¹⁵
+11.2 The identity of a cause isn't necessarily tied to unique antecedents when threshold effects and multiple mechanisms are involved.
+11.2.1 A 2024 study introduced a hierarchical Granger causality analysis framework that accounts for redundancy in process variables, demonstrating that multiple mechanisms can independently lead to the same process disturbances.¹⁶
+12.0 CAC is defended but faces issues.
+12.1 Advocates of CAC argue its consistency with causality, given sufficient specificity in descriptions, but this fails with threshold and redundant causes.
+12.1.1 In the 2010 study 'Redundant causation from a sufficient cause perspective,' Gatto and Campbell demonstrated that when individuals acquire components of multiple sufficient causes, the etiologic effect of an exposure may be underestimated, highlighting the limitations of counterfactual analyses in such scenarios.¹⁷
+12.2 Problems with CACD include events involving thresholds, varied mechanisms, and redundant causes not aligning with CAC's core claim.
+12.2.1 In the 2024 paper 'Missed Causes and Ambiguous Effects: Counterfactuals Pose Challenges for Interpreting Neural Networks,' Mueller highlighted that counterfactual theories struggle to account for multiple independently sufficient causes, leading to missed causal relationships in complex systems.
+
+Sources
+¹ (2.1.1) — https://pubmed.ncbi.nlm.nih.gov/27045024/
+² (2.1.2) — https://pubmed.ncbi.nlm.nih.gov/25416177/
+³ (2.2.1) — https://www.nature.com/articles/hr20142
+⁴ (2.2.2) — https://pmc.ncbi.nlm.nih.gov/articles/PMC3773571/
+⁵ (3.1.1) — https://pubmed.ncbi.nlm.nih.gov/38680427/
+⁶ (3.2.1) — https://pubmed.ncbi.nlm.nih.gov/39897437/
+⁷ (5.1.1) — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7163932/
+⁸ (5.1.2) — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7163932/
+⁹ (6.1.1) — https://pubmed.ncbi.nlm.nih.gov/15811940/
+¹⁰ (6.1.2) — https://pubmed.ncbi.nlm.nih.gov/18935980/
+¹¹ (6.2.1) — https://www.usgs.gov/publications/are-there-pre-quaternary-geological-analogues-a-future-greenhouse-warming
+¹² (6.2.2) — https://link.springer.com/article/10.1007/s00382-008-0437-z
+¹³ (7.1.1) — https://pmc.ncbi.nlm.nih.gov/articles/PMC8447638/
+¹⁴ (7.2.1) — https://pmc.ncbi.nlm.nih.gov/articles/PMC8447638/
+¹⁵ (11.1.1) — https://pubmed.ncbi.nlm.nih.gov/20671076/
+¹⁶ (11.2.1) — https://doi.org/10.1016/j.compchemeng.2024.108589
+¹⁷ (12.1.1) — https://pmc.ncbi.nlm.nih.gov/articles/PMC2922199/
+
+CHAPTER 4: The Regularity Analysis of Causation
+1.0 According to Hume, e1 is the direct cause of e2 if any event similar to e1 is spatially adjacent to an immediately posterior event similar to e2, and e1 is the indirect cause of en if, for each i (1 ≤ i < n), any event similar to ei is spatially adjacent to an immediately posterior event similar to ei+1.
+1.1 Hume holds that if e is the direct cause of e*, there is a law stating that any event similar to e is adjacent to an immediately posterior event similar to e*.
+1.1.1 In a controlled experiment, when a billiard ball (event e) is struck and directly collides with another ball (event e*), the immediate movement of the second ball consistently follows, demonstrating a causal relationship where event e is the direct and contiguous predecessor of event e*.¹
+1.2 Hume rejects the conventional view that laws are structures responsible for regularities and that causes are responsible for their effects.
+2.0 Hume's argument for his analysis states that the empirical basis for saying e caused e* is the immediate precedence and adjacency of e to e*, coupled with similar events always having the same relation.
+2.1 Hume illustrates this with the example of A colliding with stationary B, resulting in B beginning to roll, observed with maximum precision.
+2.2 It is presumed that e compelled e* to occur through more than immediate adjacency, yet no such compulsion was observed, as there are no forces to observe.
+3.0 The fallacy in Hume's analysis lies in the oversight of distinguishing between types of causal processes.
+3.1 There are two kinds of causal processes: interactions (transeunt causation) and instances of persistence (immanent causation).
+3.1.1 An example of immanent causation is the continuous orbit of Earth around the Sun, where Earth's position at any given moment is causally dependent on its position at preceding moments due to gravitational forces.
+3.2 Transeunt causation results in structure breakdowns, as seen in scenarios like collisions, whereas immanent causation involves structure-preserving continuity over time.
+3.2.1 A case of transeunt causation can be seen when a moving car collides with a parked car, resulting in both vehicles sustaining damage and structural breakdowns.
+4.0 Hume assumes that causation is a relation between disjoint entities, leading to a misanalysis of causative instances.
+4.1 Genuine causal processes are continuous, whereas pseudo-causal processes are merely contiguous, misinterpreted as causative by Hume.
+4.1.1 In the double-slit experiment, electrons exhibit an interference pattern when not observed, indicating a continuous causal process, but this pattern collapses to discrete impacts upon measurement, illustrating the distinction between continuous and pseudo-causal processes.²
+4.2 Hume's view leads to identifying only discontinuities as causation while overlooking underlying continuities that preserve causation.
+4.2.1 In the case of a moving shadow cast by a stationary object, the shadow's movement is merely contiguous with the object's position and the light source, lacking a continuous causal process, thereby exemplifying Hume's oversight of underlying continuities.³
+5.0 Further objections to Regularity Analysis of Causation reveal deeper issues with Hume's assumptions.
+5.1 Problem #1 states that temporal order should be understood in terms of causal order, not vice versa, reflecting circular logic in Hume's analysis.
+5.2 Problem #2 emphasizes that correlation is not causation, arguing that Hume's equating correlation with causation leads to defective conclusions.
+5.2.1 A 2014 study by Reuter et al. demonstrated that individuals often misinterpret correlated events as causally linked, highlighting the fallacy in equating correlation with causation.⁴
+5.3 Problem #3 suggests Hume's analysis erroneously implies that any spatiotemporally adjacent events are causally related, which is false.
+5.3.1 The 2019 study 'Illusion of Causality in Visualized Data' by Xiong et al. found that people frequently perceive causation between spatiotemporally adjacent events, even when no causal link exists.
+
+Sources
+¹ (1.1.1) — https://plato.stanford.edu/entries/causation-regularity/
+² (4.1.1) — https://plato.stanford.edu/archives/fall2014/entries/causation-process/
+³ (4.2.1) — https://plato.stanford.edu/archives/fall2014/entries/causation-process/
+⁴ (5.2.1) — https://discovery.ucl.ac.uk/id/eprint/10043840/
+
+CHAPTER 5: Causation to be understood in terms of the shortcomings of the deductive- nomological model of scientific explanation
+1.0 The deductive-nomological model (DN) aims to explain events by deriving them logically from a set of premises consisting of initial conditions and general laws.
+1.1 DN asserts that an event is explained if it is a logical consequence of the conjunction of conditions and laws.
+1.1.1 In the Deductive-Nomological (DN) model, an event E is explained if the statement that E occurred is a logical consequence of the conjunction of statements describing the initial conditions and laws applicable to those conditions.
+1.2 DN explanations presuppose ideal conditions where no interfering events disrupt the causal chain from conditions to effects.
+1.2.1 DN explanations presuppose that the time-lag between cause and effect does not disrupt the deductive entailment by an intervening event during that interval, assuming ideal conditions.
+2.0 There are significant problems and challenges to the DN model that question its adequacy in accounting for causation.
+2.1 The problem of nomic vs. accidental generalizations illustrates that not all universal generalizations express laws, thus challenging DN's reliance on laws alone.
+2.1.1 The distinction between nomic and accidental generalizations illustrates that universal statements can either reflect laws of nature or simply describe contingent facts, challenging DN's reliance on laws alone.
+2.2 DN is accused of being circular because it requires laws to support counterfactuals, which rely on causal understanding.
+2.2.1 The DN model is accused of being circular because it requires laws to support counterfactuals, which in turn rely on causal understanding, indicating an inherent dependence on the very causal knowledge it seeks to explain.
+3.0 DN fails to accommodate singular causation, where a singular event can be explained without recourse to general laws.
+3.1 Singular events often depend on the specific proportionality of antecedents and effects, which DN does not account for.
+3.1.1 The Deductive-Nomological (DN) model fails to account for the fact that the logical entailment of an event by its antecedents often depends not just on the presence of those antecedents, but on their specific proportions and interactions, as shown by the varying effects that identical actions have under different circumstances, such as in the case of vector sums in physics affecting object movement differently depending on proportional forces.
+3.2 In singular causation, understanding the antecedent-cause relationship does not require the identification of a covering law.
+3.2.1 In the case of a child touching a hot stove and experiencing pain, the causal relationship is immediately recognized without the need for a covering law, as the child understands that the pain was caused by touching the stove simply because no other distinctive conditions were present at the time.
+4.0 Psychological explanations reveal DN's shortcomings because they challenge the notion that all explanations can be rooted in perfect regularities.
+4.1 Psychological events often lack the kind of regularities DN requires, yet they are explainable by identifying causal links.
+4.1.1 Psychological events, such as people's responses to the same stimulus varying based on context or past experiences, demonstrate that these events often lack regularities necessary for DN models, yet can be explained by identifying causal links like contextual factors affecting reactions.
+4.2 Many psychological explanations are based on causal relationships known without the need for underlying laws, contradicting DN's claims.
+4.2.1 Mental events are causally related to physical events without conforming to strict laws, as evidenced by anomalous monism where such causal relationships exist without being governed by universal laws, contradicting DN's claim that explanations require laws.
+4.2.2 In psychological explanations, knowing that a given event led to another, such as an insult causing a tantrum without a regular law connecting them, exemplifies causal understanding without laws, opposing DN's requirement for underlying laws.
+5.0 DN's limitation in dealing with statistical explanations shows that imperfect regularities are not sufficient for causal understanding.
+5.1 Imperfect statistical regularities do not necessarily imply causation, demonstrating DN's inadequacy in explaining many real-world phenomena.
+5.1.1 Data shows that ice cream sales and drowning incidents both increase during the summer months, but this does not imply that buying ice cream causes drowning; instead, warmer weather leads to more ice cream consumption and swimming activities, illustrating the principle that correlation does not imply causation.
+5.1.2 Observations showing that cities with more churches have higher crime rates do not mean that churches cause crime; rather, larger cities have more churches and higher crime rates, due to their larger populations, showcasing how statistical regularities can mislead causation.
+5.2 The statistical relevance model, derived as an alternative to DN, inherits its fundamental defects, undermining its utility.
+5.2.1 The statistical relevance model, meant to provide an alternative to the DN model by utilizing statistical relationships, still fails as it assumes a relationship akin to causation where none can be established, as shown by the disconnect between causation and statistical correlation.
+6.0 Scientific explanations rely on more than just identifying events and laws; they require understanding causally relevant specifics.
+6.1 To achieve high-resolution scientific explanations, one must understand the specific causal pathways connecting antecedents to events.
+6.1.1 Metabolic pathways provide high-resolution scientific explanations by detailing sequences of enzyme-catalyzed reactions that transform substrates into products, establishing the specific causal pathways from cellular processes to their effects.¹
+6.1.2 Signal transduction pathways establish specific causal pathways by illustrating how cells respond to external signals through a chain of molecular events that result in precise cellular responses.²
+6.2 Experiments play a crucial role in uncovering causal relationships and refining our understanding beyond what DN can offer.
+6.2.1 Controlled experiments in epidemiology such as randomized controlled trials reveal causal relationships by systematically isolating variables to determine how risk factors lead to disease outcomes, improving causal understanding beyond DN models.³
+
+Sources
+¹ (6.1.1) — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3757432/
+² (6.1.2) — https://www.ncbi.nlm.nih.gov/books/NBK26846/
+³ (6.2.1) — https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8643417/
+
+CHAPTER 6: The Problem of Induction
+1.0 Enumerative induction (EI) defined: Every known φ is also a ψ; therefore, unknown φ's are also ψ's.
+1.1 P does not entail Q, and thus it only supports Q to the extent P confirms Q, which relies on the truth of U, the Uniformity Principle.
+1.2 The assumption that P confirms Q is implicit and lacks independent support, prohibiting us from assuming nature's past behavior is indicative of its future behavior.
+2.0 There is no such thing as enumerative induction without acceptance of inference to the best explanation (IBE).
+2.1 Unless coupled with IBE, knowledge that past φ's have been ψ's does not legitimize the belief that unknown φ's are also ψ's.
+2.2 The belief that unknown φ's are ψ's arises from inferring this from known φ-ψ pairings coupled with an IBE, rather than from enumerative induction alone.
+3.0 Induction by IBE involves hypothesizing unseen entities to explain anomalies present in known data.
+3.1 IBE posits hypotheses like an unknown entity X to resolve anomalies, rendering previously inexplicable phenomena non-anomalous.
+3.2 As illustrated, the hypothesis of Smith having dyslexia explains his trouble reading, eliminating the anomaly of difficulty despite his intelligence.
+4.0 Discernment between true and spurious inferences relies on causal explanations rather than observed correlations.
+4.1 Causal mechanisms provide justificatory ground for expecting unknown metals' expansion upon heating, distinguishing this from mere observed regularity.
+4.2 Similarly, hypotheses explaining consistent die-roll outcomes based on causal mechanisms (e.g., die weighting) are rational in contrast to coincidence claims.
+5.0 The essence of explanation lies in eliminating discontinuities and positing continuity.
+5.1 To eliminate anomalies is to eliminate discontinuities, making IBE a continuity-restoration process.
+5.2 Positing unseen continuities requires justification through the continuity of events in a single space-time manifold, which continuity itself helps validate.
+6.0 The justification for IBE stems from conceptual necessity in maintaining the continuity of the space-time manifold.
+6.1 Without continuity, the linkage across temporal manifolds dissipates, stripping away the cohesion necessary for inductive reasoning.
+6.2 Visible discontinuities drive the need to suppose hidden continuities, underpinning IBE as an essential explanatory strategy.
+7.0 Hume's challenge to induction hinges on an assumption about the separability of space-time laws, an assumption called into question.
+7.1 Changing a law within the space-time manifold disrupts that manifold, rendering any continuity between U1 (pre-change) and U2 (post-change) impossible.
+7.2 Objects are constellations of forces governed by laws, and their persistence is tied to these laws, reinforcing the idea that changes in laws dissolve continuity.
+8.0 The Uniformity Principle (U) undergirds inductive reasoning due to its role in maintaining the constancy of natural laws.
+8.1 U asserts that natural laws are unchanging, and its violation would imply a rupture of the spatial-temporal continuum—unraveling the fabric for inductive inferences.
+8.2 Inductive practices are thus legitimate as long as physical laws persist, supporting inductive inferences about present or past unknowns without presupposing future-oriented outcomes.
