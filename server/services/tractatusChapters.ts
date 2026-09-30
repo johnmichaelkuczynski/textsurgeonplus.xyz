@@ -53,3 +53,26 @@ export function splitBookChapters(text: string, allowShortChapters = false): Boo
   if (bodyChapters.some((chapter, index) => index > 0 && chapter.number <= bodyChapters[index - 1].number)) return [];
   return bodyChapters.map(({ title, text }) => ({ title, text }));
 }
+
+/** In Tractatus chapter mode, lines of three or more Xs take precedence over inferred headings. */
+export function splitTractatusChapters(text: string): BookChapter[] {
+  const lines = text.replace(/\r\n?/g, "\n").split("\n");
+  const markers = lines.flatMap((line, index) => /^x{3,}$/i.test(line.trim()) ? [index] : []);
+  if (markers.length === 0) return splitBookChapters(text);
+
+  if (lines.slice(0, markers[0]).some((line) => line.trim())) {
+    throw new Error("Place a line of three or more Xs before the first chapter. Move any text before it into a marked chapter.");
+  }
+
+  return markers.map((start, index) => {
+    const content = lines.slice(start + 1, markers[index + 1] ?? lines.length).join("\n").trim();
+    if (!content) {
+      throw new Error(`Chapter ${index + 1} is empty. Put chapter text after each line of three or more Xs.`);
+    }
+    const firstLine = content.split("\n")[0].trim();
+    const title = /^chapter\s+\S/i.test(firstLine) && firstLine.length <= 140
+      ? firstLine
+      : `Chapter ${index + 1}`;
+    return { title, text: content };
+  });
+}

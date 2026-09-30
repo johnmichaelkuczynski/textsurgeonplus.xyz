@@ -21,7 +21,7 @@ import {
   searchGenius101,
 } from "./services/genius101";
 import { transformWorkshop, validateWorkshopRequest } from "./services/humanizerWorkshop";
-import { splitBookChapters } from "./services/tractatusChapters";
+import { splitBookChapters, splitTractatusChapters } from "./services/tractatusChapters";
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -1205,9 +1205,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (mode !== "whole" && mode !== "chapters") {
       return res.status(400).json({ error: "Invalid Tractatus Tree mode" });
     }
-    const chapters = mode === "chapters" ? splitBookChapters(text) : [];
+    let chapters: ReturnType<typeof splitTractatusChapters> = [];
+    if (mode === "chapters") {
+      try {
+        chapters = splitTractatusChapters(text);
+      } catch (error: any) {
+        return res.status(400).json({ error: error.message });
+      }
+    }
     if (mode === "chapters" && chapters.length < 2) {
-      return res.status(400).json({ error: "Could not find at least two substantial, sequential chapters with standalone Chapter headings. Use the whole-book option or check the chapter headings." });
+      return res.status(400).json({ error: "Could not find at least two chapters. Put a line of three or more Xs before each chapter, including the first, or use substantial standalone Chapter headings." });
     }
 
     res.setHeader('Content-Type', 'text/event-stream');
@@ -1222,12 +1229,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (let index = 0; index < chapters.length; index++) {
           const chapter = chapters[index];
           res.write(`data: ${JSON.stringify({ type: "progress", current: index, total: chapters.length, message: `Generating ${chapter.title} (${index + 1} of ${chapters.length})` })}\n\n`);
-           let result;
-           try {
-             result = await generateTractatusTree(chapter.text, provider || "openai");
-           } catch (error: any) {
-             throw new Error(`${chapter.title}: ${error?.message || "generation failed"}`);
-           }
+          let result;
+          try {
+            result = await generateTractatusTree(chapter.text, provider || "openai");
+          } catch (error: any) {
+            throw new Error(`${chapter.title}: ${error?.message || "generation failed"}`);
+          }
           res.write(`data: ${JSON.stringify({ type: "chapter-complete", index, title: chapter.title, total: chapters.length, result })}\n\n`);
         }
         res.write(`data: ${JSON.stringify({ type: "complete", chapterCount: chapters.length })}\n\n`);

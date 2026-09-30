@@ -7817,8 +7817,10 @@ Freedom is the ratio essendi of the moral law."
               </Select>
               {tractatusTreeMode === "chapters" && (
                 <p className="text-xs text-muted-foreground">
-                  Requires at least two substantial chapters with standalone “Chapter 1”, “Chapter Two”, or similar headings.
-                  Each chapter generates its own independent four-column tree, starting again at 1.0.
+                  Put three or more Xs on their own line before each chapter, including the first (for example, XXX or XXXXX).
+                  No chapter headings are needed. Text before the first marker is not accepted.
+                  Each marked chapter gets its own four-column tree, starting again at 1.0.
+                  If there are no marker lines, standalone “Chapter 1”, “Chapter Two”, or similar headings are used instead.
                 </p>
               )}
             </div>
