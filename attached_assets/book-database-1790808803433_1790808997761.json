@@ -1,0 +1,933 @@
+{
+  "meta": {
+    "wordCount": 34587,
+    "processedAt": "2026-09-30T22:42:35.624Z",
+    "provider": "perplexity"
+  },
+  "cleanedTree": [
+    {
+      "id": "n1",
+      "number": "1.0",
+      "claim": "Inferential knowledge tracks dependence-relations through legitimate inference rules.",
+      "type": "core",
+      "depth": 0,
+      "parentId": null
+    },
+    {
+      "id": "n2",
+      "number": "1.1",
+      "claim": "Indirect knowledge is acquired through inference from prior beliefs.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n3",
+      "number": "1.2",
+      "claim": "Legitimate inference rules correspond to dependence-relations.",
+      "type": "doctrinal",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n4",
+      "number": "1.3",
+      "claim": "Dependence-relations are either logical or causal.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n5",
+      "number": "1.3.1",
+      "claim": "Logical dependence holds among propositions.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n4"
+    },
+    {
+      "id": "n6",
+      "number": "1.3.1.1",
+      "claim": "That x is a triangle depends on x having three sides.",
+      "type": "supporting",
+      "depth": 3,
+      "parentId": "n5"
+    },
+    {
+      "id": "n7",
+      "number": "1.3.2",
+      "claim": "Causal dependence holds among states of affairs in space-time.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n4"
+    },
+    {
+      "id": "n8",
+      "number": "1.3.2.1",
+      "claim": "Smith's passing the class depends on Smith studying.",
+      "type": "supporting",
+      "depth": 3,
+      "parentId": "n7"
+    },
+    {
+      "id": "n9",
+      "number": "1.4",
+      "claim": "Propositions are the objects of knowledge.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n10",
+      "number": "1.4.1",
+      "claim": "Knowledge requires belief, and belief requires propositions.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n9"
+    },
+    {
+      "id": "n11",
+      "number": "1.4.2",
+      "claim": "Non-propositions like rocks and trees are objects of awareness, not knowledge.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n9"
+    },
+    {
+      "id": "n12",
+      "number": "1.4.3",
+      "claim": "One knows truths about objects, not the objects themselves.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n9"
+    },
+    {
+      "id": "n13",
+      "number": "1.5",
+      "claim": "Some dependence-relations are known through conceptual analysis rather than sensory observation.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n14",
+      "number": "1.5.1",
+      "claim": "Truths known through conceptual analysis are analytic.",
+      "type": "doctrinal",
+      "depth": 2,
+      "parentId": "n13"
+    },
+    {
+      "id": "n15",
+      "number": "1.5.2",
+      "claim": "That if P, then either P or Q, expresses a logical dependence-relation.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n13"
+    },
+    {
+      "id": "n16",
+      "number": "1.5.3",
+      "claim": "That there are infinitely many primes expresses a dependence-relation: a finite set cannot have the primes as a subset.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n13"
+    },
+    {
+      "id": "n17",
+      "number": "1.5.4",
+      "claim": "That nothing is numerate or literate without being sentient expresses a dependence-relation.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n13"
+    },
+    {
+      "id": "n18",
+      "number": "1.5.5",
+      "claim": "That 1+1=2 expresses a dependence-relation: being a couple depends on being the union of two non-overlapping unit sets.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n13"
+    },
+    {
+      "id": "n19",
+      "number": "1.6",
+      "claim": "Analytic knowledge is always knowledge of dependence-relations.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n20",
+      "number": "1.6.1",
+      "claim": "Both analytic and empirical knowledge can be direct or indirect.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n19"
+    },
+    {
+      "id": "n21",
+      "number": "1.7",
+      "claim": "Knowledge is conceptually articulated awareness.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n22",
+      "number": "1.7.1",
+      "claim": "Knowing that one's shoes are uncomfortably tight requires concepts of shoes, tightness, and discomfort.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n21"
+    },
+    {
+      "id": "n23",
+      "number": "1.7.2",
+      "claim": "Awareness of uncomfortable shoe tightness does not require possessing those concepts.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n21"
+    },
+    {
+      "id": "n24",
+      "number": "1.7.3",
+      "claim": "Knowledge of a truth is a conceptualization of awareness of a state of affairs.",
+      "type": "doctrinal",
+      "depth": 2,
+      "parentId": "n21"
+    },
+    {
+      "id": "n25",
+      "number": "1.8",
+      "claim": "Awareness is either propositional or objectual.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n26",
+      "number": "1.8.1",
+      "claim": "Visual perception of a dog is objectual awareness.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n25"
+    },
+    {
+      "id": "n27",
+      "number": "1.8.2",
+      "claim": "Knowledge that there is a dog in front of one is propositional awareness.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n25"
+    },
+    {
+      "id": "n28",
+      "number": "1.9",
+      "claim": "Truths, not objects, are the proper targets of explanation.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n29",
+      "number": "1.9.1",
+      "claim": "Objectual awareness must be converted into propositions to be explained.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n28"
+    },
+    {
+      "id": "n30",
+      "number": "1.9.2",
+      "claim": "Explaining an avalanche consists in explaining why it is true that the avalanche occurred.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n28"
+    },
+    {
+      "id": "n31",
+      "number": "1.10",
+      "claim": "Causal relations are known only empirically.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n32",
+      "number": "1.10.1",
+      "claim": "Sight and touch can provide knowledge of causal relations.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n31"
+    },
+    {
+      "id": "n33",
+      "number": "1.10.2",
+      "claim": "Causal relations can be known through real-time awareness of one's own psychological processes.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n31"
+    },
+    {
+      "id": "n34",
+      "number": "1.11",
+      "claim": "Theoretical truths are necessarily known through inference.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n35",
+      "number": "1.11.1",
+      "claim": "Not all inferential knowledge is theoretical.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n34"
+    },
+    {
+      "id": "n36",
+      "number": "1.11.2",
+      "claim": "Knowing someone did not sleep enough from noticing they look tired is non-theoretical inferential knowledge.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n35"
+    },
+    {
+      "id": "n37",
+      "number": "1.12",
+      "claim": "A theory is a proposition that, if true, describes a relatively comprehensive fact about the structure of the universe.",
+      "type": "doctrinal",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n38",
+      "number": "1.12.1",
+      "claim": "Theoretical knowledge includes both knowledge of a theory and knowledge derived from a theory.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n37"
+    },
+    {
+      "id": "n39",
+      "number": "1.12.2",
+      "claim": "Knowledge that projectile x will collide with surface y in approximately two hours can be derived from the laws of mechanics and x's state of motion.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n38"
+    },
+    {
+      "id": "n40",
+      "number": "1.13",
+      "claim": "Knowledge is justified true belief.",
+      "type": "doctrinal",
+      "depth": 1,
+      "parentId": "n1"
+    },
+    {
+      "id": "n41",
+      "number": "2.0",
+      "claim": "Classes of objects referred to by laws of nature can comprise merely possible objects.",
+      "type": "core",
+      "depth": 0,
+      "parentId": null
+    },
+    {
+      "id": "n42",
+      "number": "2.1",
+      "claim": "A class comprises merely possible objects when its members do not actually exist but could exist.",
+      "type": "doctrinal",
+      "depth": 1,
+      "parentId": "n41"
+    },
+    {
+      "id": "n43",
+      "number": "2.2",
+      "claim": "Many laws of nature hold only with respect to classes whose members are merely possible.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n41"
+    },
+    {
+      "id": "n44",
+      "number": "2.2.1",
+      "claim": "An object undergoes no changes in shape or size if the forces acting on it cancel each other out.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n43"
+    },
+    {
+      "id": "n45",
+      "number": "2.3",
+      "claim": "Some laws of nature hold with respect to classes whose members are prohibited from existing by the laws of nature.",
+      "type": "core",
+      "depth": 1,
+      "parentId": "n41"
+    },
+    {
+      "id": "n46",
+      "number": "2.3.1",
+      "claim": "An object undergoes no changes in shape or size if no forces are acting on it.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n45"
+    },
+    {
+      "id": "n47",
+      "number": "2.3.2",
+      "claim": "Laws concerning prohibited limiting cases are important for understanding actual cases.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n45"
+    },
+    {
+      "id": "n48",
+      "number": "2.3.3",
+      "claim": "An object's shape and size are stable to the extent that its condition approximates the condition of an object on which no differential forces are acting.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n47"
+    },
+    {
+      "id": "n49",
+      "number": "3.0",
+      "claim": "Knowledge of the imperceptible is identical with knowledge of conditional truth.",
+      "type": "core",
+      "depth": 0,
+      "parentId": null
+    },
+    {
+      "id": "n50",
+      "number": "3.1",
+      "claim": "Knowledge of the future is conditional.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n49"
+    },
+    {
+      "id": "n51",
+      "number": "3.1.1",
+      "claim": "If O is copper being heated and not otherwise subject to differential forces, then O will soon be bigger than it is now.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n50"
+    },
+    {
+      "id": "n52",
+      "number": "3.2",
+      "claim": "Knowledge of the past is conditional.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n49"
+    },
+    {
+      "id": "n53",
+      "number": "3.2.1",
+      "claim": "If Jerry's ice-cream cone is melting on the tabletop, then the cone was removed from a cold environment more than ten seconds ago.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n52"
+    },
+    {
+      "id": "n54",
+      "number": "3.3",
+      "claim": "Knowledge of what is possible but non-actual is conditional.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n49"
+    },
+    {
+      "id": "n55",
+      "number": "3.3.1",
+      "claim": "Jerry's ice-cream cone, if not melting because it is inside a freezer, would melt if the freezer were unplugged.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n54"
+    },
+    {
+      "id": "n56",
+      "number": "3.4",
+      "claim": "Knowledge of what is present but imperceptible is conditional.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n49"
+    },
+    {
+      "id": "n57",
+      "number": "3.4.1",
+      "claim": "If Jerry's ice-cream cone is melting in the next room and is imperceptible to me, then it was recently removed from an environment at −32 degrees.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n56"
+    },
+    {
+      "id": "n58",
+      "number": "4.0",
+      "claim": "Physical objects can be imperceptible in at least three important ways.",
+      "type": "core",
+      "depth": 0,
+      "parentId": null
+    },
+    {
+      "id": "n59",
+      "number": "4.1",
+      "claim": "A physical object can be imperceptible to a given person in a given context.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n58"
+    },
+    {
+      "id": "n60",
+      "number": "4.1.1",
+      "claim": "Such imperceptibility occurs when causal, information-bearing processes between the person and an otherwise perceptible object have been severed.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n59"
+    },
+    {
+      "id": "n61",
+      "number": "4.1.2",
+      "claim": "An ice-cream cone in the next room is imperceptible because opaque walls intercept light-rays bouncing off it before they reach the person.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n60"
+    },
+    {
+      "id": "n62",
+      "number": "4.2",
+      "claim": "A physical object can be imperceptible because it is too small to perceive unaided.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n58"
+    },
+    {
+      "id": "n63",
+      "number": "4.2.1",
+      "claim": "Objects too small to perceive unaided can be perceived with appropriate technology.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n62"
+    },
+    {
+      "id": "n64",
+      "number": "4.2.2",
+      "claim": "Cells, viruses, and molecules can be perceived with appropriate technology.",
+      "type": "supporting",
+      "depth": 2,
+      "parentId": "n63"
+    },
+    {
+      "id": "n65",
+      "number": "4.3",
+      "claim": "A physical object can be imperceptible because natural law makes its perception impossible.",
+      "type": "supporting",
+      "depth": 1,
+      "parentId": "n58"
+    }
+  ],
+  "positions": [
+    {
+      "id": "p1",
+      "claim": "Inferential knowledge tracks dependence-relations through legitimate inference rules",
+      "type": "core",
+      "level": 0,
+      "parentId": null,
+      "confidence": 90
+    },
+    {
+      "id": "p2",
+      "claim": "Dependence-relations are either logical or causal",
+      "type": "core",
+      "level": 1,
+      "parentId": "p1",
+      "confidence": 92
+    },
+    {
+      "id": "p3",
+      "claim": "Logical dependence holds among propositions",
+      "type": "supporting",
+      "level": 2,
+      "parentId": "p2",
+      "confidence": 88
+    },
+    {
+      "id": "p4",
+      "claim": "Causal dependence holds among states of affairs in space-time",
+      "type": "supporting",
+      "level": 2,
+      "parentId": "p2",
+      "confidence": 88
+    },
+    {
+      "id": "p5",
+      "claim": "Propositions are the objects of knowledge",
+      "type": "core",
+      "level": 1,
+      "parentId": "p1",
+      "confidence": 85
+    },
+    {
+      "id": "p6",
+      "claim": "Knowledge requires belief, and belief requires propositions",
+      "type": "supporting",
+      "level": 2,
+      "parentId": "p5",
+      "confidence": 87
+    },
+    {
+      "id": "p7",
+      "claim": "Non-propositions like rocks and trees are objects of awareness, not knowledge",
+      "type": "supporting",
+      "level": 2,
+      "parentId": "p5",
+      "confidence": 82
+    },
+    {
+      "id": "p8",
+      "claim": "Some dependence-relations are known through conceptual analysis rather than sensory observation",
+      "type": "core",
+      "level": 1,
+      "parentId": "p1",
+      "confidence": 86
+    },
+    {
+      "id": "p9",
+      "claim": "Truths known through conceptual analysis are analytic",
+      "type": "doctrinal",
+      "level": 2,
+      "parentId": "p8",
+      "confidence": 90
+    },
+    {
+      "id": "p10",
+      "claim": "Analytic knowledge is always knowledge of dependence-relations",
+      "type": "core",
+      "level": 1,
+      "parentId": "p1",
+      "confidence": 84
+    },
+    {
+      "id": "p11",
+      "claim": "Knowledge is conceptually articulated awareness",
+      "type": "core",
+      "level": 0,
+      "parentId": null,
+      "confidence": 88
+    },
+    {
+      "id": "p12",
+      "claim": "Knowledge of a truth is a conceptualization of awareness of a state of affairs",
+      "type": "doctrinal",
+      "level": 2,
+      "parentId": "p11",
+      "confidence": 85
+    },
+    {
+      "id": "p13",
+      "claim": "Awareness is either propositional or objectual",
+      "type": "core",
+      "level": 1,
+      "parentId": "p11",
+      "confidence": 89
+    },
+    {
+      "id": "p14",
+      "claim": "Truths, not objects, are the proper targets of explanation",
+      "type": "core",
+      "level": 0,
+      "parentId": null,
+      "confidence": 80
+    },
+    {
+      "id": "p15",
+      "claim": "Causal relations are known only empirically",
+      "type": "core",
+      "level": 0,
+      "parentId": null,
+      "confidence": 87
+    },
+    {
+      "id": "p16",
+      "claim": "Theoretical truths are necessarily known through inference",
+      "type": "core",
+      "level": 0,
+      "parentId": null,
+      "confidence": 91
+    },
+    {
+      "id": "p17",
+      "claim": "A theory is a proposition that, if true, describes a relatively comprehensive fact about the structure of the universe",
+      "type": "doctrinal",
+      "level": 1,
+      "parentId": "p16",
+      "confidence": 83
+    },
+    {
+      "id": "p18",
+      "claim": "Knowledge is justified true belief",
+      "type": "doctrinal",
+      "level": 0,
+      "parentId": null,
+      "confidence": 75
+    },
+    {
+      "id": "p19",
+      "claim": "Classes of objects referred to by laws of nature can comprise merely possible objects",
+      "type": "core",
+      "level": 0,
+      "parentId": null,
+      "confidence": 79
+    },
+    {
+      "id": "p20",
+      "claim": "Some laws of nature hold with respect to classes whose members are prohibited from existing by the laws of nature",
+      "type": "core",
+      "level": 1,
+      "parentId": "p19",
+      "confidence": 81
+    },
+    {
+      "id": "p21",
+      "claim": "Knowledge of the imperceptible is identical with knowledge of conditional truth",
+      "type": "core",
+      "level": 0,
+      "parentId": null,
+      "confidence": 77
+    },
+    {
+      "id": "p22",
+      "claim": "Physical objects can be imperceptible in at least three important ways",
+      "type": "core",
+      "level": 0,
+      "parentId": null,
+      "confidence": 72
+    }
+  ],
+  "quotes": [
+    {
+      "id": "q1",
+      "text": "Rules of inference, when legitimate, correspond to dependence-relations.",
+      "signalStrength": 9,
+      "whyHighSignal": "Core thesis compressing epistemology into ontology: inferential legitimacy maps directly onto dependence structures in reality",
+      "relatedPositionIds": [
+        "p1"
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Knowledge is conceptually articulated awareness. In order for me to know that my shoes are uncomfortably tight, I need to have the concepts shoe, tight, discomfort, etc. I do not need to have these concepts---or, arguably, any concepts---to be aware of the uncomfortable tightness in my shoes.",
+      "signalStrength": 8,
+      "whyHighSignal": "Precise distinction between awareness and knowledge grounded in conceptual articulation, with concrete example showing philosophical bite",
+      "relatedPositionIds": [
+        "p11",
+        "p12",
+        "p13"
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "Information-transmission is structure-preservation. When you talk on the phone, the structure of the sounds you make is coded into electrical signals. The other person s phone converts those signals into isomorphic (structure-identical) sounds. The second sound-class therefore bears information about the first.",
+      "signalStrength": 7,
+      "whyHighSignal": "Technical definition of information as structure-preservation with clear operationalization through isomorphism",
+      "relatedPositionIds": [
+        "p15"
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "For you to be en rapport with those realities is for you to be linked to them by structures that are information-transmissive, as opposed to merely evidence-generative.",
+      "signalStrength": 8,
+      "whyHighSignal": "Critical distinction between information-transmission and evidence-generation that underlies the epistemology, addressing Gettier-style problems",
+      "relatedPositionIds": [
+        "p18"
+      ]
+    },
+    {
+      "id": "q5",
+      "text": "To explain some avalanche or lightning-bolt x is to explain why it is a truth that x occurred. One is aware of lightning-bolts and avalanches. One explains the corresponding truths.",
+      "signalStrength": 7,
+      "whyHighSignal": "Sharp methodological claim about explanation requiring propositional targets, not object-level events",
+      "relatedPositionIds": [
+        "p14"
+      ]
+    }
+  ],
+  "arguments": [
+    {
+      "id": "a1",
+      "premises": [
+        "Indirect knowledge is acquired through inference from prior beliefs",
+        "Legitimate inference rules correspond to dependence-relations",
+        "Dependence-relations are either logical or causal"
+      ],
+      "conclusion": "Inferential knowledge tracks either logical or causal dependence-relations",
+      "relatedPositionIds": [
+        "p1",
+        "p2"
+      ]
+    },
+    {
+      "id": "a2",
+      "premises": [
+        "Knowledge requires belief",
+        "Belief requires propositions",
+        "Objects like rocks and trees are not propositions"
+      ],
+      "conclusion": "One knows truths about objects, not the objects themselves",
+      "relatedPositionIds": [
+        "p5",
+        "p6",
+        "p7"
+      ]
+    },
+    {
+      "id": "a3",
+      "premises": [
+        "Knowledge is conceptually articulated awareness",
+        "Knowing that one's shoes are uncomfortably tight requires concepts of shoes, tightness, and discomfort",
+        "Awareness of uncomfortable shoe tightness does not require possessing those concepts"
+      ],
+      "conclusion": "Knowledge and awareness are distinct; knowledge is a conceptualization of awareness",
+      "relatedPositionIds": [
+        "p11",
+        "p12"
+      ]
+    },
+    {
+      "id": "a4",
+      "premises": [
+        "Truths are explained, not objects",
+        "Explaining an avalanche consists in explaining why it is true that the avalanche occurred",
+        "Objectual awareness must be converted into propositions to be explained"
+      ],
+      "conclusion": "The proper targets of explanation are truths (propositions), not objects",
+      "relatedPositionIds": [
+        "p14"
+      ]
+    },
+    {
+      "id": "a5",
+      "premises": [
+        "Causal relations can only be known through sensory observation or awareness of one's psychological processes",
+        "Knowledge acquired through sensory observation is empirical"
+      ],
+      "conclusion": "Causal relations are known only empirically",
+      "relatedPositionIds": [
+        "p15"
+      ]
+    },
+    {
+      "id": "a6",
+      "premises": [
+        "Some dependence-relations are known through conceptual analysis rather than sensory observation",
+        "Truths known through conceptual analysis are analytic",
+        "Examples include: if P, then either P or Q; there are infinitely many primes; 1+1=2"
+      ],
+      "conclusion": "Analytic knowledge is always knowledge of dependence-relations",
+      "relatedPositionIds": [
+        "p8",
+        "p9",
+        "p10"
+      ]
+    }
+  ],
+  "conceptClusters": [
+    {
+      "id": "c1",
+      "label": "Dependence-Tracking Epistemology",
+      "description": "The core thesis that legitimate inference maps onto real dependence structures (logical or causal) in the world. Knowledge acquisition through inference corresponds to tracking these objective dependency relations.",
+      "relatedPositionIds": [
+        "p1",
+        "p2",
+        "p3",
+        "p4"
+      ],
+      "relatedQuoteIds": [
+        "q1"
+      ]
+    },
+    {
+      "id": "c2",
+      "label": "Knowledge vs. Awareness Distinction",
+      "description": "A fundamental distinction between conceptually articulated knowledge (propositional) and pre-conceptual awareness (objectual). Knowledge requires conceptual resources that awareness does not.",
+      "relatedPositionIds": [
+        "p11",
+        "p12",
+        "p13",
+        "p5",
+        "p7"
+      ],
+      "relatedQuoteIds": [
+        "q2",
+        "q5"
+      ]
+    },
+    {
+      "id": "c3",
+      "label": "Analytic Knowledge as Dependence-Knowledge",
+      "description": "All analytic truths express dependence-relations knowable through conceptual analysis. Mathematical and logical truths are reinterpreted as statements about what depends on what.",
+      "relatedPositionIds": [
+        "p8",
+        "p9",
+        "p10"
+      ],
+      "relatedQuoteIds": [
+        "q1"
+      ]
+    },
+    {
+      "id": "c4",
+      "label": "Information-Transmission Theory",
+      "description": "A causal theory of knowledge distinguishing information-transmission (structure-preservation) from mere evidence-generation. Addresses Gettier problems by requiring appropriate causal connection.",
+      "relatedPositionIds": [
+        "p15",
+        "p18"
+      ],
+      "relatedQuoteIds": [
+        "q3",
+        "q4"
+      ]
+    },
+    {
+      "id": "c5",
+      "label": "Modal and Theoretical Knowledge",
+      "description": "Treatment of knowledge concerning non-actual possibilities, theoretical entities, and laws governing merely possible or even impossible objects. Ties theoretical knowledge to conditional truths.",
+      "relatedPositionIds": [
+        "p16",
+        "p17",
+        "p19",
+        "p20",
+        "p21"
+      ],
+      "relatedQuoteIds": []
+    }
+  ],
+  "intelligence": {
+    "overallScore": 76,
+    "claimDensity": 4.2,
+    "conceptualCompression": 71,
+    "redundancyScore": 18,
+    "fillerRatio": 0.12,
+    "fractalScore": 68,
+    "qualitativeAssessment": "This is a sustained, systematic work of original epistemology with genuine theoretical ambition. The central innovation—that legitimate inference rules correspond to objective dependence-relations—provides organizing architecture for reinterpreting knowledge (analytic truths as dependence-truths, causal knowledge as structure-preserving information channels). The text shows conceptual compression: multiple examples (triangle/three-sides, 1+1=2, prime infinitude) get unified under dependence-tracking. The information-transmission vs. evidence-generation distinction addresses real philosophical problems (Gettier cases). Weaknesses include some definitional stipulation (especially the theory definition) and occasional repetition. The fractal score reflects that depth-2+ nodes often elaborate core ideas substantively rather than merely restate them. Overall quality places this in the 'good scholarly philosophy with systematic argument' tier—genuine contribution to epistemology, though not maximally compressed."
+  },
+  "stylometricThumbprint": {
+    "signaturePhrases": [
+      "dependence-relations",
+      "structure-preserving series",
+      "conceptually articulated awareness",
+      "en rapport with the relevant realities",
+      "information-transmissive, as opposed to merely evidence-generative"
+    ],
+    "abstractionLevel": "High — operates fluidly between technical philosophical distinctions (logical vs. causal dependence, propositional vs. objectual awareness) and concrete examples (melting ice cream, tight shoes, phone conversations). Comfortable with formal precision (isomorphism, cardinality) without excessive jargon.",
+    "sentenceRhythmNotes": "Favors definition-by-equivalence structures ('X is Y iff Z'). Uses parallel constructions extensively (e.g., repeated 'If P, then Q' formulations). Employs dash-separated clarifications. Sentence length varies strategically: short definitional claims followed by longer elaborations with examples.",
+    "notableStylisticTraits": [
+      "Systematic use of asterisked reformulations (2*. A set s having finitely many members depends on...)",
+      "Numbered example lists establishing patterns before generalizing",
+      "Precise technical terms introduced casually then operationalized (information-bearing, structure-preserving)",
+      "Footnote apparatus (referenced but not shown) suggests scholarly engagement",
+      "Preference for 'one' as generic pronoun rather than 'we' or 'you' in core philosophical exposition"
+    ]
+  }
+}

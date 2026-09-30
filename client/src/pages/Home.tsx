@@ -2689,31 +2689,53 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
           author: bookDb2Author,
         }),
       });
+      if (!response.ok) {
+        const responseText = await response.text().catch(() => "");
+        throw new Error(`Book Database 2.0 request failed (${response.status})${responseText.trim() ? `: ${responseText.trim().slice(0, 300)}` : ""}`);
+      }
+      if (!response.headers.get("content-type")?.toLowerCase().includes("text/event-stream")) {
+        throw new Error("Book Database 2.0 returned an unexpected response type; expected an event stream.");
+      }
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       if (!reader) throw new Error("No response stream");
       let buf = "";
+      let completedResult: any = null;
+      let sawComplete = false;
+      let streamError: string | null = null;
+      const consumeLine = (line: string) => {
+        if (!line.startsWith("data: ")) return;
+        const parsed = JSON.parse(line.slice(6));
+        if (controller.signal.aborted) return;
+        if (parsed.type === "progress") {
+          setBookDb2Progress({ stage: parsed.stage, message: parsed.message, current: parsed.current, total: parsed.total });
+        } else if (parsed.type === "complete") {
+          if (!parsed.result) throw new Error("Book Database 2.0 completed without a result.");
+          completedResult = parsed.result;
+          sawComplete = true;
+        } else if (parsed.type === "error") {
+          streamError = parsed.message || "Book Database 2.0 failed.";
+        }
+      };
       while (true) {
         const { done, value } = await reader.read();
         if (controller.signal.aborted) break;
-        if (done) break;
+        if (done) {
+          buf += decoder.decode();
+          if (buf) consumeLine(buf);
+          break;
+        }
         buf += decoder.decode(value, { stream: true });
         const lines = buf.split("\n");
         buf = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const parsed = JSON.parse(line.slice(6));
-          if (controller.signal.aborted) break;
-          if (parsed.type === "progress") {
-            setBookDb2Progress({ stage: parsed.stage, message: parsed.message, current: parsed.current, total: parsed.total });
-          } else if (parsed.type === "complete") {
-            setBookDb2Data(parsed.result);
-            setBookDb2Progress(null);
-          } else if (parsed.type === "error") {
-            setBookDb2Error(parsed.message);
-          }
-        }
+        for (const line of lines) consumeLine(line);
+        if (streamError) throw new Error(streamError);
       }
+      if (controller.signal.aborted) return;
+      if (streamError) throw new Error(streamError);
+      if (!sawComplete) throw new Error("Book Database 2.0 stream ended before a completed result was received.");
+      setBookDb2Data(completedResult);
+      setBookDb2Progress(null);
     } catch (err: any) {
       if (!controller.signal.aborted) setBookDb2Error(err.message || "Failed to run Book Database 2.0");
     } finally {
@@ -2723,6 +2745,22 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
       }
     }
   };
+
+  const formatBookDb2Source = (source: any) => {
+    if (!source || typeof source !== "object") return "Source not recorded";
+    const hasChapterIndex = source.chapterIndex !== undefined && source.chapterIndex !== null && Number.isFinite(Number(source.chapterIndex));
+    const chapterNumber = hasChapterIndex ? Number(source.chapterIndex) + 1 : null;
+    const chapterLabel = source.chapterTitle || (chapterNumber !== null ? `Section ${chapterNumber}` : null);
+    const partIndex = source.chapterPartIndex ?? source.partIndex;
+    const hasPartIndex = partIndex !== undefined && partIndex !== null && Number.isFinite(Number(partIndex));
+    const partNumber = hasPartIndex ? Number(partIndex) + 1 : null;
+    return [chapterLabel, partNumber !== null ? `Part ${partNumber}` : null].filter(Boolean).join(" · ") || "Source not recorded";
+  };
+
+  const getBookDb2SourceGroupKey = (source: any) =>
+    source && typeof source === "object"
+      ? `${source.chapterIndex ?? ""}|${source.chapterTitle ?? ""}|${source.partIndex ?? ""}`
+      : "";
 
   const handleSaveBookDatabase2 = async () => {
     if (!bookDb2Data) return;
@@ -2772,22 +2810,33 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
           heading: HeadingLevel.HEADING_1,
           spacing: { after: 360 },
         }),
-        ...nodes.map((node: { number: string; claim: string; depth: number; type: string }) =>
-          new Paragraph({
-            children: [
-              new TextRun({ text: `${node.number}  `, color: "808080", size: 20 }),
-              new TextRun({
-                text: node.claim,
-                bold: node.type === "core",
-                color: node.type === "core" ? "2256A8" : node.type === "doctrinal" ? "B46908" : "444444",
-                size: 20,
-              }),
-              new TextRun({ text: `  [${node.type}]`, color: "808080", size: 18 }),
-            ],
-            indent: { left: Math.max(0, Math.min(12, Number(node.depth) || 0)) * 280 },
-            spacing: { after: 120 },
-          }),
-        ),
+        ...nodes.flatMap((node: any, index: number) => {
+          const source = node.source;
+          const previousSource = index > 0 ? nodes[index - 1]?.source : null;
+          const groupChanged = source && getBookDb2SourceGroupKey(source) !== getBookDb2SourceGroupKey(previousSource);
+          return [
+            ...(groupChanged ? [new Paragraph({
+              children: [new TextRun({ text: formatBookDb2Source(source), bold: true, color: "555555", size: 22 })],
+              heading: HeadingLevel.HEADING_2,
+              spacing: { before: 240, after: 120 },
+            })] : []),
+            new Paragraph({
+              children: [
+                new TextRun({ text: `${node.number}  `, color: "808080", size: 20 }),
+                new TextRun({
+                  text: node.claim,
+                  bold: node.type === "core",
+                  color: node.type === "core" ? "2256A8" : node.type === "doctrinal" ? "B46908" : "444444",
+                  size: 20,
+                }),
+                new TextRun({ text: `  [${node.type}]`, color: "808080", size: 18 }),
+                new TextRun({ text: `  (${formatBookDb2Source(source)})`, color: "808080", size: 16 }),
+              ],
+              indent: { left: Math.max(0, Math.min(12, Number(node.depth) || 0)) * 280 },
+              spacing: { after: 120 },
+            }),
+          ];
+        }),
       ];
       const blob = await Packer.toBlob(new Document({ sections: [{ children: paragraphs }] }));
       saveAs(blob, "tractatus-tree-2-clean.docx");
@@ -9662,11 +9711,11 @@ Freedom is the ratio essendi of the moral law."
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
                     className="bg-primary h-2 rounded-full transition-all"
-                    style={{ width: `${(bookDb2Progress.current / bookDb2Progress.total) * 100}%` }}
+                    style={{ width: `${bookDb2Progress.total > 0 ? Math.min(100, Math.max(0, (bookDb2Progress.current / bookDb2Progress.total) * 100)) : 0}%` }}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Stage {bookDb2Progress.current} of {bookDb2Progress.total}
+                  Completed steps {bookDb2Progress.current} of {bookDb2Progress.total}
                 </p>
               </div>
             )}
@@ -9721,6 +9770,48 @@ Freedom is the ratio essendi of the moral law."
                   ))}
                 </div>
 
+                {/* Full-text coverage is explicit so legacy saved results aren't mistaken for complete runs. */}
+                {bookDb2Data.meta?.coverage ? (
+                  <section className="border rounded-lg p-3 bg-slate-50 space-y-2" aria-label="Full-text coverage">
+                    <div>
+                      <p className="text-sm font-semibold">Full-text coverage</p>
+                      <p className="text-xs text-muted-foreground">
+                        {Number(bookDb2Data.meta.coverage.processedCharacters || 0).toLocaleString()} of {Number(bookDb2Data.meta.coverage.totalCharacters || 0).toLocaleString()} characters processed
+                        {" · "}
+                        {Number(bookDb2Data.meta.coverage.processedParts || 0).toLocaleString()} of {Number(bookDb2Data.meta.coverage.totalParts || 0).toLocaleString()} parts processed
+                        {bookDb2Data.meta.coverage.assessment === "whole-text-reconciled"
+                          ? " · Whole-text intelligence and style assessment"
+                          : bookDb2Data.meta.coverage.aggregation === "word-weighted" ? " · Word-weighted aggregation" : ""}
+                      </p>
+                    </div>
+                    {Array.isArray(bookDb2Data.meta.coverage.chapters) && bookDb2Data.meta.coverage.chapters.length > 0 && (
+                      <div className="border-t pt-2 space-y-1.5 max-h-40 overflow-auto">
+                        {bookDb2Data.meta.coverage.chapters.map((chapter: any, i: number) => {
+                          const chapterNumber = chapter.chapterIndex !== undefined && chapter.chapterIndex !== null
+                            ? Number(chapter.chapterIndex) + 1
+                            : i + 1;
+                          const partCount = Number(chapter.partCount || 0);
+                          const processedParts = Number(chapter.processedParts || 0);
+                          return (
+                            <div key={`${chapter.chapterIndex ?? i}-${chapter.title ?? ""}`} className="flex items-center justify-between gap-3 text-xs">
+                              <span className="truncate">
+                                {chapter.title || `Section ${chapterNumber}`}
+                              </span>
+                              <span className="shrink-0 text-muted-foreground">
+                                {processedParts} of {partCount} parts · {Number(chapter.wordCount || 0).toLocaleString()} words
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </section>
+                ) : (
+                  <div className="border rounded-lg px-3 py-2 text-xs text-muted-foreground bg-slate-50">
+                    Full-text coverage not recorded.
+                  </div>
+                )}
+
                 {/* POSITIONS */}
                 {bookDb2Tab === "positions" && (
                   <div className="space-y-2">
@@ -9734,6 +9825,7 @@ Freedom is the ratio essendi of the moral law."
                           <span className="text-xs text-muted-foreground">Level {p.level} · {p.confidence}% confidence</span>
                         </div>
                         <p className="text-sm">{p.claim}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{formatBookDb2Source(p.source)}</p>
                       </div>
                     ))}
                   </div>
@@ -9757,6 +9849,7 @@ Freedom is the ratio essendi of the moral law."
                         </div>
                         <blockquote className="text-sm italic border-l-2 border-amber-400 pl-3 mb-2">"{q.text}"</blockquote>
                         <p className="text-xs text-muted-foreground">{q.whyHighSignal}</p>
+                        <p className="text-xs text-muted-foreground mt-2">{formatBookDb2Source(q.source)}</p>
                       </div>
                     ))}
                   </div>
@@ -9779,6 +9872,7 @@ Freedom is the ratio essendi of the moral law."
                         <div className="border-t border-teal-200 pt-2">
                           <p className="text-sm"><span className="text-xs font-bold text-teal-700 mr-1">∴</span>{a.conclusion}</p>
                         </div>
+                        <p className="text-xs text-muted-foreground mt-2">{formatBookDb2Source(a.source)}</p>
                       </div>
                     ))}
                   </div>
@@ -9861,13 +9955,24 @@ Freedom is the ratio essendi of the moral law."
                       {(bookDb2Data.cleanedTree || []).length === 0 && (
                         <p className="text-muted-foreground">No tree data.</p>
                       )}
-                      {(bookDb2Data.cleanedTree || []).map((node: any, i: number) => (
-                        <div key={node.id || i} className={`flex gap-2 py-0.5 ${node.type === "core" ? "text-primary font-semibold" : node.type === "doctrinal" ? "text-amber-600" : "text-gray-600"}`} style={{ paddingLeft: `${node.depth * 16}px` }}>
-                          <span className="text-gray-400 select-none">{node.number}</span>
-                          <span>{node.claim}</span>
-                          <span className="ml-auto text-gray-400 text-xs">[{node.type}]</span>
-                        </div>
-                      ))}
+                      {(bookDb2Data.cleanedTree || []).map((node: any, i: number) => {
+                        const previousSource = i > 0 ? bookDb2Data.cleanedTree[i - 1]?.source : null;
+                        const showHeader = node.source && getBookDb2SourceGroupKey(node.source) !== getBookDb2SourceGroupKey(previousSource);
+                        return (
+                          <div key={node.id || i}>
+                            {showHeader && (
+                              <div className="font-sans text-xs font-semibold text-gray-700 border-t first:border-t-0 pt-2 mt-2">
+                                {formatBookDb2Source(node.source)}
+                              </div>
+                            )}
+                            <div className={`flex gap-2 py-0.5 ${node.type === "core" ? "text-primary font-semibold" : node.type === "doctrinal" ? "text-amber-600" : "text-gray-600"}`} style={{ paddingLeft: `${node.depth * 16}px` }}>
+                              <span className="text-gray-400 select-none">{node.number}</span>
+                              <span>{node.claim}</span>
+                              <span className="ml-auto text-gray-400 text-xs">[{node.type}] · {formatBookDb2Source(node.source)}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -9882,6 +9987,7 @@ Freedom is the ratio essendi of the moral law."
                       <div key={c.id || i} className="border rounded-lg p-3 bg-violet-50 border-violet-200">
                         <p className="font-bold text-sm text-violet-800 mb-1">{c.label}</p>
                         <p className="text-sm text-gray-700">{c.description}</p>
+                        <p className="text-xs text-muted-foreground mt-2">{formatBookDb2Source(c.source)}</p>
                       </div>
                     ))}
                   </div>

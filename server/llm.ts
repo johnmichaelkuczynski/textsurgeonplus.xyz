@@ -690,7 +690,7 @@ export async function analyzeTextStreaming(text: string, provider: string, funct
   }
 }
 
-export async function callLLM(provider: string, prompt: string, signal?: AbortSignal): Promise<string> {
+export async function callLLM(provider: string, prompt: string, signal?: AbortSignal, options: { rejectTruncated?: boolean } = {}): Promise<string> {
   const apiKeys = {
     gemini: process.env.GEMINI_API_KEY || "",
     openai: process.env.OPENAI_API_KEY || "",
@@ -724,6 +724,9 @@ export async function callLLM(provider: string, prompt: string, signal?: AbortSi
     }
 
     const data = await response.json();
+    if (options.rejectTruncated && data.choices?.[0]?.finish_reason === "length") {
+      throw new Error("The provider stopped at its output limit; the analysis is incomplete.");
+    }
     return data.choices[0].message.content;
   };
 
@@ -759,6 +762,9 @@ export async function callLLM(provider: string, prompt: string, signal?: AbortSi
         });
       }
       const geminiData = await geminiResponse.json();
+      if (options.rejectTruncated && geminiData?.candidates?.[0]?.finishReason === "MAX_TOKENS") {
+        throw new Error("Gemini stopped at its output limit; the analysis is incomplete.");
+      }
       const generatedText = Array.isArray(geminiData?.candidates?.[0]?.content?.parts)
         ? geminiData.candidates[0].content.parts
             .filter((part: any) => typeof part?.text === "string")
@@ -800,6 +806,9 @@ export async function callLLM(provider: string, prompt: string, signal?: AbortSi
         throw new Error(`Anthropic API Error: ${err}`);
       }
       const anthropicData = await anthropicResponse.json();
+      if (options.rejectTruncated && anthropicData?.stop_reason === "max_tokens") {
+        throw new Error("Anthropic stopped at its output limit; the analysis is incomplete.");
+      }
       const textBlocks = Array.isArray(anthropicData?.content)
         ? anthropicData.content.filter(
             (block: any) => block?.type === "text" && typeof block.text === "string",

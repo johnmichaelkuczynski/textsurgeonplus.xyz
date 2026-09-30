@@ -3806,7 +3806,12 @@ Otherwise return JSON array:
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
 
-    const send = (data: object) => res.write(`data: ${JSON.stringify(data)}\n\n`);
+    const controller = new AbortController();
+    req.once("aborted", () => controller.abort());
+    res.once("close", () => { if (!res.writableEnded) controller.abort(); });
+    const send = (data: object) => {
+      if (!controller.signal.aborted && !res.writableEnded) res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
 
     try {
       const { generateBookDatabase2 } = await import("./services/bookToDatabase2");
@@ -3814,7 +3819,8 @@ Otherwise return JSON array:
         text,
         provider,
         { title, author },
-        (p) => send({ type: "progress", ...p })
+        (p) => send({ type: "progress", ...p }),
+        { signal: controller.signal },
       );
       send({ type: "complete", result });
     } catch (err: any) {
