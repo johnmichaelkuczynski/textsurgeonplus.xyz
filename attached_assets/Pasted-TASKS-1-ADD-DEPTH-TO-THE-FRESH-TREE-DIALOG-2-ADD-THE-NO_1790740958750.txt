@@ -1,0 +1,83 @@
+TASKS: (1) ADD "DEPTH" TO THE FRESH TREE DIALOG. (2) ADD THE NODE LEGITIMACY RULE. CHANGE NOTHING ELSE.
+
+0. GROUND RULES
+- Do not remove, rename, move, or restyle any existing control. GENERATE, ADD NEXT TIER, SEND TO PROSIFY, and all other functions keep working exactly as now.
+- Restart the server after every code change and before testing. Do not report anything as working until you have seen it work in the running app.
+
+PART 1 — DEPTH
+
+1. NEW DIALOG FIELDS (between the four scope options and GENERATE)
+(a) "Depth (optional)": numeric field, blank by default. Placeholder: "Blank = 2 tiers".
+(b) "Instructions for added tiers (optional)": multi-line text box, blank by default. Placeholder: "Blank = default fresh-node rules".
+(c) Live estimate line under the Depth field: "Estimated size: ~N nodes, ~M model calls." If tiers 1–2 do not yet exist for this input, show "Estimated size shown after tiers 1–2 are built."
+
+2. VALIDATION
+- Blank or 2 = standard two-tier run.
+- Accept whole numbers 2 and up. Reject 0, 1, negatives, decimals, non-numbers with: "Depth must be a whole number of 2 or more."
+- If depth > 6, show: "Depth N will produce roughly X nodes and take several minutes. Continue?" with Continue / Cancel.
+
+3. BEHAVIOR ON GENERATE
+- Build tiers 1–2 from the source exactly as now (source-only, no fresh material).
+- If depth > 2, automatically run ADD NEXT TIER repeatedly until the requested depth is reached, with no user action between tiers.
+- Auto-added tiers use the text in "Instructions for added tiers"; if blank, the default fresh-node instructions.
+- Children per node: tier 3 = 1 or 2 per node; tier 4 and deeper = 1 per node, unless the user's instructions say otherwise.
+- Auto-added tiers obey the NODE LEGITIMACY RULE (Part 2), the freshness rules, and the isolation rules exactly as manual ADD NEXT TIER does.
+- Per-chapter runs (options B and C): every chapter's tree goes to the requested depth.
+
+4. PROGRESS AND CONTROL
+- Show: "Building tier T of N — thesis K of M" (plus "chapter C of D" for per-chapter runs).
+- Display each tier as it completes.
+- Show a STOP button during the run. STOP finishes the current model call, halts, and keeps everything built so far.
+- If a tier fails: stop, keep all completed tiers, show a red error naming the tier, thesis, and chapter. Never discard completed work.
+
+5. AFTER THE RUN
+- Result box shows "Current depth: N tiers", ADD NEXT TIER with its instructions box, and SEND TO PROSIFY, as now. ADD NEXT TIER continues from depth N.
+
+PART 2 — NODE LEGITIMACY RULE (applies to every tier 3 and deeper, manual or auto)
+
+6. THE RULE (include verbatim in every tier-generation prompt)
+"Every node must ESTABLISH its parent, by evidence or by logic:
+ (a) EMPIRICAL: a specific fact, measurement, experiment, observed case, or real-world instance, stated concretely (what, where, when, how much).
+ (b) LOGICAL: a derivation, a demonstration, or a counterexample, stated in full.
+ A node that reports what someone SAYS, ARGUES, or BELIEVES establishes nothing and is forbidden. A person may appear only as part of a fact (e.g. 'In 1847 Semmelweis cut maternal deaths in his ward from about 18% to about 2% by requiring handwashing'), never as an authority (e.g. 'Semmelweis argued that handwashing matters').
+ Vague appeals are forbidden: 'studies show', 'research indicates', 'a study found', 'experts agree', 'it is widely accepted', 'a classic illustration', 'a well-known example'.
+ The node must support its parent's EXACT claim, not a neighboring claim that shares a word with it.
+ Citations are allowed only as a footnote marker (¹, ², ...) at the end of a factual node. The citation never replaces the fact."
+
+7. ENFORCEMENT — TWO CHECKS ON EVERY NEW NODE, BEFORE DISPLAY
+Check A (pattern filter, in code). Reject any node containing, case-insensitively:
+  argued, argues, posits, posited, contends, maintains that, claims that, according to, as noted in, as discussed in, is discussed in, highlights, emphasizes, suggests that, states that, notes that, the article, the paper, the book, the encyclopedia, Stanford Encyclopedia, Internet Encyclopedia, SEP, IEP, studies show, research indicates, research shows, a study found, experts, widely accepted, classic illustration, well-known example.
+Check B (model classifier, one call per batch). For each node return one label and a one-line reason:
+  EMPIRICAL | LOGICAL | AUTHORITY | VAGUE | OFF-TARGET
+  Prompt: "Label each node. EMPIRICAL = a specific, concrete fact or case. LOGICAL = a derivation, demonstration, or counterexample. AUTHORITY = its content is that someone says/argues/believes something. VAGUE = gestures at evidence without stating it. OFF-TARGET = does not establish the parent's exact claim. Return: node number, label, reason."
+A node passes only if it passes Check A AND Check B labels it EMPIRICAL or LOGICAL.
+
+8. REGENERATION
+- Regenerate each failed node once with: "Your node was rejected as <label>: <reason>. Replace it with a node that establishes the parent by a concrete fact or by logic."
+- Recheck. If it still fails, drop it and show under the tree: "Node <number> dropped: <label> — <reason>."
+- If a parent is left with no children, show: "Node <parent number> has no legitimate support."
+
+9. CITATIONS
+- Footnote markers only, at the end of factual nodes; sources listed under "Sources", keyed by marker and node number.
+- A node whose only content is a citation fails as AUTHORITY.
+
+10. SCOPE
+- Tiers 1–2 (distilled from the author's text) are exempt.
+- User-typed instructions do NOT switch this rule off unless they explicitly say "allow citation nodes".
+
+11. DEFINITION OF DONE
+1. Restart the server.
+2. Depth blank: GENERATE produces exactly two tiers.
+3. Depth 4, instructions blank: tiers 1–4 in one click, no pauses.
+4. Depth 4 with instructions "Add one counterexample under each node": tiers 3–4 follow them.
+5. Depth 1, 0, 2.5, "abc": each rejected with the validation message.
+6. Depth 8: confirmation appears; Cancel aborts; Continue runs.
+7. STOP mid-run: completed tiers remain; ADD NEXT TIER works from there.
+8. Option B at depth 3: every chapter tree reaches 3 tiers.
+9. After a depth-4 run, ADD NEXT TIER produces tier 5.
+10. Checks on "The Stanford Encyclopedia of Philosophy notes that induction lacks a non-circular justification." → rejected as AUTHORITY.
+11. Checks on "In 1846 Le Verrier predicted Neptune's position from irregularities in Uranus's orbit, and Galle found it within 1 degree of the prediction." → passes as EMPIRICAL.
+12. Checks on "A study found people conform to groups." → rejected as VAGUE.
+13. With instruction "cite philosophers for each node": regeneration occurs, then drop warnings appear.
+14. Every pre-existing button still works.
+Report only after seeing steps 2–14 succeed: "Done. Tested steps 2 through 14." or exactly which step failed.

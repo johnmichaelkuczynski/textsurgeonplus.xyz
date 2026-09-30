@@ -2,10 +2,42 @@ import { callLLM } from "../llm";
 import type { TractatusStatement } from "./tractatusTree";
 
 export type FreshTreeStatement = TractatusStatement;
-export type FreshTreeSource = { node: string; url: string };
-type TierCandidate = FreshTreeStatement & { parent: string; url?: string };
+export type FreshTreeSource = { node: string; marker?: string; url: string };
+type TierCandidate = FreshTreeStatement & {
+  parent: string;
+  url?: string;
+  searched?: boolean;
+  legitimacyLabel?: LegitimacyResult["label"];
+  reviewFailure?: { label: LegitimacyResult["label"]; reason: string };
+};
 
 export const DEFAULT_FRESH_INSTRUCTIONS = "Under each node, add 1 or 2 child nodes. Each must be a concrete example or fact that illustrates or supports its parent. It must be FRESH: do not use any example, name, case, or illustration from the source text. Prefer real, accurate, current scientific or factual examples; everyday examples are allowed; do not invent fake facts. One sentence per node. No commentary.";
+export const NODE_LEGITIMACY_RULE = `Every node must ESTABLISH its parent, by evidence or by logic:
+(a) EMPIRICAL: a specific fact, measurement, experiment, observed case, or real-world instance, stated concretely (what, where, when, how much).
+(b) LOGICAL: a derivation, a demonstration, or a counterexample, stated in full.
+A node that reports what someone SAYS, ARGUES, or BELIEVES establishes nothing and is forbidden. A person may appear only as part of a fact (e.g. 'In 1847 Semmelweis cut maternal deaths in his ward from about 18% to about 2% by requiring handwashing'), never as an authority (e.g. 'Semmelweis argued that handwashing matters').
+Vague appeals are forbidden: 'studies show', 'research indicates', 'a study found', 'experts agree', 'it is widely accepted', 'a classic illustration', 'a well-known example'.
+The node must support its parent's EXACT claim, not a neighboring claim that shares a word with it.
+Citations are allowed only as a footnote marker (¹, ², ...) at the end of a factual node. The citation never replaces the fact.`;
+
+const AUTHORITY_PATTERNS = [
+  /\bargued\b/i, /\bargues\b/i, /\bposits\b/i, /\bposited\b/i, /\bcontends\b/i, /\bmaintains that\b/i,
+  /\bclaims that\b/i, /\baccording to\b/i, /\bas noted in\b/i, /\bas discussed in\b/i, /\bis discussed in\b/i,
+  /\bhighlights\b/i, /\bemphasizes\b/i, /\bsuggests that\b/i, /\bstates that\b/i, /\bnotes that\b/i,
+  /\bthe article\b/i, /\bthe paper\b/i, /\bthe book\b/i, /\bthe encyclopedia\b/i, /\bstanford encyclopedia\b/i,
+  /\binternet encyclopedia\b/i, /\bSEP\b/i, /\bIEP\b/i,
+];
+const VAGUE_PATTERNS = [
+  /\bstudies show\b/i, /\bresearch indicates\b/i,
+  /\bresearch shows\b/i, /\ba study found\b/i, /\bexperts\b/i, /\bwidely accepted\b/i,
+  /\bclassic illustration\b/i, /\bwell-known example\b/i,
+];
+
+type AddTierOptions = {
+  shouldStop?: () => boolean;
+  onProgress?: (tier: number, thesis: number, totalTheses: number) => void;
+  onWarning?: (message: string) => void;
+};
 
 function assertNotAborted(signal: AbortSignal) {
   if (signal.aborted) throw new Error("Fresh Tree generation cancelled.");
@@ -31,14 +63,19 @@ export function parseTreeLines(raw: string, maximumParts: number): FreshTreeStat
 export async function generateFreshTree(source: string, signal: AbortSignal): Promise<FreshTreeStatement[]> {
   assertNotAborted(signal);
   const required = "Produce only top-level theses (1.0, 2.0 ...) and their direct sub-claims (1.1, 1.2 ...). Do not produce any deeper level. Use only concepts, claims, and examples that appear in the text supplied below. Do not add material from any other source.";
-  const raw = await callLLM("openai", `Build a plain numbered tree. ${required}\nEvery thesis must have at least one direct sub-claim. Output numbered lines only, with one sentence per line. Do not use Markdown.\n\n<source>\n${source}\n</source>`, signal);
-  assertNotAborted(signal);
-  const statements = parseTreeLines(raw, 2);
-  const roots = statements.filter((item) => item.number.endsWith(".0"));
-  if (!roots.length || roots.some((root) => !statements.some((item) => item.number.startsWith(`${root.number.slice(0, -1)}`) && item.number !== root.number))) {
-    throw new Error("The model did not return a valid two-tier tree.");
+  let previous = "";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const correction = attempt ? `\nThe previous response was not a valid two-tier tree. Correct the format: each thesis must be numbered 1.0, 2.0, etc., followed by at least one child numbered 1.1, 2.1, etc. No deeper lines. Recheck every line against the source.\n<previous-response>\n${previous}\n</previous-response>` : "";
+    const raw = await callLLM("openai", `Build a plain numbered tree. ${required}\nEvery thesis must have at least one direct sub-claim. Output numbered lines only, with one sentence per line. Do not use Markdown.${correction}\n\n<source>\n${source}\n</source>`, signal);
+    assertNotAborted(signal);
+    const statements = parseTreeLines(raw, 2);
+    const roots = statements.filter((item) => item.number.endsWith(".0"));
+    if (roots.length && roots.every((root) => statements.some((item) => item.number.startsWith(`${root.number.slice(0, -1)}`) && item.number !== root.number))) {
+      return statements;
+    }
+    previous = raw;
   }
-  return statements;
+  throw new Error("The model did not return a valid two-tier tree after a correction attempt.");
 }
 
 function responseText(data: any): string {
@@ -48,7 +85,7 @@ function responseText(data: any): string {
     .map((item: any) => item.text).join("\n");
 }
 
-async function research(prompt: string, signal: AbortSignal): Promise<{ text: string; searched: boolean }> {
+async function research(prompt: string, signal: AbortSignal, shouldStop?: () => boolean): Promise<{ text: string; searched: boolean }> {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return { text: await callLLM("openai", prompt, signal), searched: false };
   try {
@@ -63,6 +100,7 @@ async function research(prompt: string, signal: AbortSignal): Promise<{ text: st
     return { text, searched: true };
   } catch (error) {
     if (signal.aborted) throw error;
+    if (shouldStop?.()) return { text: "", searched: false };
     return { text: await callLLM("openai", prompt, signal), searched: false };
   }
 }
@@ -102,19 +140,37 @@ function duplicatesAny(candidate: TierCandidate, lines: Array<{ text: string }>)
   return lines.some((line) => wordOverlap(candidate.text, line.text) > 0.6);
 }
 
-function parseTier(raw: string, parents: FreshTreeStatement[], depth: number): TierCandidate[] {
+function childCount(instructions: string, tier: number): { min: number; max: number } {
+  const userOverride = Boolean(instructions.trim()) && instructions.trim() !== DEFAULT_FRESH_INSTRUCTIONS;
+  const explicit = userOverride
+    ? /\b(one|1|two|2|three|3|four|4|five|5)\s+(?:new\s+)?(?:child(?:ren)?|nodes?)\b/i.exec(instructions)
+    : null;
+  const exampleCount = explicit || (userOverride
+    ? /\b(one|1|two|2|three|3|four|4|five|5)\s+(?:counterexample|example)\b/i.exec(instructions)
+    : null);
+  if (exampleCount) {
+    const count = ({ one: 1, two: 2, three: 3, four: 4, five: 5 } as Record<string, number>)[exampleCount[1].toLowerCase()] || Number(exampleCount[1]);
+    return { min: count, max: count };
+  }
+  if (userOverride && /\b1\s+or\s+2\b|\bone\s+or\s+two\b/i.test(instructions)) return { min: 1, max: 2 };
+  return tier === 3 ? { min: 1, max: 2 } : { min: 1, max: 1 };
+}
+
+function parseTier(raw: string, parents: FreshTreeStatement[], tier: number, count: { min: number; max: number }): TierCandidate[] {
   const start = raw.indexOf("{");
   const end = raw.lastIndexOf("}");
-  if (start < 0 || end < start) throw new Error(`Tier ${depth} returned invalid structured output.`);
+  if (start < 0 || end < start) throw new Error(`Tier ${tier} returned invalid structured output.`);
   const parsed = JSON.parse(raw.slice(start, end + 1));
   const statements: TierCandidate[] = [];
   for (const parent of parents) {
     const children = parsed[parent.number];
-    if (!Array.isArray(children) || children.length < 1 || children.length > 2) throw new Error(`Tier ${depth} is missing children for ${parent.number}.`);
-    children.forEach((child: any, index: number) => {
-      if (typeof child?.text !== "string" || !child.text.trim()) throw new Error(`Tier ${depth} contains an invalid child for ${parent.number}.`);
+    if (!Array.isArray(children) || children.length < count.min) {
+      throw new Error(`Tier ${tier} is missing the required ${count.min === count.max ? count.min : `${count.min}-${count.max}`} children for ${parent.number}.`);
+    }
+    children.slice(0, count.max).forEach((child: any, index: number) => {
+      if (typeof child?.text !== "string" || !child.text.trim()) throw new Error(`Tier ${tier} contains an invalid child for ${parent.number}.`);
       const number = `${parent.number}.${index + 1}`;
-      statements.push({ number, parent: parent.number, text: child.text.trim(), depth: depth - 1,
+      statements.push({ number, parent: parent.number, text: child.text.trim(), depth: tier - 1,
         url: isReputableSource(child.url) ? child.url : undefined });
     });
   }
@@ -150,37 +206,212 @@ ${source}`;
   if (start < 0 || end < start) throw new Error("Fresh-tier review returned invalid structured output.");
   const reviewed = JSON.parse(reviewedRaw.slice(start, end + 1));
   const accepted: TierCandidate[] = [];
+  const rejected: TierCandidate[] = [];
   for (const candidate of candidates) {
     const result = reviewed[candidate.number];
-    if (!result || result.directSupport !== true || typeof result.text !== "string" || !result.text.trim()) continue;
+    if (!result || result.directSupport !== true || typeof result.text !== "string" || !result.text.trim()) {
+      rejected.push({ ...candidate, reviewFailure: { label: "OFF-TARGET", reason: "The node did not pass the existing direct-support review." } });
+      continue;
+    }
     const wasDuplicate = duplicateNumbers.includes(candidate.number);
     const updated = { ...candidate, text: wasDuplicate ? result.text.trim() : candidate.text };
     // This is the required post-regeneration code gate. A second duplicate is dropped, not retried.
-    if (duplicatesAny(updated, [...existing, ...accepted])) continue;
+    if (duplicatesAny(updated, [...existing, ...accepted])) {
+      rejected.push({ ...updated, reviewFailure: { label: "VAGUE", reason: "The node remained too similar to an existing tree node after one regeneration." } });
+      continue;
+    }
     accepted.push(updated);
+  }
+  const byNumber = new Map([...accepted, ...rejected].map((candidate) => [candidate.number, candidate]));
+  return candidates.map((candidate) => byNumber.get(candidate.number)!).filter(Boolean);
+}
+
+type LegitimacyResult = { label: "EMPIRICAL" | "LOGICAL" | "AUTHORITY" | "VAGUE" | "OFF-TARGET"; reason: string };
+
+function parseClassifications(raw: string, candidates: TierCandidate[]): Record<string, LegitimacyResult> {
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start >= 0 && end >= start) {
+    try {
+      const parsed = JSON.parse(raw.slice(start, end + 1));
+      const result: Record<string, LegitimacyResult> = {};
+      for (const candidate of candidates) {
+        const item = parsed[candidate.number];
+        if (item && ["EMPIRICAL", "LOGICAL", "AUTHORITY", "VAGUE", "OFF-TARGET"].includes(item.label) &&
+          typeof item.reason === "string" && item.reason.trim()) {
+          result[candidate.number] = { label: item.label, reason: item.reason.trim() };
+        }
+      }
+      if (candidates.every((candidate) => result[candidate.number])) return result;
+    } catch {
+      // Try the requested line-oriented response format below.
+    }
+  }
+  const result: Record<string, LegitimacyResult> = {};
+  for (const line of raw.split("\n")) {
+    const match = /^\s*(\d+(?:\.\d+)+)\s*[,|:\-]\s*(EMPIRICAL|LOGICAL|AUTHORITY|VAGUE|OFF-TARGET)\s*[,|:\-]\s*(.+)$/i.exec(line);
+    if (match) result[match[1]] = { label: match[2].toUpperCase() as LegitimacyResult["label"], reason: match[3].trim() };
+  }
+  const missing = candidates.filter((candidate) => !result[candidate.number]).map((candidate) => candidate.number);
+  if (missing.length) throw new Error(`Fresh-tier legitimacy classifier returned no valid label and reason for: ${missing.join(", ")}.`);
+  return result;
+}
+
+async function classifyLegitimacy(candidates: TierCandidate[], existing: FreshTreeStatement[], signal: AbortSignal,
+  allowCitationNodes: boolean): Promise<Record<string, LegitimacyResult>> {
+  if (!candidates.length) return {};
+  const prompt = `Label each node. EMPIRICAL = a specific, concrete fact or case. LOGICAL = a derivation, demonstration, or counterexample. AUTHORITY = its content is that someone says/argues/believes something. VAGUE = gestures at evidence without stating it. OFF-TARGET = does not establish the parent's exact claim. Return: node number, label, reason. Return ONLY a JSON object keyed by node number, each value {"label":"EMPIRICAL|LOGICAL|AUTHORITY|VAGUE|OFF-TARGET","reason":"one-line reason"}.
+ A restatement or paraphrase of the parent is VAGUE, not LOGICAL: an actual derivation needs distinct premises and a complete inference. "A study found people conform to groups" is VAGUE, not EMPIRICAL, because it gives no specific study, measurement, place, or observed case. "The Stanford Encyclopedia of Philosophy notes that induction lacks a non-circular justification" is AUTHORITY, not LOGICAL. Do not mistake a matching topic for support of the exact parent.
+${allowCitationNodes ? 'The user explicitly requested "allow citation nodes": AUTHORITY citation nodes may pass, but OFF-TARGET and VAGUE nodes must still fail.' : ""}
+
+${NODE_LEGITIMACY_RULE}
+
+PARENTS AND NODES:
+${candidates.map((item) => `${item.parent} ${existing.find((line) => line.number === item.parent)?.text}\n${item.number} ${item.text}`).join("\n")}`;
+  const raw = await callLLM("openai", prompt, signal);
+  return parseClassifications(raw, candidates);
+}
+
+function patternLabel(text: string, allowCitationNodes: boolean): "VAGUE" | "AUTHORITY" | undefined {
+  if (VAGUE_PATTERNS.some((pattern) => pattern.test(text))) return "VAGUE";
+  if (!allowCitationNodes && (AUTHORITY_PATTERNS.some((pattern) => pattern.test(text)) ||
+    /^(?:\s*(?:https?:\/\/\S+|[¹²³⁴⁵⁶⁷⁸⁹⁰]+|\[\d+\])\s*[.,]?\s*)$/.test(text))) return "AUTHORITY";
+  return undefined;
+}
+
+function patternFailure(text: string, allowCitationNodes: boolean): string | undefined {
+  const label = patternLabel(text, allowCitationNodes);
+  return label === "VAGUE" ? "The node contains a forbidden vague-evidence phrase." :
+    label === "AUTHORITY" ? "The node contains a forbidden authority phrase or only a citation." : undefined;
+}
+
+function legitimacyPasses(label: string | undefined, allowCitationNodes: boolean): boolean {
+  return label === "EMPIRICAL" || label === "LOGICAL" || (allowCitationNodes && label === "AUTHORITY");
+}
+
+async function recheckDirectSupport(candidates: TierCandidate[], existing: FreshTreeStatement[], signal: AbortSignal): Promise<Set<string>> {
+  if (!candidates.length) return new Set();
+  const prompt = `Review regenerated child nodes. For every exact node number return directSupport true only if the node directly establishes its immediate parent's specific claim; otherwise false. Return ONLY a JSON object keyed by node number, shaped {"1.1.1":{"directSupport":true}}.
+
+PARENTS AND REGENERATED NODES:
+${candidates.map((item) => `${item.parent} ${existing.find((line) => line.number === item.parent)?.text}\n${item.number} ${item.text}`).join("\n")}
+
+FULL EXISTING TREE:
+${existing.map((item) => `${item.number} ${item.text}`).join("\n")}`;
+  const raw = await callLLM("openai", prompt, signal);
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start < 0 || end < start) throw new Error("Fresh-tier regenerated-node review returned invalid structured output.");
+  const reviewed = JSON.parse(raw.slice(start, end + 1));
+  return new Set(candidates.filter((candidate) => reviewed[candidate.number]?.directSupport === true).map((candidate) => candidate.number));
+}
+
+async function enforceLegitimacy(candidates: TierCandidate[], existing: FreshTreeStatement[], source: string, researchResult: string,
+  instructions: string, signal: AbortSignal, onWarning: (message: string) => void, shouldStop?: () => boolean): Promise<TierCandidate[]> {
+  const allowCitationNodes = /\ballow citation nodes\b/i.test(instructions);
+  const firstReview = await classifyLegitimacy(candidates, existing, signal, allowCitationNodes);
+  if (shouldStop?.()) return [];
+  const failed = candidates.filter((candidate) => candidate.reviewFailure || patternFailure(candidate.text, allowCitationNodes) ||
+    !legitimacyPasses(firstReview[candidate.number]?.label, allowCitationNodes) ||
+    firstReview[candidate.number]?.label === "OFF-TARGET");
+  const regenerated: TierCandidate[] = [];
+  for (const candidate of failed) {
+    assertNotAborted(signal);
+    const classification = firstReview[candidate.number] || { label: "VAGUE" as const, reason: "The classifier did not return a label." };
+    const rejection = candidate.reviewFailure;
+    const reason = rejection?.reason || patternFailure(candidate.text, allowCitationNodes) || classification.reason;
+    const label = rejection?.label || patternLabel(candidate.text, allowCitationNodes) || classification.label;
+    const prompt = `Regenerate this rejected node exactly once. Your node was rejected as ${label}: ${reason}. Replace it with a node that establishes the parent by a concrete fact or by logic.
+
+${NODE_LEGITIMACY_RULE}
+${allowCitationNodes ? 'The user explicitly requested "allow citation nodes", but the replacement must still establish its parent and must not be OFF-TARGET.' : ""}
+
+Return ONLY one sentence for node ${candidate.number}, with no node number or links. If factual, put any citation marker (¹, ², ...) only at the end. Use only the provided web research result for factual claims.
+
+USER INSTRUCTIONS:
+${instructions.trim() || DEFAULT_FRESH_INSTRUCTIONS}
+PARENT ${candidate.parent}: ${existing.find((line) => line.number === candidate.parent)?.text}
+REJECTED NODE ${candidate.number}: ${candidate.text}
+WEB RESEARCH RESULT: ${researchResult}
+SOURCE TEXT (freshness exclusion list): ${source}`;
+    const replacement = await callLLM("openai", prompt, signal);
+    assertNotAborted(signal);
+    if (shouldStop?.()) return [];
+    const text = replacement.trim().replace(/^\s*\d+(?:\.\d+)+\s+/, "").split("\n")[0].trim();
+    if (text) regenerated.push({ ...candidate, text });
+  }
+  if (shouldStop?.()) return [];
+  const recheck = regenerated.length ? await classifyLegitimacy(regenerated, existing, signal, allowCitationNodes) : {};
+  if (shouldStop?.()) return [];
+  const supportRecheck = regenerated.length ? await recheckDirectSupport(regenerated, existing, signal) : new Set<string>();
+  if (shouldStop?.()) return [];
+  const accepted: TierCandidate[] = [];
+  const failedNumbers = new Set(failed.map((candidate) => candidate.number));
+  const byNumber = new Map(regenerated.map((item) => [item.number, item]));
+  for (const candidate of candidates) {
+    const replacement = byNumber.get(candidate.number);
+    const result = replacement ? recheck[candidate.number] : firstReview[candidate.number];
+    const text = replacement?.text || candidate.text;
+    const pattern = patternFailure(text, allowCitationNodes);
+    const supportFailed = Boolean(replacement && !supportRecheck.has(candidate.number));
+    const regenerationMissing = failedNumbers.has(candidate.number) && !replacement;
+    if (pattern || result?.label === "OFF-TARGET" || !legitimacyPasses(result?.label, allowCitationNodes) || supportFailed || regenerationMissing) {
+      const label = supportFailed ? "OFF-TARGET" : patternLabel(text, allowCitationNodes) || result?.label || candidate.reviewFailure?.label || "VAGUE";
+      const why = supportFailed ? "The regenerated node did not pass the existing direct-support review." :
+        regenerationMissing ? "The one allowed regeneration returned no replacement." :
+          pattern || result?.reason || candidate.reviewFailure?.reason || "The classifier did not return a label.";
+      onWarning(`Node ${candidate.number} dropped: ${label} — ${why}`);
+      continue;
+    }
+    accepted.push({ ...candidate, text, legitimacyLabel: result!.label });
   }
   return accepted;
 }
 
+function superscript(value: number): string {
+  const digits = ["⁰", "¹", "²", "³", "⁴", "⁵", "⁶", "⁷", "⁸", "⁹"];
+  return String(value).split("").map((digit) => digits[Number(digit)]).join("");
+}
+
 export async function addNextTier(source: string, existing: FreshTreeStatement[], instructions: string, signal: AbortSignal,
-  onThesis: (statements: FreshTreeStatement[], sources: FreshTreeSource[]) => void) {
+  onTier: (statements: FreshTreeStatement[], sources: FreshTreeSource[]) => void, options: AddTierOptions = {}): Promise<boolean> {
   const deepest = Math.max(...existing.map((item) => item.depth));
-  const nextDepth = deepest + 2;
+  const tierNumber = deepest + 2;
   const parents = existing.filter((item) => item.depth === deepest);
   if (!parents.length) throw new Error("The existing tree has no deepest-tier nodes.");
-  for (const root of existing.filter((item) => item.number.endsWith(".0"))) {
+  const roots = existing.filter((item) => item.number.endsWith(".0")).filter((root) => {
+    const prefix = root.number.split(".")[0] + ".";
+    return parents.some((item) => item.number.startsWith(prefix));
+  });
+  const maxTheses = roots.length;
+  const count = childCount(instructions, tierNumber);
+  const effectiveInstructions = !instructions.trim() || instructions.trim() === DEFAULT_FRESH_INSTRUCTIONS
+    ? (tierNumber > 3
+      ? DEFAULT_FRESH_INSTRUCTIONS.replace("add 1 or 2 child nodes", "add exactly 1 child node")
+      : DEFAULT_FRESH_INSTRUCTIONS)
+    : instructions.trim();
+  const allowCitationNodes = /\ballow citation nodes\b/i.test(instructions);
+  const allCandidates: TierCandidate[] = [];
+  const results: string[] = [];
+  for (let rootIndex = 0; rootIndex < roots.length; rootIndex++) {
+    const root = roots[rootIndex];
     assertNotAborted(signal);
+    if (options.shouldStop?.()) return true;
     const prefix = root.number.split(".")[0] + ".";
     const group = parents.filter((item) => item.number.startsWith(prefix));
     if (!group.length) continue;
-    const prompt = `Search exactly once for this top-level thesis. Build focused search queries from EACH immediate parent's complete, specific claim—not generic topic words—then add exactly one new tier. Follow the user's instructions. Return ONLY a JSON object keyed by every exact parent number. Each value is an array of 1 or 2 objects shaped {"text":"one sentence","url":"direct supporting source URL"}. Include every parent exactly once. Do not put links in text.
+    options.onProgress?.(tierNumber, rootIndex + 1, maxTheses);
+    const prompt = `Search exactly once for this top-level thesis. Build focused search queries from EACH immediate parent's complete, specific claim—not generic topic words—then add exactly one new tier. Follow the user's instructions. Return ONLY a JSON object keyed by every exact parent number. Each value is an array of ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} objects shaped {"text":"one sentence","url":"direct supporting source URL"}. Include every parent exactly once. Do not put links in text.
 
 Every node must add NEW, SPECIFIC information beyond its parent: a named study, experiment, case, number, mechanism, place, or person. It must directly support its IMMEDIATE parent's specific claim. A restatement or paraphrase of its parent or any other tree line is forbidden. "Current" means scientifically up to date and not superseded, not merely recent; classic and recent findings are allowed. Never write "a study found": name the study, researchers, or case. Prefer vivid, memorable, concrete cases over generic summaries.
 
 Use only primary or reputable sources: journals, universities, government agencies, or major science outlets. Never use career sites, content farms, or pop-psychology explainer sites. Confirm that each source's date and content match the node's claim.
 
+${NODE_LEGITIMACY_RULE}
+${allowCitationNodes ? 'The user explicitly requested "allow citation nodes"; citation/authority nodes are allowed, but vague and OFF-TARGET nodes remain forbidden.' : ""}
+
 USER INSTRUCTIONS:
-${instructions.trim() || DEFAULT_FRESH_INSTRUCTIONS}
+${effectiveInstructions}
 
 FULL EXISTING TREE (do not alter it):
 ${existing.map((item) => `${item.number} ${item.text}`).join("\n")}
@@ -192,12 +423,82 @@ SOURCE TEXT (reference and freshness exclusion list):
 <source>
 ${source}
 </source>`;
-    const answer = await research(prompt, signal);
-    const parsed = parseTier(answer.text, group, nextDepth);
-    const accepted = await reviewAndDeduplicate(parsed, existing, answer.text, source, signal);
-    const statements = accepted.map(({ parent: _parent, url, ...statement }) => ({ ...statement,
-      text: `${statement.text}${answer.searched && url ? "" : " [unverified]"}` }));
-    const sources = answer.searched ? accepted.filter((item) => item.url).map((item) => ({ node: item.number, url: item.url! })) : [];
-    onThesis(statements, sources);
+    try {
+      const answer = await research(prompt, signal, options.shouldStop);
+      assertNotAborted(signal);
+      if (options.shouldStop?.()) return true;
+      let parsed: TierCandidate[];
+      try {
+        parsed = parseTier(answer.text, group, tierNumber, count);
+      } catch {
+        const repaired = await callLLM("openai", `The prior tier response omitted or misnumbered a required parent. Return ONLY a JSON object with exactly these parent keys: ${group.map((item) => item.number).join(", ")}. Under each key put ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} child objects shaped {"text":"one concrete sentence establishing this exact parent","url":"direct reputable supporting source URL"}. Use facts from the research response below; do not invent claims or cite someone merely saying something.\n\n${NODE_LEGITIMACY_RULE}\n\nPARENTS:\n${group.map((item) => `${item.number} ${item.text}`).join("\n")}\n\nRESEARCH RESPONSE:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
+        assertNotAborted(signal);
+        if (options.shouldStop?.()) return true;
+        try {
+          parsed = parseTier(repaired, group, tierNumber, count);
+        } catch {
+          const perParent: Record<string, Array<{ text: string; url?: string }>> = {};
+          for (const parent of group) {
+            const individual = await callLLM("openai", `Return ONLY a JSON array of ${count.min} ${count.min === 1 ? "child" : "children"} for parent ${parent.number}: ${parent.text}. Each child is {"text":"one sentence establishing the exact parent by a concrete fact or full logical counterexample","url":"direct reputable source URL if factual"}. Use only facts supported by the research below, no examples from the source, no authority assertions.\n\n${NODE_LEGITIMACY_RULE}\n\nRESEARCH:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
+            assertNotAborted(signal);
+            if (options.shouldStop?.()) return true;
+            const opening = individual.indexOf("[");
+            const closing = individual.lastIndexOf("]");
+            const children = opening >= 0 && closing > opening ? JSON.parse(individual.slice(opening, closing + 1)) : [];
+            if (!Array.isArray(children) || children.length < count.min) {
+              throw new Error(`Tier ${tierNumber} is missing children for ${parent.number} after a correction attempt.`);
+            }
+            perParent[parent.number] = children;
+          }
+          parsed = parseTier(JSON.stringify(perParent), group, tierNumber, count);
+        }
+      }
+      const accepted = await reviewAndDeduplicate(parsed, existing, answer.text, source, signal);
+      assertNotAborted(signal);
+      if (options.shouldStop?.()) return true;
+      allCandidates.push(...accepted.map((candidate) => ({ ...candidate, searched: answer.searched })));
+      results.push(answer.text);
+    } catch (error: any) {
+      throw new Error(`Tier ${tierNumber}, thesis ${root.number}: ${error?.message || "generation failed"}`);
+    }
   }
+  const allResearch = results.join("\n");
+  let supported: TierCandidate[];
+  try {
+    supported = await enforceLegitimacy(allCandidates, existing, source, allResearch, instructions, signal,
+      (message) => options.onWarning?.(message), options.shouldStop);
+  } catch (error: any) {
+    throw new Error(`Tier ${tierNumber}, thesis ${roots[0]?.number || "unknown"}: ${error?.message || "legitimacy review failed"}`);
+  }
+  assertNotAborted(signal);
+  if (options.shouldStop?.()) return true;
+  const parentNumbers = new Set(supported.map((item) => item.parent));
+  for (const parent of parents) if (!parentNumbers.has(parent.number)) {
+    options.onWarning?.(`Node ${parent.number} has no legitimate support.`);
+  }
+  if (!supported.length) {
+    throw new Error(`Tier ${tierNumber}, thesis ${roots[0]?.number || "unknown"}: no legitimate children remained after review.`);
+  }
+  let markerNumber = existing.reduce((max, statement) => {
+    const trailingMarker = /([⁰¹²³⁴⁵⁶⁷⁸⁹]+)$/.exec(statement.text.trim())?.[1];
+    if (!trailingMarker) return max;
+    const numeric = Number(trailingMarker.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (digit) =>
+      String("⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit))));
+    return Number.isFinite(numeric) ? Math.max(max, numeric) : max;
+  }, 0);
+  const statements: FreshTreeStatement[] = [];
+  const sources: FreshTreeSource[] = [];
+  for (const { parent: _parent, url, searched, legitimacyLabel, reviewFailure: _reviewFailure, ...statement } of supported) {
+    const factualText = statement.text.replace(/[¹²³⁴⁵⁶⁷⁸⁹⁰]/g, "").trim();
+    if (url && searched && legitimacyLabel === "EMPIRICAL") {
+      markerNumber++;
+      const marker = superscript(markerNumber);
+      statements.push({ ...statement, text: `${factualText}${marker}` });
+      sources.push({ node: statement.number, marker, url });
+    } else {
+      statements.push({ ...statement, text: factualText });
+    }
+  }
+  onTier(statements, sources);
+  return false;
 }

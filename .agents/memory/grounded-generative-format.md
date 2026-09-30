@@ -14,3 +14,9 @@ For new source-only tree flows, cite code-assigned source passage numbers rather
 **Why:** Exact-excerpt retries still rejected a short, one-page book when the model altered a supporting quote. Passage IDs remove quote-transcription failures while keeping citations tied to actual supplied text.
 
 **How to apply:** Number source passages before prompting, validate cited IDs in the response, and keep claims and fresh examples separate. Do not describe a valid passage ID as proof of semantic support without a separate check.
+
+For legitimacy edge cases, do not treat a conflicting instruction as a deterministic test fixture. A model may anticipate a prohibition and produce an allowed node instead, so the rejection, regeneration, and drop path never runs.
+
+**Why:** Live requests asking for philosopher citations produced apparently valid support nodes without any drop warnings, even after classifier guidance was tightened. The absence of warnings did not prove the rejection path worked.
+
+**How to apply:** Verify rejection and one-time regeneration with controlled candidate inputs as well as live requests. Report separately when a live conflict scenario never actually exercised that path; do not infer it passed from prompt wording.

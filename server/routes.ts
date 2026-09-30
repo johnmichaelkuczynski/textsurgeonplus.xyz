@@ -49,6 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Replit forwards requests through one trusted proxy hop. This makes req.ip
   // the server-derived client address rather than a caller-controlled header.
   app.set("trust proxy", 1);
+  const freshTreeRuns = new Map<string, { stopRequested: boolean }>();
 
   const { analyzeText, analyzeTextStreaming, callLLM } = await import("./llm");
 
@@ -1276,11 +1277,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     })) });
   });
 
+  app.post("/api/fresh-tree/stop", (req, res) => {
+    const { runId } = req.body || {};
+    if (typeof runId !== "string" || !runId.trim()) return res.status(400).json({ error: "A runId is required." });
+    const run = freshTreeRuns.get(runId);
+    if (run) run.stopRequested = true;
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ stopped: Boolean(run) });
+  });
+
   app.post("/api/fresh-tree", async (req, res) => {
-    const { text, selection, mode, indices, action = "generate", trees, instructions } = req.body || {};
+    const { text, selection, mode, indices, action = "generate", trees, instructions, addedInstructions, depth, runId } = req.body || {};
     if (typeof text !== "string" || !text.trim() || !["A", "B", "C", "D"].includes(mode) || !["generate", "next"].includes(action)) {
       return res.status(400).json({ error: "Valid text, mode, and action are required." });
     }
+    if (depth !== undefined && (!Number.isInteger(depth) || depth < 2)) {
+      return res.status(400).json({ error: "Depth must be a whole number of 2 or more." });
+    }
+    if (typeof runId !== "string" || !runId.trim()) return res.status(400).json({ error: "A runId is required." });
     if (mode === "D" && (typeof selection !== "string" || !selection || !text.includes(selection))) {
       return res.status(400).json({ error: "Highlight text in the main text box first" });
     }
@@ -1289,7 +1303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (mode === "C" && (!Array.isArray(indices) || !indices.length || indices.some((index: unknown) => !Number.isInteger(index) || (index as number) < 0 || (index as number) >= chapters.length))) {
       return res.status(400).json({ error: "Tick at least one detected chapter." });
     }
-    const selected = mode === "C" ? [...new Set(indices as number[])].sort((a, b) => a - b) : mode === "B" ? chapters.map((_, index) => index) : [0];
+    const selected = mode === "C" ? Array.from(new Set(indices as number[])).sort((a, b) => a - b) : mode === "B" ? chapters.map((_, index) => index) : [0];
     let units = selected.map((index) => ({ index, title: mode === "A" ? "Whole book" : mode === "D" ? "Selected text" : chapters[index].title,
       source: mode === "A" ? text : mode === "D" ? selection as string : chapters[index].text }));
     if (action === "next") {
@@ -1299,6 +1313,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     const controller = new AbortController();
+    const runState = { stopRequested: false };
+    freshTreeRuns.set(runId, runState);
     req.once("aborted", () => controller.abort());
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-store");
@@ -1307,28 +1323,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const send = (event: unknown) => { if (!controller.signal.aborted && !res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`); };
     try {
       const { generateFreshTree, addNextTier } = await import("./services/freshTree");
+      let stopped = false;
       for (let position = 0; position < units.length; position++) {
         const unit = units[position];
         if (controller.signal.aborted) break;
-        send({ type: "progress", message: `${action === "next" ? "Adding next tier" : "Building tree"}: ${unit.title} (${position + 1}/${units.length})` });
+        if (runState.stopRequested) { stopped = true; break; }
+        let treeEmitted = false;
         try {
           if (action === "generate") {
-            const statements = await generateFreshTree(unit.source, controller.signal);
+            const chapterLabel = mode === "B" || mode === "C" ? ` — chapter ${position + 1} of ${units.length}` : "";
+            send({ type: "progress", message: `Building tier 1 of ${Number.isInteger(depth) ? depth : 2} — thesis 1 of 1${chapterLabel}` });
+            let statements;
+            try {
+              statements = await generateFreshTree(unit.source, controller.signal);
+            } catch (error: any) {
+              throw new Error(`Tier 1–2, thesis 1: ${error?.message || "generation failed"}`);
+            }
             send({ type: "tree", index: unit.index, title: unit.title, statements });
+            treeEmitted = true;
+            if (runState.stopRequested) {
+              send({ type: "chapter-complete", index: unit.index, title: unit.title });
+              stopped = true;
+              break;
+            }
+            let current = statements;
+            const targetDepth = Number.isInteger(depth) ? depth : 2;
+            for (let tier = 3; tier <= targetDepth; tier++) {
+              if (runState.stopRequested) { stopped = true; break; }
+              const wasStopped = await addNextTier(unit.source, current, typeof (addedInstructions ?? instructions) === "string" ? (addedInstructions ?? instructions) : "",
+                controller.signal, (tierStatements, sources) => {
+                  current = [...current, ...tierStatements];
+                  send({ type: "tier", index: unit.index, title: unit.title, statements: tierStatements, sources });
+                }, {
+                  shouldStop: () => runState.stopRequested,
+                  onProgress: (tierNumber, thesis, totalTheses) => {
+                    const chapter = mode === "B" || mode === "C" ? ` — chapter ${position + 1} of ${units.length}` : "";
+                    send({ type: "progress", message: `Building tier ${tierNumber} of ${targetDepth} — thesis ${thesis} of ${totalTheses}${chapter}` });
+                  },
+                  onWarning: (message) => send({ type: "node-warning", index: unit.index, message }),
+                });
+              if (wasStopped || runState.stopRequested) { stopped = true; break; }
+              if (current.length === statements.length) break;
+            }
+            if (stopped) {
+              send({ type: "chapter-complete", index: unit.index, title: unit.title });
+              break;
+            }
           } else {
             const tree = trees.find((item: any) => item.index === unit.index);
+            const currentDepth = Math.max(...tree.statements.map((item: any) => item.depth)) + 1;
+            const tier = currentDepth + 1;
+            const targetDepth = tier;
+            let wasStopped = false;
             await addNextTier(unit.source, tree.statements, typeof instructions === "string" ? instructions : "", controller.signal,
-              (statements, sources) => send({ type: "tier", index: unit.index, title: unit.title, statements, sources }));
+              (statements, sources) => send({ type: "tier", index: unit.index, title: unit.title, statements, sources }), {
+                shouldStop: () => runState.stopRequested,
+                onProgress: (tierNumber, thesis, totalTheses) => {
+                  const chapter = mode === "B" || mode === "C" ? ` — chapter ${position + 1} of ${units.length}` : "";
+                  send({ type: "progress", message: `Building tier ${tierNumber} of ${targetDepth} — thesis ${thesis} of ${totalTheses}${chapter}` });
+                },
+                onWarning: (message) => send({ type: "node-warning", index: unit.index, message }),
+              }).then((result) => { wasStopped = result; });
+            if (wasStopped || runState.stopRequested) { stopped = true; break; }
           }
           send({ type: "chapter-complete", index: unit.index, title: unit.title });
         } catch (error: any) {
-          if (!controller.signal.aborted) send({ type: "chapter-error", index: unit.index, title: unit.title, error: error?.message || "Generation failed" });
+          if (!controller.signal.aborted) {
+            send({ type: "chapter-error", index: unit.index, title: unit.title, error: error?.message || "Generation failed" });
+            if (treeEmitted) send({ type: "chapter-complete", index: unit.index, title: unit.title });
+            break;
+          }
         }
       }
+      if (runState.stopRequested) stopped = true;
+      if (stopped) send({ type: "stopped" });
       send({ type: "complete" });
     } catch (error: any) {
       send({ type: "error", error: error?.message || "Fresh Tree failed" });
     } finally {
+      if (freshTreeRuns.get(runId) === runState) freshTreeRuns.delete(runId);
       if (!res.writableEnded) res.end();
     }
   });
