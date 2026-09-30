@@ -62,7 +62,7 @@ export function parseTreeLines(raw: string, maximumParts: number): FreshTreeStat
 
 export async function generateFreshTree(source: string, signal: AbortSignal): Promise<FreshTreeStatement[]> {
   assertNotAborted(signal);
-  const required = "Produce only top-level theses (1.0, 2.0 ...) and their direct sub-claims (1.1, 1.2 ...). Do not produce any deeper level. Use only concepts, claims, and examples that appear in the text supplied below. Do not add material from any other source.";
+  const required = "Build a compressed two-tier architecture of the author's theory, not an outline. Each n.0 is a load-bearing thesis, not a heading. Each n.1, n.2, ... must ESTABLISH that exact parent using only the source (reason, distinction, definition, author's example, or author's counterexample). Do not emit one root per paragraph. Each thesis needs at least two children. No lines deeper than tier 2. No outside facts.";
   let previous = "";
   for (let attempt = 0; attempt < 2; attempt++) {
     const correction = attempt ? `\nThe previous response was not a valid two-tier tree. Correct the format: each thesis must be numbered 1.0, 2.0, etc., followed by at least one child numbered 1.1, 2.1, etc. No deeper lines. Recheck every line against the source.\n<previous-response>\n${previous}\n</previous-response>` : "";
