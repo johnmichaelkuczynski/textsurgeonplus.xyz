@@ -131,6 +131,7 @@ ${chunk.slice(0, 6000)}
 """
 
 STRICT RULES:
+- Use ONLY the quoted TEXT for substance. The section title is a label, not evidence. Do not import ideas from other chapters of a book, prior runs, web results, or general knowledge of the work.
 - Only declarative propositions (claims, theses, facts)
 - NEVER: "I will examine", "This section discusses", "The paper is divided"
 - Number format: ${i + 1}.1, ${i + 1}.1.1, ${i + 1}.1.2, ${i + 1}.2, etc.
@@ -157,6 +158,7 @@ ${text.slice(0, 12000)}
 """
 
 CRITICAL RULES:
+0. Use ONLY the quoted TEXT for substance. If this is one chapter of a larger book, do not import ideas from other chapters, web results, prior runs, or general knowledge of the book.
 1. Only declarative propositions — no promissory or structural statements
 2. REJECT: "I will argue", "This paper examines", "The study is divided", "Chapter X discusses"
 3. ACCEPT: "X causes Y", "The central claim is Z", "Determinism entails P", "Language acquisition requires Q"
@@ -226,6 +228,7 @@ DELETION RULES (enforce without mercy):
 - DELETE vague contribution claims: "This study contributes to", "The literature is enriched by"
 
 REWRITING RULES:
+- Do not add new ideas, claims, examples, or references. This pass may only edit or remove nodes already present in RAW TREE.
 - Rewrite every surviving node as a clean, self-contained declarative claim
 - Remove hedges where the text clearly asserts
 - Ensure each claim stands alone without context

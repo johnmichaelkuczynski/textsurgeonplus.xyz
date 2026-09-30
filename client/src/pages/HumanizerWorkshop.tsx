@@ -232,13 +232,15 @@ function SampleBox({
 export default function HumanizerWorkshop() {
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
-  const [customInstructions, setCustomInstructions] = useState("Make every idea as clear as possible. Include numerous rich, original, clearly hypothetical examples that illuminate the source's actual claims and distinctions. Do not present invented examples as facts or borrow the style sample's subject. If a style sample is supplied, follow its prose style only.");
+  const [customInstructions, setCustomInstructions] = useState("");
   const [selectedStylePreset, setSelectedStylePreset] = useState("");
   const [styleSample, setStyleSample] = useState("");
   const [styleInstructions, setStyleInstructions] = useState("");
   const [contentSample, setContentSample] = useState("");
   const [contentInstructions, setContentInstructions] = useState("");
-  const [aiProseProvider, setAiProseProvider] = useState("gemini");
+  const [aiProseProvider, setAiProseProvider] = useState("perplexity");
+  const [isTransforming, setIsTransforming] = useState(false);
+  const [sources, setSources] = useState<string[]>([]);
   const [rewriteMessage, setRewriteMessage] = useState("");
   const [isLoadingInputFile, setIsLoadingInputFile] = useState(false);
   const [rewriteError, setRewriteError] = useState("");
@@ -247,6 +249,47 @@ export default function HumanizerWorkshop() {
   const unavailable = (action: string) => {
     setRewriteMessage("");
     setRewriteError(`${action} is unavailable while the workshop transformation logic is being replaced.`);
+  };
+
+  const transformText = async () => {
+    if (isTransforming) return;
+    if (!inputText.trim() || !styleSample.trim()) {
+      setRewriteError("Enter text in Box A and a style sample in Box D.");
+      return;
+    }
+    if (inputText.trim().split(/\s+/).length > 600) {
+      setRewriteError("This initial Workshop version accepts up to 600 words in Box A.");
+      return;
+    }
+    setIsTransforming(true);
+    setRewriteError("");
+    setRewriteMessage("");
+    setSources([]);
+    try {
+      const response = await fetch("/api/humanizer/transform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: inputText,
+          styleSample,
+          instructions: customInstructions,
+          styleInstructions,
+          contentSample,
+          contentInstructions,
+          provider: aiProseProvider,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "The transformation failed.");
+      if (typeof result.text !== "string" || !result.text.trim()) throw new Error("The provider returned no prose.");
+      setOutputText(result.text);
+      setSources(Array.isArray(result.sources) ? result.sources : []);
+      setRewriteMessage(`${aiProseProvider === "perplexity" ? "Perplexity" : aiProseProvider} transformation complete.`);
+    } catch (error: any) {
+      setRewriteError(error?.message || "The transformation failed.");
+    } finally {
+      setIsTransforming(false);
+    }
   };
 
   const loadInputFile = async (file: File) => {
@@ -276,7 +319,10 @@ export default function HumanizerWorkshop() {
 
   const downloadOutput = () => {
     if (!outputText.trim()) return;
-    const url = URL.createObjectURL(new Blob([outputText], { type: "text/plain;charset=utf-8" }));
+    const downloadableText = sources.length
+      ? `${outputText}\n\nResearch sources:\n${sources.map((source, index) => `[${index + 1}] ${source}`).join("\n")}`
+      : outputText;
+    const url = URL.createObjectURL(new Blob([downloadableText], { type: "text/plain;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "humanizer-box-b-result.txt";
@@ -331,7 +377,7 @@ export default function HumanizerWorkshop() {
                 <FileInput className="h-5 w-5 text-blue-700" />
                 <div>
                   <h2 className="font-black uppercase tracking-wide text-blue-950">Box A — Text Input</h2>
-                  <p className="text-xs text-blue-700">Paste your text here; put the target style sample in Box D.</p>
+                  <p className="text-xs text-blue-700">Enter up to 600 words here; Box D controls the prose style.</p>
                 </div>
               </div>
             </div>
@@ -348,11 +394,12 @@ export default function HumanizerWorkshop() {
               />
               <Button
                 type="button"
-                onClick={() => unavailable("Transform Text")}
+                 onClick={() => void transformText()}
+                 disabled={isTransforming}
                 className="gap-2 bg-blue-700 text-white hover:bg-blue-800"
                 data-testid="button-rewrite-workshop"
               >
-                <WandSparkles className="h-4 w-4" /> Transform Text
+                 {isTransforming ? <Loader2 className="h-4 w-4 animate-spin" /> : <WandSparkles className="h-4 w-4" />} {isTransforming ? "Transforming…" : "Transform Text"}
               </Button>
               {import.meta.env.DEV ? (
                 <Button
@@ -390,7 +437,7 @@ export default function HumanizerWorkshop() {
                   <SelectItem value="venice">Venice AI</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-xs text-blue-700">Transformation is unavailable. Text and Markdown files can still be loaded.</span>
+               <span className="text-xs text-blue-700">Perplexity is the default for web-supported additions. Other providers may not research the web.</span>
             </div>
             <Textarea
               value={inputText}
@@ -412,14 +459,15 @@ export default function HumanizerWorkshop() {
                 <Sparkles className="h-5 w-5 text-emerald-700" />
                 <div>
                   <h2 className="font-black uppercase tracking-wide text-emerald-950">Box B — Text Output</h2>
-                  <p className="text-xs text-emerald-700">Output can be entered manually; transformation is unavailable.</p>
+                   <p className="text-xs text-emerald-700">The transformed text appears here and remains editable.</p>
                 </div>
               </div>
             </div>
             <div className="flex items-center gap-2 border-b border-emerald-200 bg-emerald-50 px-5 py-3">
               <Button
                 type="button"
-                onClick={() => unavailable("Rewrite")}
+                 onClick={() => void transformText()}
+                 disabled={isTransforming}
                 className="gap-2 bg-emerald-700 text-white hover:bg-emerald-800"
                 data-testid="button-rewrite-output"
               >
@@ -437,7 +485,7 @@ export default function HumanizerWorkshop() {
               <Button type="button" variant="outline" onClick={downloadOutput} disabled={!outputText.trim()} className="gap-2 bg-white" data-testid="button-download-output">
                 <Download className="h-4 w-4" /> Download Box B
               </Button>
-              <span className="text-xs text-emerald-800">Rewrite and saved-result loading are unavailable.</span>
+               <span className="text-xs text-emerald-800">Saved-result loading is unavailable.</span>
             </div>
             {rewriteMessage ? (
               <p role="status" className="border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs font-semibold text-emerald-900">{rewriteMessage}</p>
@@ -445,10 +493,18 @@ export default function HumanizerWorkshop() {
             {rewriteError ? (
               <p role="alert" className="border-b border-red-200 bg-red-50 px-5 py-2 text-sm text-red-800">{rewriteError}</p>
             ) : null}
+            {sources.length > 0 ? (
+              <div className="border-b border-emerald-200 bg-emerald-50 px-5 py-2 text-xs text-emerald-900">
+                Research sources: {sources.map((url, index) => (
+                  <a key={`${url}-${index}`} href={url} target="_blank" rel="noopener noreferrer" className="mr-3 underline">[{index + 1}]</a>
+                ))}
+              </div>
+            ) : null}
             <Textarea
               value={outputText}
               onChange={(event) => {
                 setOutputText(event.target.value);
+                setSources([]);
                 setRewriteMessage("");
                 setRewriteError("");
               }}
@@ -464,7 +520,7 @@ export default function HumanizerWorkshop() {
             <SlidersHorizontal className="h-5 w-5 text-violet-700" />
             <div>
               <h2 className="font-black uppercase tracking-wide text-violet-950">Box C — Custom Instructions</h2>
-              <p className="text-xs text-violet-700">Specify exactly how the text should be humanized.</p>
+               <p className="text-xs text-violet-700">Optional. Clarity, support, vivid examples, and style matching apply by default.</p>
             </div>
           </div>
           <div className="border-b border-violet-200 bg-violet-50/50 px-5 py-3">
@@ -506,7 +562,7 @@ export default function HumanizerWorkshop() {
         <SampleBox
           boxLabel="Box D"
           title="Style Sample"
-          description="Provide a sample whose prose style should guide the transformation."
+           description="The controlling model for syntax, diction, examples, illustrations, and argument."
           color="amber"
           value={styleSample}
           onChange={setStyleSample}

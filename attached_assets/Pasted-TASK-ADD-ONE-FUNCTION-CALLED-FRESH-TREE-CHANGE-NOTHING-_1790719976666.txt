@@ -1,0 +1,69 @@
+TASK: ADD ONE FUNCTION CALLED "FRESH TREE". CHANGE NOTHING ELSE.
+
+SCOPE RULES
+- Do not remove, rename, move, or restyle any existing button, dialog, dropdown, or function.
+- First remove any leftover code from the previous "fresh-support" attempt (buttons, routes, dropdown options).
+- Add exactly ONE new button, labeled "FRESH TREE", in the same function-button grid as the existing "TRACTATUS TREE" button, directly next to it, same size and style.
+
+CLICKING "FRESH TREE" OPENS ONE DIALOG WITH FOUR RADIO OPTIONS:
+  (A) Whole book — one tree
+  (B) Whole book — each chapter gets its own tree
+  (C) Selected chapters — each gets its own tree
+  (D) Manual select
+Plus one "GENERATE" button and one "CANCEL" button. Nothing else in the dialog.
+
+Default selection: (D) if the user has text highlighted in the main text box; otherwise (A).
+
+OPTION DETAILS
+(A) Input = entire text in the main text box. Output = one tree.
+(B) Input = entire text, split into chapters. Output = one separate tree per chapter.
+(C) When selected, show a checklist of all detected chapters (number, title, word count). User ticks any subset. Output = one separate tree per ticked chapter.
+(D) Input = exactly the highlighted text, any length. Output = one tree. If nothing is highlighted, show the message "Highlight text in the main text box first" and do nothing else.
+
+CHAPTER DETECTION (used by B and C)
+- Reuse the chapter-splitting code of the existing chapter-by-chapter tree option.
+- Split on chapter headings in the BODY of the text, not the table of contents. Ignore table-of-contents lines.
+- Before generating, (B) and (C) show the detected chapter list (number, title, word count) so the user can see what will be processed.
+
+ISOLATION (critical)
+- Each tree must be built ONLY from its own input text. For (B) and (C), each chapter's tree sees ONLY that chapter's text.
+- Every model call is stateless: no conversation history, no prior results, no database or retrieval context, no cached output from earlier runs.
+- The prompt must say: "Use only concepts, claims, and examples that appear in the text supplied below. Do not add material from any other source."  (This applies to Step 1 only.)
+
+WHAT HAPPENS FOR EACH TREE
+Step 1. Build a Tractatus tree of the input with ONLY two tiers: top theses (1.0, 2.0 ...) and sub-claims (1.1, 1.2, 2.1 ...). Never generate 1.1.1 or deeper in this step. Reuse the existing tree code with depth limited to 2.
+Step 2. For every two-digit claim (1.1, 1.2 ..., not the x.0 headings), generate 1 or 2 third-tier lines (1.1.1, 1.1.2).
+  The Step 2 prompt must include these rules verbatim:
+  "Each third-tier line must be a concrete example or fact that illustrates or supports its parent claim.
+   It must be FRESH: do not use any example, name, case, or illustration that appears in the source text below. The source text is provided only so you can avoid repeating it.
+   Prefer real, accurate, current scientific or factual examples. Everyday examples are allowed. Do not invent fake facts.
+   One sentence per line. No commentary."
+  Pass that tree's own input text in the prompt as the exclusion reference.
+  Process one top-level thesis at a time and display each as soon as it finishes, so long inputs do not time out.
+Step 3. Display in the same result panel/format the existing TRACTATUS TREE uses: plain numbered lines, e.g.
+  1.0 ...
+  1.1 ...
+  1.1.1 ...
+  1.1.2 ...
+  For (B) and (C), show the trees in chapter order, each preceded by a header line: "CHAPTER <number>: <title>".
+  Provide Copy and Download .txt buttons (one .txt containing all trees shown).
+
+FOURTH TIER (optional)
+- After all trees finish, show one button under the result: "ADD FOURTH TIER".
+- Clicking it adds 1 line (1.1.1.1) under every third-tier line of every tree shown, same freshness rules, same isolation rules, and redisplays everything with all earlier lines unchanged.
+
+NO WEB SEARCH. Use the model's own knowledge. No source links. No paid research calls.
+
+ERRORS
+- Any failure shows a visible red error message saying what failed and for which chapter. Nothing may ever fail silently.
+- If one chapter fails in (B) or (C), still display the others.
+
+DEFINITION OF DONE (you are authorized to restart the app)
+1. Restart the app.
+2. Load a text with at least 3 chapters. Run (A). Confirm one tree with fresh third-tier lines.
+3. Run (B). Confirm one tree per chapter, each with a CHAPTER header, and that no chapter's tree mentions material from another chapter.
+4. Run (C) with 2 chapters ticked. Confirm exactly those 2 trees.
+5. Highlight one paragraph, run (D). Confirm one tree built only from that paragraph.
+6. Click ADD FOURTH TIER after any run. Confirm fourth-tier lines appear and earlier lines are unchanged.
+7. Confirm every pre-existing button still works as before.
+Do not report complete until you have personally seen steps 2 through 7 succeed in the Preview. Report only: "Done. Tested steps 2 through 7." or exactly which step failed.

@@ -2,3 +2,6 @@
 - [Provider diagnostic honesty](provider-diagnostic-honesty.md) — a successful fallback rewrite does not verify the requested provider's key.
 - [Author corpus credentials](author-corpus-credentials.md) — preserve distinct author keys; a shared-key search cannot verify them individually.
 - [Live Vite file replacement](vite-hmr-file-replacement.md) — avoid transient deletion of imported pages during hot updates; it can crash the running preview.
+- [Document-bound analyses](document-bound-analyses.md) — derived outputs must be tied to the exact current source, not merely to the page session.
+- [Removed fresh-support tree](removed-fresh-support-tree.md) — keep the rejected extension removed; the later, separately requested FRESH TREE is distinct.
+- [Grounded generative output](grounded-generative-format.md) — live tree models may invent quotes, omit children, or ignore numbering; validate and use keyed output.

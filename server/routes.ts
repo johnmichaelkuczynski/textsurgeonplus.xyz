@@ -20,6 +20,8 @@ import {
   getGenius101Status,
   searchGenius101,
 } from "./services/genius101";
+import { transformWorkshop, validateWorkshopRequest } from "./services/humanizerWorkshop";
+import { splitBookChapters } from "./services/tractatusChapters";
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -1189,7 +1191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/tractatus-tree", async (req, res) => {
-    const { text, provider, username } = req.body;
+    const { text, provider, username, mode = "whole" } = req.body;
 
     if (!text || typeof text !== "string") {
       return res.status(400).json({ error: "Missing or invalid 'text' field" });
@@ -1199,26 +1201,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     if (wordCount < 100) {
       return res.status(400).json({ error: "Text too short for Tractatus Tree (minimum 100 words)" });
     }
+    if (mode !== "whole" && mode !== "chapters") {
+      return res.status(400).json({ error: "Invalid Tractatus Tree mode" });
+    }
+    const chapters = mode === "chapters" ? splitBookChapters(text) : [];
+    if (mode === "chapters" && chapters.length < 2) {
+      return res.status(400).json({ error: "Could not find at least two substantial, sequential chapters with standalone Chapter headings. Use the whole-book option or check the chapter headings." });
+    }
 
     res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
     try {
       const { generateTractatusTree } = await import("./services/tractatusTree");
-      
-      const result = await generateTractatusTree(
-        text,
-        provider || 'openai',
-        (progress) => {
-          res.write(`data: ${JSON.stringify({ type: 'progress', ...progress })}\n\n`);
+      let result: Awaited<ReturnType<typeof generateTractatusTree>> | undefined;
+      if (mode === "chapters") {
+        for (let index = 0; index < chapters.length; index++) {
+          const chapter = chapters[index];
+          res.write(`data: ${JSON.stringify({ type: "progress", current: index, total: chapters.length, message: `Generating ${chapter.title} (${index + 1} of ${chapters.length})` })}\n\n`);
+          const result = await generateTractatusTree(chapter.text, provider || "openai");
+          res.write(`data: ${JSON.stringify({ type: "chapter-complete", index, title: chapter.title, total: chapters.length, result })}\n\n`);
         }
-      );
+        res.write(`data: ${JSON.stringify({ type: "complete", chapterCount: chapters.length })}\n\n`);
+      } else {
+        result = await generateTractatusTree(
+          text,
+          provider || 'openai',
+          (progress) => {
+            res.write(`data: ${JSON.stringify({ type: 'progress', ...progress })}\n\n`);
+          }
+        );
+        res.write(`data: ${JSON.stringify({ type: 'complete', result })}\n\n`);
+      }
 
-      res.write(`data: ${JSON.stringify({ type: 'complete', result })}\n\n`);
-
-      if (username && typeof username === "string" && username.trim().length >= 2) {
+      if (mode === "whole" && result && username && typeof username === "string" && username.trim().length >= 2) {
         try {
           const cleanUsername = username.trim().toLowerCase();
           let user = await storage.getUserByUsername(cleanUsername);
@@ -1242,6 +1260,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.write(`data: ${JSON.stringify({ type: 'error', error: error.message || 'Generation failed' })}\n\n`);
     } finally {
       res.end();
+    }
+  });
+
+  app.post("/api/fresh-tree/chapters", (req, res) => {
+    const { text } = req.body || {};
+    if (typeof text !== "string" || !text.trim()) return res.status(400).json({ error: "Text is required." });
+    const chapters = splitBookChapters(text, true);
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ chapters: chapters.map((chapter, index) => ({
+      index,
+      title: chapter.title,
+      number: Number(/\d+/.exec(chapter.title)?.[0] || index + 1),
+      wordCount: chapter.text.split(/\s+/).filter(Boolean).length,
+    })) });
+  });
+
+  app.post("/api/fresh-tree", async (req, res) => {
+    const { text, selection, mode, indices, phase = "generate", trees } = req.body || {};
+    if (typeof text !== "string" || !text.trim() || !["A", "B", "C", "D"].includes(mode) ||
+        !["generate", "fourth"].includes(phase)) {
+      return res.status(400).json({ error: "Valid text, mode, and phase are required." });
+    }
+    if (mode === "D" && (typeof selection !== "string" || !selection.trim() || !text.includes(selection))) {
+      return res.status(400).json({ error: "Highlight text in the main text box first." });
+    }
+    const chapters = mode === "B" || mode === "C" ? splitBookChapters(text, true) : [];
+    if ((mode === "B" || mode === "C") && !chapters.length) {
+      return res.status(400).json({ error: "No body chapters were detected. Check the chapter headings." });
+    }
+    if (mode === "C" && (!Array.isArray(indices) || !indices.length ||
+        indices.some((index: unknown) => !Number.isInteger(index) || (index as number) < 0 || (index as number) >= chapters.length))) {
+      return res.status(400).json({ error: "Tick at least one detected chapter." });
+    }
+    const selected = mode === "C" ? Array.from(new Set(indices as number[])).sort((a, b) => a - b) :
+      mode === "B" ? chapters.map((_, index) => index) : [0];
+    let units = selected.map((index) => ({
+      index,
+      title: mode === "A" ? "Whole book" : mode === "D" ? "Selected text" : chapters[index].title,
+      source: mode === "A" ? text : mode === "D" ? selection as string : chapters[index].text,
+    }));
+    if (phase === "fourth") {
+      if (!Array.isArray(trees) || !trees.length || trees.some((tree: any) =>
+        !units.some((unit) => unit.index === tree?.index) ||
+        !Array.isArray(tree?.statements) || tree.statements.some((item: any) =>
+          typeof item?.number !== "string" || typeof item?.text !== "string" ||
+          ![0, 1, 2].includes(item?.depth))) ||
+        new Set(trees.map((tree: any) => tree.index)).size !== trees.length) {
+        return res.status(400).json({ error: "Completed third-tier trees are required to add a fourth tier." });
+      }
+      units = units.filter((unit) => trees.some((tree: any) => tree.index === unit.index));
+    }
+
+    const controller = new AbortController();
+    const abort = () => { if (!res.writableEnded) controller.abort(); };
+    req.once("aborted", abort);
+    res.once("close", abort);
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+    const send = (event: unknown) => {
+      if (!controller.signal.aborted && !res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`);
+    };
+    try {
+      const { generateFreshTree, addFourthTier } = await import("./services/freshTree");
+      for (let unitIndex = 0; unitIndex < units.length; unitIndex++) {
+        const unit = units[unitIndex];
+        if (controller.signal.aborted) break;
+        send({ type: "progress", message: `${phase === "fourth" ? "Adding fourth tier" : "Building tree"}: ${unit.title} (${unitIndex + 1}/${units.length})` });
+        try {
+          if (phase === "fourth") {
+            await addFourthTier(unit.source, trees.find((tree: any) => tree.index === unit.index).statements, controller.signal, (statements) =>
+              send({ type: "fourth", index: unit.index, title: unit.title, statements }));
+          } else {
+            await generateFreshTree(unit.source, controller.signal, (statements) =>
+              send({ type: "thesis", index: unit.index, title: unit.title, statements }));
+          }
+          send({ type: "chapter-complete", index: unit.index, title: unit.title });
+        } catch (error: any) {
+          if (controller.signal.aborted) break;
+          send({ type: "chapter-error", index: unit.index, title: unit.title, error: error?.message || "Generation failed" });
+        }
+      }
+      send({ type: "complete" });
+    } catch (error: any) {
+      send({ type: "error", error: error?.message || "Fresh Tree failed" });
+    } finally {
+      req.off("aborted", abort);
+      res.off("close", abort);
+      if (!res.writableEnded) res.end();
     }
   });
 
@@ -3801,6 +3909,33 @@ Return only the response.`;
       res.status(502).json({
         error: error?.message || "The thinker response could not be generated",
       });
+    }
+  });
+
+  app.post("/api/humanizer/transform", async (req, res) => {
+    let input;
+    try {
+      input = validateWorkshopRequest(req.body);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+    const controller = new AbortController();
+    const abortOnDisconnect = () => {
+      if (!res.writableEnded) controller.abort();
+    };
+    req.once("aborted", abortOnDisconnect);
+    res.once("close", abortOnDisconnect);
+    try {
+      const result = await transformWorkshop(input, callLLM, controller.signal);
+      if (!controller.signal.aborted) res.json(result);
+    } catch (error: any) {
+      if (!controller.signal.aborted) {
+        console.error("Workshop transformation error:", error);
+        res.status(502).json({ error: error?.message || "The transformation failed." });
+      }
+    } finally {
+      req.off("aborted", abortOnDisconnect);
+      res.off("close", abortOnDisconnect);
     }
   });
 

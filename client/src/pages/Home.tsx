@@ -49,6 +49,7 @@ import {
   MessageCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { FreshTreeDialog } from "@/components/FreshTreeDialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,6 +106,14 @@ type GPTZeroDetection = {
   scannedCharacters: number;
   truncated: boolean;
   cached?: boolean;
+};
+
+type TractatusTreeStatement = { number: string; text: string; depth: number };
+type TractatusChapterResult = {
+  title: string;
+  columns: TractatusTreeStatement[][];
+  maxDepth: number;
+  totalStatements: number;
 };
 
 function getOrCreateVisitorId(): string {
@@ -339,6 +348,8 @@ export default function Home() {
   const [streamingOutput, setStreamingOutput] = useState("");
   
   const [chunks, setChunks] = useState<Chunk[]>([]);
+  const [chunkRangeInput, setChunkRangeInput] = useState("");
+  const [chunkRangeFeedback, setChunkRangeFeedback] = useState<{ text: string; error: boolean } | null>(null);
   const [showChunkSelector, setShowChunkSelector] = useState(false);
   const [currentChunkIndex, setCurrentChunkIndex] = useState(0);
   const [totalChunksToProcess, setTotalChunksToProcess] = useState(0);
@@ -449,11 +460,19 @@ export default function Home() {
 
   // Tractatus Tree state
   const [showTractatusTree, setShowTractatusTree] = useState(false);
+  const [showFreshTree, setShowFreshTree] = useState(false);
+  const [freshTreeSelection, setFreshTreeSelection] = useState("");
   const [tractatusTreeProgress, setTractatusTreeProgress] = useState<{current: number, total: number, message: string} | null>(null);
   const [tractatusTreeColumns, setTractatusTreeColumns] = useState<{number: string, text: string, depth: number}[][]>([]);
   const [tractatusTreeMaxDepth, setTractatusTreeMaxDepth] = useState(0);
   const [isGeneratingTree, setIsGeneratingTree] = useState(false);
   const [tractatusTreeTitle, setTractatusTreeTitle] = useState("TRACTATUS TREE");
+  const [tractatusTreeMode, setTractatusTreeMode] = useState<"whole" | "chapters">("whole");
+  const [chapterTrees, setChapterTrees] = useState<TractatusChapterResult[]>([]);
+  const [selectedChapterIndex, setSelectedChapterIndex] = useState(0);
+  const treeRequestRef = useRef<AbortController | null>(null);
+  const bookDb2RequestRef = useRef<AbortController | null>(null);
+  const previousSourceRef = useRef(text);
 
   // Summary state
   const [showSummary, setShowSummary] = useState(false);
@@ -588,6 +607,28 @@ export default function Home() {
   
   const wordCount = text.split(/\s+/).filter(Boolean).length;
   const needsChunking = wordCount > CHUNK_SIZE;
+
+  // Derived trees belong to exactly one source document, not to the page session.
+  useEffect(() => {
+    if (previousSourceRef.current === text) return;
+    previousSourceRef.current = text;
+    treeRequestRef.current?.abort();
+    bookDb2RequestRef.current?.abort();
+    treeRequestRef.current = null;
+    bookDb2RequestRef.current = null;
+    setIsGeneratingTree(false);
+    setTractatusTreeColumns([]);
+    setTractatusTreeMaxDepth(0);
+    setTractatusTreeProgress(null);
+    setChapterTrees([]);
+    setSelectedChapterIndex(0);
+    setFreshTreeSelection("");
+    setBookDb2Data(null);
+    setBookDb2Progress(null);
+    setBookDb2Error(null);
+    setBookDb2SavedId(null);
+    setIsRunningBookDb2(false);
+  }, [text]);
   
   useEffect(() => {
     loadSavedAuthors(username);
@@ -668,6 +709,8 @@ export default function Home() {
   
   // Update chunks when text changes, preserving processed state
   useEffect(() => {
+    setChunkRangeInput("");
+    setChunkRangeFeedback(null);
     if (needsChunking) {
       const newChunks = splitIntoChunks(text);
       setChunks(prevChunks => {
@@ -943,32 +986,32 @@ export default function Home() {
   
   const selectedChunks = chunks.filter(c => c.selected);
 
-  // Manual chunk range input state
-  const [chunkRangeInput, setChunkRangeInput] = useState("");
-  
   // Density slider state (1-10, affects extraction intensity)
   const [extractionDensity, setExtractionDensity] = useState(5);
   
   // Parse and apply manual chunk ranges like "1-5, 8, 10-12"
   const applyChunkRange = (rangeStr: string) => {
-    if (!rangeStr.trim()) return;
-    
+    if (!rangeStr.trim()) {
+      setChunkRangeFeedback({ text: `Enter a range from 1 to ${chunks.length}, or choose a preset. This button selects chunks; a function button below starts analysis.`, error: true });
+      return;
+    }
+
     const selectedIds = new Set<number>();
     const parts = rangeStr.split(',').map(s => s.trim());
-    
     for (const part of parts) {
-      if (part.includes('-')) {
-        const [start, end] = part.split('-').map(n => parseInt(n.trim()));
-        if (!isNaN(start) && !isNaN(end)) {
-          for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
-            selectedIds.add(i);
-          }
-        }
-      } else {
-        const num = parseInt(part);
-        if (!isNaN(num)) {
-          selectedIds.add(num);
-        }
+      const match = /^(\d+)(?:\s*-\s*(\d+))?$/.exec(part);
+      if (!match) {
+        setChunkRangeFeedback({ text: `Invalid range. Use numbers from 1 to ${chunks.length}, such as 1-2, 4.`, error: true });
+        return;
+      }
+      const start = Number(match[1]);
+      const end = match[2] ? Number(match[2]) : start;
+      if (start < 1 || end < 1 || start > chunks.length || end > chunks.length) {
+        setChunkRangeFeedback({ text: `Chunk numbers must be between 1 and ${chunks.length}. No selection was changed.`, error: true });
+        return;
+      }
+      for (let i = Math.min(start, end); i <= Math.max(start, end); i++) {
+        selectedIds.add(i);
       }
     }
     
@@ -976,6 +1019,7 @@ export default function Home() {
       ...c,
       selected: selectedIds.has(c.id)
     })));
+    setChunkRangeFeedback({ text: `${selectedIds.size} of ${chunks.length} chunks selected. Click a function button below to generate results.`, error: false });
   };
   
   // Preset selection functions
@@ -1020,6 +1064,7 @@ export default function Home() {
       ...c,
       selected: selectedSet.has(c.id)
     })));
+    setChunkRangeFeedback({ text: `${selectedIds.length} of ${total} chunks selected. Click a function button below to generate results.`, error: false });
     
     // Update the range input to reflect the selection
     if (selectedIds.length > 0) {
@@ -2099,6 +2144,8 @@ export default function Home() {
   };
 
   const handleGenerateTractatusTree = async () => {
+    if (treeRequestRef.current) return;
+    const runMode = tractatusTreeMode;
     const wordCount = text.split(/\s+/).filter(Boolean).length;
     if (wordCount < 100) {
       toast({
@@ -2109,24 +2156,32 @@ export default function Home() {
       return;
     }
 
+    const controller = new AbortController();
+    treeRequestRef.current = controller;
     setIsGeneratingTree(true);
     setTractatusTreeColumns([]);
+    setChapterTrees([]);
+    setSelectedChapterIndex(0);
     setTractatusTreeProgress({ current: 0, total: 3, message: "Starting Tractatus Tree generation..." });
 
     try {
       const response = await fetch('/api/tractatus-tree', {
         method: 'POST',
+        cache: 'no-store',
+        signal: controller.signal,
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
           text,
           provider: selectedLLM,
+          mode: runMode,
           username: username || undefined
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to start Tractatus Tree generation');
+        const error = await response.json().catch(() => null);
+        throw new Error(error?.error || 'Failed to start Tractatus Tree generation');
       }
 
       const reader = response.body?.getReader();
@@ -2134,9 +2189,11 @@ export default function Home() {
 
       const decoder = new TextDecoder();
       let buffer = '';
+      let completed = false;
 
       while (true) {
         const { done, value } = await reader.read();
+        if (controller.signal.aborted) break;
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
@@ -2146,15 +2203,35 @@ export default function Home() {
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const data = line.slice(6);
+            let parsed: any;
             try {
-              const parsed = JSON.parse(data);
-              if (parsed.type === 'progress') {
-                setTractatusTreeProgress({
-                  current: parsed.current,
-                  total: parsed.total,
-                  message: parsed.message
-                });
-              } else if (parsed.type === 'complete') {
+              parsed = JSON.parse(data);
+            } catch {
+              console.error('Failed to parse Tractatus Tree event');
+              continue;
+            }
+            if (controller.signal.aborted) break;
+            if (parsed.type === 'progress') {
+              setTractatusTreeProgress({
+                current: parsed.current ?? 0,
+                total: parsed.total ?? 0,
+                message: parsed.message
+              });
+            } else if (parsed.type === 'chapter-complete') {
+              const chapter: TractatusChapterResult = {
+                title: parsed.title,
+                columns: parsed.result.columns || [],
+                maxDepth: parsed.result.maxDepth || 0,
+                totalStatements: parsed.result.totalStatements || 0,
+              };
+              setChapterTrees((previous) => [...previous, chapter]);
+              if (parsed.index === 0) {
+                setTractatusTreeColumns(chapter.columns);
+                setTractatusTreeMaxDepth(chapter.maxDepth);
+              }
+            } else if (parsed.type === 'complete') {
+              completed = true;
+              if (runMode === 'whole') {
                 setTractatusTreeColumns(parsed.result.columns || []);
                 setTractatusTreeMaxDepth(parsed.result.maxDepth || 0);
                 setTractatusTreeProgress({ current: 3, total: 3, message: `Complete: ${parsed.result.totalStatements} statements across ${parsed.result.columns?.length || 0} abstraction levels` });
@@ -2162,16 +2239,19 @@ export default function Home() {
                   title: "Tractatus Tree Complete",
                   description: `Generated ${parsed.result.totalStatements} statements with ${parsed.result.maxDepth + 1} levels of depth`,
                 });
-              } else if (parsed.type === 'error') {
-                throw new Error(parsed.error);
+              } else {
+                setTractatusTreeProgress({ current: parsed.chapterCount, total: parsed.chapterCount, message: `Complete: ${parsed.chapterCount} separate chapter trees` });
+                toast({ title: "Chapter trees complete", description: `Generated a separate tree for each of ${parsed.chapterCount} chapters.` });
               }
-            } catch (parseError) {
-              console.error('Failed to parse SSE data:', parseError);
+            } else if (parsed.type === 'error') {
+              throw new Error(parsed.error);
             }
           }
         }
       }
+      if (!completed && !controller.signal.aborted) throw new Error("Tree generation ended before all results were received.");
     } catch (error: any) {
+      if (controller.signal.aborted) return;
       console.error('Tractatus Tree error:', error);
       toast({
         title: "Generation Failed",
@@ -2180,8 +2260,11 @@ export default function Home() {
       });
       setTractatusTreeProgress({ current: 0, total: 3, message: error.message || "Generation failed" });
     } finally {
-      setIsGeneratingTree(false);
-      fetchCredits();
+      if (treeRequestRef.current === controller) {
+        treeRequestRef.current = null;
+        setIsGeneratingTree(false);
+        fetchCredits();
+      }
     }
   };
 
@@ -2299,7 +2382,8 @@ export default function Home() {
   };
 
   const downloadTractatusTree = () => {
-    const docTitle = tractatusTreeTitle.trim() || "TRACTATUS TREE";
+    const chapterTitle = tractatusTreeMode === "chapters" ? chapterTrees[selectedChapterIndex]?.title : "";
+    const docTitle = [tractatusTreeTitle.trim() || "TRACTATUS TREE", chapterTitle].filter(Boolean).join(" — ");
     let content = `${docTitle}\n`;
     content += "=".repeat(docTitle.length) + "\n\n";
     
@@ -2317,7 +2401,7 @@ export default function Home() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'tractatus_tree.txt';
+    a.download = chapterTitle ? `tractatus_tree_chapter_${selectedChapterIndex + 1}.txt` : 'tractatus_tree.txt';
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -2326,7 +2410,8 @@ export default function Home() {
     const paragraphs: Paragraph[] = [];
     
     // Title - Heading 1 (use custom title or default)
-    const docTitle = tractatusTreeTitle.trim() || "TRACTATUS TREE";
+    const chapterTitle = tractatusTreeMode === "chapters" ? chapterTrees[selectedChapterIndex]?.title : "";
+    const docTitle = [tractatusTreeTitle.trim() || "TRACTATUS TREE", chapterTitle].filter(Boolean).join(" — ");
     paragraphs.push(
       new Paragraph({
         children: [new TextRun({ text: docTitle, bold: true, size: 32 })],
@@ -2373,7 +2458,7 @@ export default function Home() {
     });
     
     const blob = await Packer.toBlob(doc);
-    saveAs(blob, "tractatus_tree.docx");
+    saveAs(blob, chapterTitle ? `tractatus_tree_chapter_${selectedChapterIndex + 1}.docx` : "tractatus_tree.docx");
     toast({ title: "Downloaded", description: "Tractatus Tree saved as Word document" });
   };
 
@@ -2582,7 +2667,9 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
   // ── Book Database 2.0 handlers ────────────────────────────────────────────
 
   const handleRunBookDatabase2 = async () => {
-    if (!text.trim()) return;
+    if (!text.trim() || bookDb2RequestRef.current) return;
+    const controller = new AbortController();
+    bookDb2RequestRef.current = controller;
     setIsRunningBookDb2(true);
     setBookDb2Data(null);
     setBookDb2Error(null);
@@ -2591,6 +2678,8 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     try {
       const response = await fetch("/api/book-to-database-2", {
         method: "POST",
+        cache: "no-store",
+        signal: controller.signal,
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
@@ -2606,6 +2695,7 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
       let buf = "";
       while (true) {
         const { done, value } = await reader.read();
+        if (controller.signal.aborted) break;
         if (done) break;
         buf += decoder.decode(value, { stream: true });
         const lines = buf.split("\n");
@@ -2613,6 +2703,7 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
         for (const line of lines) {
           if (!line.startsWith("data: ")) continue;
           const parsed = JSON.parse(line.slice(6));
+          if (controller.signal.aborted) break;
           if (parsed.type === "progress") {
             setBookDb2Progress({ stage: parsed.stage, message: parsed.message, current: parsed.current, total: parsed.total });
           } else if (parsed.type === "complete") {
@@ -2624,9 +2715,12 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
         }
       }
     } catch (err: any) {
-      setBookDb2Error(err.message || "Failed to run Book Database 2.0");
+      if (!controller.signal.aborted) setBookDb2Error(err.message || "Failed to run Book Database 2.0");
     } finally {
-      setIsRunningBookDb2(false);
+      if (bookDb2RequestRef.current === controller) {
+        bookDb2RequestRef.current = null;
+        setIsRunningBookDb2(false);
+      }
     }
   };
 
@@ -3793,13 +3887,21 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
 
   const handleClearInput = () => {
     setText("");
-    toast({ description: "Input cleared" });
+    toast({ description: "Input discarded" });
   };
 
   const handleClearOutput = () => {
     setHasResult(false);
     setResult(null);
-    toast({ description: "Results cleared" });
+    toast({ description: "Results discarded" });
+  };
+
+  const handleHardRefresh = () => {
+    treeRequestRef.current?.abort();
+    bookDb2RequestRef.current?.abort();
+    const url = new URL(window.location.href);
+    url.searchParams.set("fresh", Date.now().toString());
+    window.location.replace(url.toString());
   };
 
   const generateReportContent = () => {
@@ -4449,12 +4551,23 @@ ${parsed.analyzer}`);
                     size="sm" 
                     className="h-10 text-sm gap-2 text-muted-foreground hover:text-destructive transition-all"
                     onClick={handleClearInput}
-                    title="Clear Input"
+                    title="Discard Input"
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span>Clear</span>
+                    <span>Discard Input</span>
                   </Button>
                 )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-10 text-sm gap-2 border-2 border-amber-400"
+                  onClick={handleHardRefresh}
+                  data-testid="button-hard-refresh"
+                  title="Reset this page and fetch a fresh copy without deleting saved work"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Hard Refresh
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -4485,7 +4598,12 @@ ${parsed.analyzer}`);
                 placeholder="Enter text, paste content, or drag files here to begin analysis..." 
                 className={`min-h-[65vh] md:min-h-[70vh] flex-none resize-y border-none focus-visible:ring-0 p-6 text-xl leading-relaxed font-serif bg-transparent placeholder:text-gray-400 ${isDragging ? 'pointer-events-none' : ''}`}
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => { setText(e.target.value); setFreshTreeSelection(""); }}
+                onSelect={(e) => {
+                  const field = e.currentTarget;
+                  setFreshTreeSelection(field.selectionStart < field.selectionEnd
+                    ? field.value.slice(field.selectionStart, field.selectionEnd) : "");
+                }}
                 data-testid="input-text"
               />
               
@@ -4751,7 +4869,16 @@ ${parsed.analyzer}`);
                           type="text"
                           placeholder="Enter range: 1-5, 8, 10-12"
                           value={chunkRangeInput}
-                          onChange={(e) => setChunkRangeInput(e.target.value)}
+                          onChange={(e) => {
+                            setChunkRangeInput(e.target.value);
+                            setChunkRangeFeedback(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              applyChunkRange(chunkRangeInput);
+                            }
+                          }}
                           className="flex-1 h-8 text-sm"
                           data-testid="input-chunk-range"
                         />
@@ -4762,9 +4889,12 @@ ${parsed.analyzer}`);
                           className="h-8 text-xs bg-orange-600 hover:bg-orange-700"
                           data-testid="button-apply-range"
                         >
-                          Apply
+                          Apply Range
                         </Button>
                       </div>
+                      <p className={`text-xs ${chunkRangeFeedback?.error ? "text-red-700" : "text-orange-700"}`} aria-live="polite" data-testid="chunk-range-feedback">
+                        {chunkRangeFeedback?.text || "Apply Range selects document chunks. To generate an analysis, choose a function below."}
+                      </p>
                       
                       <div className="flex flex-wrap gap-1">
                         <span className="text-xs text-orange-700 font-semibold mr-1 self-center">Presets:</span>
@@ -4986,6 +5116,15 @@ ${parsed.analyzer}`);
                     <GitBranch className="w-5 h-5 mr-2" />
                     TRACTATUS TREE
                   </Button>
+                  <Button
+                    onClick={() => setShowFreshTree(true)}
+                    disabled={isProcessing || !text}
+                    className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-yellow-600 to-amber-600 text-white hover:shadow-lg transition-all hover:scale-105"
+                    data-testid="button-fresh-tree"
+                  >
+                    <GitBranch className="w-5 h-5 mr-2" />
+                    FRESH TREE
+                  </Button>
                   <Button 
                     onClick={() => {
                       if (!ttsText.trim() && text) setTtsText(text);
@@ -5167,7 +5306,7 @@ ${parsed.analyzer}`);
                     variant="ghost" 
                     size="icon" 
                     className="h-10 w-10 text-muted-foreground hover:text-destructive transition-all" 
-                    title="Clear Results"
+                    title="Discard Results"
                     onClick={handleClearOutput}
                   >
                     <RotateCcw className="w-5 h-5" />
@@ -7575,6 +7714,8 @@ Freedom is the ratio essendi of the moral law."
       </ResizableDialog>
 
       {/* Tractatus Tree Dialog */}
+      <FreshTreeDialog open={showFreshTree} onOpenChange={setShowFreshTree}
+        text={text} selection={freshTreeSelection} />
       <ResizableDialog open={showTractatusTree} onOpenChange={(open) => {
         setShowTractatusTree(open);
         if (!open) {
@@ -7604,10 +7745,41 @@ Freedom is the ratio essendi of the moral law."
               </p>
             </div>
 
+            <div className="space-y-2 rounded-lg border border-yellow-200 bg-white p-4">
+              <Label htmlFor="tractatus-tree-mode" className="font-semibold">Generate a tree for</Label>
+              <Select
+                value={tractatusTreeMode}
+                onValueChange={(value) => {
+                  if (value !== "whole" && value !== "chapters") return;
+                  setTractatusTreeMode(value);
+                  setTractatusTreeColumns([]);
+                  setTractatusTreeMaxDepth(0);
+                  setChapterTrees([]);
+                  setSelectedChapterIndex(0);
+                  setTractatusTreeProgress(null);
+                }}
+                disabled={isGeneratingTree}
+              >
+                <SelectTrigger id="tractatus-tree-mode" className="max-w-lg" data-testid="select-tractatus-tree-mode">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="whole">The whole book — one tree</SelectItem>
+                  <SelectItem value="chapters">Each chapter — separate trees, one by one</SelectItem>
+                </SelectContent>
+              </Select>
+              {tractatusTreeMode === "chapters" && (
+                <p className="text-xs text-muted-foreground">
+                  Requires at least two substantial chapters with standalone “Chapter 1”, “Chapter Two”, or similar headings.
+                  Each chapter is sent separately in its own generation request.
+                </p>
+              )}
+            </div>
+
             {tractatusTreeProgress && (
               <div className="bg-muted rounded-lg p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+                  {isGeneratingTree && <div className="w-5 h-5 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />}
                   <span className="text-sm font-medium">{tractatusTreeProgress.message}</span>
                 </div>
                 {tractatusTreeProgress.total > 0 && (
@@ -7618,6 +7790,35 @@ Freedom is the ratio essendi of the moral law."
                     />
                   </div>
                 )}
+              </div>
+            )}
+
+            {tractatusTreeMode === "chapters" && chapterTrees.length > 0 && (
+              <div className="space-y-2 rounded-lg border border-yellow-200 bg-white p-4">
+                <Label htmlFor="tractatus-chapter-result" className="font-semibold">Chapter tree to view or download</Label>
+                <Select
+                  value={String(selectedChapterIndex)}
+                  onValueChange={(value) => {
+                    const index = Number(value);
+                    const chapter = chapterTrees[index];
+                    if (!chapter) return;
+                    setSelectedChapterIndex(index);
+                    setTractatusTreeColumns(chapter.columns);
+                    setTractatusTreeMaxDepth(chapter.maxDepth);
+                  }}
+                >
+                  <SelectTrigger id="tractatus-chapter-result" className="max-w-lg" data-testid="select-tractatus-chapter-result">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {chapterTrees.map((chapter, index) => (
+                      <SelectItem key={`${chapter.title}-${index}`} value={String(index)}>
+                        {chapter.title} — {chapter.totalStatements} statements
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">{chapterTrees.length} chapter tree{chapterTrees.length === 1 ? "" : "s"} generated separately.</p>
               </div>
             )}
 
@@ -7734,7 +7935,7 @@ Freedom is the ratio essendi of the moral law."
             </div>
 
             <Button
-              onClick={handleGenerateTractatusTree}
+              onClick={() => handleGenerateTractatusTree()}
               disabled={isGeneratingTree || !text || text.split(/\s+/).filter(Boolean).length < 100}
               className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
               data-testid="button-generate-tractatus-tree"
@@ -7742,14 +7943,14 @@ Freedom is the ratio essendi of the moral law."
               {isGeneratingTree ? (
                 <>
                   <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Generating Tree...
+                  Generating {tractatusTreeMode === "chapters" ? "Chapter Trees" : "Tree"}...
                 </>
               ) : (
                 <>
                   <GitBranch className="w-4 h-4 mr-2" />
-                  {tractatusTreeColumns.length > 0
-                    ? "Generate New Tractatus Tree"
-                    : "Generate Tractatus Tree"}
+                  {tractatusTreeMode === "chapters"
+                    ? (chapterTrees.length > 0 ? "Regenerate Chapter Trees" : "Generate Chapter Trees")
+                    : (tractatusTreeColumns.length > 0 ? "Generate New Tractatus Tree" : "Generate Tractatus Tree")}
                 </>
               )}
             </Button>

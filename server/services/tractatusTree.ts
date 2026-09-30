@@ -89,6 +89,8 @@ Your task is to rewrite the following text as a series of hierarchically numbere
 3. Progressively more specific as the decimal places increase (1.0 is the most general thesis, 1.1 elaborates on it, 1.1.1 further specifies 1.1)
 
 CRITICAL RULES:
+- The TEXT TO TRANSFORM below is the ONLY source of substance. This request may be for one chapter of a much larger book: do not use, infer, search for, or import content from other chapters, prior generations, outside sources, or your own knowledge of the book.
+- If an idea is not supported by this exact supplied text, omit it, even if you know it appears elsewhere in the same book. Do not fill gaps with likely later developments.
 - Create a DEEP hierarchy with 3-5 levels of depth (e.g., statements like 2.3.4.1 or even 3.1.2.4.2)
 - YOU MUST generate MULTIPLE top-level statements (1.0, 2.0, 3.0, 4.0, etc.) - at least ${Math.max(3, Math.min(10, Math.ceil(wordCount / 500)))} of them
 - Top-level statements (1.0, 2.0, 3.0, 4.0, 5.0, etc.) should be broad theses representing DIFFERENT major topics or arguments in the text

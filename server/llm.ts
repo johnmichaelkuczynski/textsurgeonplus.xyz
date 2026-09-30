@@ -690,7 +690,7 @@ export async function analyzeTextStreaming(text: string, provider: string, funct
   }
 }
 
-export async function callLLM(provider: string, prompt: string): Promise<string> {
+export async function callLLM(provider: string, prompt: string, signal?: AbortSignal): Promise<string> {
   const apiKeys = {
     gemini: process.env.GEMINI_API_KEY || "",
     openai: process.env.OPENAI_API_KEY || "",
@@ -704,6 +704,7 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
   const makeRequest = async (url: string, apiKey: string, model: string, maxTokens: number = 16384) => {
     const response = await fetch(url, {
       method: "POST",
+      signal,
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${apiKey}`,
@@ -733,6 +734,7 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${encodeURIComponent(apiKeys.gemini)}`,
         {
           method: "POST",
+          signal,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -781,6 +783,7 @@ export async function callLLM(provider: string, prompt: string): Promise<string>
       if (!apiKeys.anthropic) throw new Error("ANTHROPIC_API_KEY not configured");
       const anthropicResponse = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
+        signal,
         headers: {
           "Content-Type": "application/json",
           "x-api-key": apiKeys.anthropic,

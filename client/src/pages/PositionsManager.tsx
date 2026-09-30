@@ -87,8 +87,7 @@ export default function PositionsManager() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Delete this position?")) return;
-    
+    // Delete acts immediately; this interface does not use confirmation steps.
     try {
       const res = await fetch(`/api/positions/${id}`, { method: "DELETE", credentials: 'include' });
       if (res.ok) {
