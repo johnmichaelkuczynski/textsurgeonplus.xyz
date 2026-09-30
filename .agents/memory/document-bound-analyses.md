@@ -14,3 +14,15 @@ Resource limits must bound individual analysis requests, never silently limit th
 **Why:** A whole-book result recorded the full input word count while representing mostly the opening chapter. Successful requests and correct source metadata concealed repeated prefix sampling in the analysis itself.
 
 **How to apply:** Check contiguous source coverage through every stage, reject output-limit completions and skipped segments, and distinguish recorded input coverage from guaranteed semantic recall. Whole-text scores need cross-segment reconciliation, not merely averages of local scores.
+
+An unverified optional quotation must not discard a valid tree and all other analyses. Recover literal source passages for typography-only differences; exclude genuinely unmatched proposals with visible evidence, and remove their links.
+
+**Why:** A short-work analysis was entirely rejected because one model-proposed quotation did not match the source. Fail-closed quotation checks were incorrectly applied to the whole independent analysis.
+
+**How to apply:** Never pass paraphrases off as verbatim quotations, but isolate rejection to the offending quote. Retain core outputs and expose quote verification/exclusion in the result and saved evidence.
+
+Tree-only requests must run only tree generation and cleaning, not unrelated quotation extraction or database assessments.
+
+**Why:** A user asking for a tree encountered a database quotation error instead of a tree. Sharing an internal pipeline does not justify making an independently requested output depend on unrelated analyses.
+
+**How to apply:** Keep requested analysis scope explicit end to end. Preserve complete-source coverage and exports for tree-only results; run the additional analyses only when those outputs are requested.

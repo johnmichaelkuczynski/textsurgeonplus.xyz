@@ -1,6 +1,7 @@
 import { callLLM } from "../llm";
 import { coverageFor, partitionBookText, type BookCoverage, type BookSourcePart } from "./bookDatabaseCoverage";
 import { assessWholeBook, crossSegmentRepetition } from "./bookDatabaseAssessment";
+import { createSourceQuoteMatcher, type QuoteVerification } from "./bookDatabaseQuotes";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -75,6 +76,8 @@ export interface BookDatabase {
     processedAt: string;
     provider: string;
     coverage?: BookCoverage;
+    quoteVerification?: QuoteVerification;
+    analysisMode?: "tree";
   };
   cleanedTree: CleanedNode[];
   positions: BookPosition[];
@@ -439,7 +442,26 @@ function prefixDerived(derived: Omit<BookDatabase, "meta" | "cleanedTree">, sour
     if (!Array.isArray(ids) || ids.some((id) => !map.has(id))) throw new Error("Database contains a broken cross-reference.");
     return ids.map((id) => map.get(id)!);
   };
-  const normalizedText = text.replace(/\s+/g, " ");
+  const matchQuote = createSourceQuoteMatcher(text);
+  const retainedQuoteIds = new Map<string, string>();
+  const quoteVerification: QuoteVerification = { verifiedCount: 0, correctedCount: 0, rejectedQuotes: [] };
+  const quotes: BookQuote[] = [];
+  for (const quote of derived.quotes) {
+    const passage = matchQuote(quote.text);
+    if (!passage) {
+      quoteVerification.rejectedQuotes.push({
+        text: quote.text, reason: "No matching passage in the source; excluded rather than presented as a quotation.", source,
+      });
+      continue;
+    }
+    retainedQuoteIds.set(quote.id, quoteIds.get(quote.id)!);
+    quoteVerification.verifiedCount++;
+    if (passage.corrected) quoteVerification.correctedCount++;
+    quotes.push({
+      ...quote, text: passage.text, id: quoteIds.get(quote.id)!,
+      relatedPositionIds: references(quote.relatedPositionIds, positionIds), source,
+    });
+  }
   const positionsById = new Map(derived.positions.map((position) => [position.id, position]));
   const positionDepths = new Map<string, number>();
   const positionDepth = (id: string, visiting = new Set<string>()): number => {
@@ -461,40 +483,60 @@ function prefixDerived(derived: Omit<BookDatabase, "meta" | "cleanedTree">, sour
         parentId: position.parentId ? references([position.parentId], positionIds)[0] : null, source,
       };
     }),
-    quotes: derived.quotes.map((quote) => {
-      if (typeof quote.text !== "string" || !quote.text.trim() ||
-          !normalizedText.includes(quote.text.replace(/\s+/g, " ").trim())) {
-        throw new Error("A purported verbatim quotation is not present in its source segment.");
-      }
-      return { ...quote, id: quoteIds.get(quote.id)!, relatedPositionIds: references(quote.relatedPositionIds, positionIds), source };
-    }),
+    quotes,
     arguments: derived.arguments.map((argument) => ({
       ...argument, id: argumentIds.get(argument.id)!, relatedPositionIds: references(argument.relatedPositionIds, positionIds), source,
     })),
-    conceptClusters: derived.conceptClusters.map((cluster) => ({
-      ...cluster, id: clusterIds.get(cluster.id)!,
-      relatedPositionIds: references(cluster.relatedPositionIds, positionIds),
-      relatedQuoteIds: references(cluster.relatedQuoteIds, quoteIds), source,
-    })),
-    intelligence: derived.intelligence, stylometricThumbprint: derived.stylometricThumbprint,
+    conceptClusters: derived.conceptClusters.map((cluster) => {
+      // Unknown IDs are still an error; known but rejected quotes are removed
+      // from links without throwing away the otherwise valid concept cluster.
+      references(cluster.relatedQuoteIds, quoteIds);
+      return {
+        ...cluster, id: clusterIds.get(cluster.id)!,
+        relatedPositionIds: references(cluster.relatedPositionIds, positionIds),
+        relatedQuoteIds: cluster.relatedQuoteIds.filter((id) => retainedQuoteIds.has(id)).map((id) => retainedQuoteIds.get(id)!),
+        source,
+      };
+    }),
+    intelligence: derived.intelligence, stylometricThumbprint: derived.stylometricThumbprint, quoteVerification,
   };
 }
 
+export interface BookTreeResult {
+  meta: BookDatabase["meta"] & { analysisMode: "tree" };
+  cleanedTree: CleanedNode[];
+}
+
+type BookGenerationOptions = { signal?: AbortSignal; model?: typeof callLLM };
+type BookGenerationProgress = (p: { stage: string; message: string; current: number; total: number }) => void;
+
+export function generateBookDatabase2(
+  text: string, provider: string, meta: { title?: string; author?: string },
+  onProgress: BookGenerationProgress, options: BookGenerationOptions & { treeOnly: true },
+): Promise<BookTreeResult>;
+export function generateBookDatabase2(
+  text: string, provider: string, meta: { title?: string; author?: string },
+  onProgress: BookGenerationProgress, options?: BookGenerationOptions,
+): Promise<BookDatabase>;
 export async function generateBookDatabase2(
   text: string,
   provider: string,
   meta: { title?: string; author?: string },
   onProgress: (p: { stage: string; message: string; current: number; total: number }) => void,
-  options: { signal?: AbortSignal; model?: typeof callLLM } = {},
-): Promise<BookDatabase> {
+  options: BookGenerationOptions & { treeOnly?: boolean } = {},
+): Promise<BookDatabase | BookTreeResult> {
+  const treeOnly = options.treeOnly === true;
   const wordCount = text.trim().split(/\s+/).length;
-  if (wordCount < 50) throw new Error("Text too short for Book Database 2.0 (minimum 50 words)");
+  if (!text.trim()) throw new Error("Text is required.");
+  if (!treeOnly && wordCount < 50) throw new Error("Text too short for Book Database 2.0 (minimum 50 words)");
 
   const parts = partitionBookText(text);
   const model: typeof callLLM = options.model ?? ((provider, prompt, signal) => callLLM(provider, prompt, signal, { rejectTruncated: true }));
   const signal = options.signal;
-  const total = parts.length * 3 + (parts.length > 1 ? 1 : 0);
+  const stepsPerPart = treeOnly ? 2 : 3;
+  const total = parts.length * stepsPerPart + (!treeOnly && parts.length > 1 ? 1 : 0);
   const results: { nodes: CleanedNode[]; derived: ReturnType<typeof prefixDerived>; weight: number; label: string }[] = [];
+  const treeNodes: CleanedNode[] = [];
   let root = 0;
   let processedParts = 0;
   for (const part of parts) {
@@ -503,10 +545,10 @@ export async function generateBookDatabase2(
     const chapterParts = parts.filter((item) => item.chapterIndex === part.chapterIndex);
     const partNumber = chapterParts.findIndex((item) => item.partIndex === part.partIndex) + 1;
     const label = `${part.chapterTitle} — part ${partNumber} of ${chapterParts.length}`;
-    const current = part.partIndex * 3;
+    const current = part.partIndex * stepsPerPart;
     if (!segmentWords) {
       processedParts++;
-      onProgress({ stage: "coverage", message: `${label}: whitespace-only segment covered.`, current: current + 3, total });
+      onProgress({ stage: "coverage", message: `${label}: whitespace-only segment covered.`, current: current + stepsPerPart, total });
       continue;
     }
     try {
@@ -518,6 +560,12 @@ export async function generateBookDatabase2(
       const localNodes = await runCleaningPass(rawTree, provider, model, signal);
       const nodes = normalizeNodes(localNodes, source, () => ++root);
       signal?.throwIfAborted();
+      if (treeOnly) {
+        treeNodes.push(...nodes);
+        processedParts++;
+        onProgress({ stage: "coverage", message: `${label}: tree completed.`, current: current + 2, total });
+        continue;
+      }
       onProgress({ stage: "database", message: `${label}: extracting positions, quotes, arguments, clusters, intelligence and style…`, current: current + 2, total });
       const derived = prefixDerived(await assembleDatabase(nodes, segment, provider, segmentWords, model, signal), source, segment);
       results.push({ nodes, derived, weight: segmentWords || 1, label });
@@ -531,6 +579,17 @@ export async function generateBookDatabase2(
   const coverage = coverageFor(text, parts, processedParts);
   if (coverage.processedCharacters !== text.length || coverage.processedParts !== coverage.totalParts) {
     throw new Error("Full-text analysis is incomplete.");
+  }
+  if (treeOnly) {
+    coverage.aggregation = "not-applicable";
+    onProgress({ stage: "done", message: `Tree complete: all ${parts.length} text segments processed.`, current: total, total });
+    return {
+      meta: {
+        title: meta.title || undefined, author: meta.author || undefined,
+        wordCount, processedAt: new Date().toISOString(), provider, coverage, analysisMode: "tree",
+      },
+      cleanedTree: treeNodes,
+    };
   }
   const weight = results.reduce((sum, result) => sum + result.weight, 0);
   let intelligence = Object.fromEntries(intelligenceKeys.map((key) => [
@@ -572,6 +631,11 @@ export async function generateBookDatabase2(
       processedAt: new Date().toISOString(),
       provider,
       coverage,
+      quoteVerification: {
+        verifiedCount: results.reduce((sum, result) => sum + result.derived.quoteVerification.verifiedCount, 0),
+        correctedCount: results.reduce((sum, result) => sum + result.derived.quoteVerification.correctedCount, 0),
+        rejectedQuotes: results.flatMap((result) => result.derived.quoteVerification.rejectedQuotes),
+      },
     },
     cleanedTree: results.flatMap((result) => result.nodes),
     positions: results.flatMap((result) => result.derived.positions),

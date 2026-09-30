@@ -3964,13 +3964,10 @@ Otherwise return JSON array:
 
     try {
       const { generateBookDatabase2 } = await import("./services/bookToDatabase2");
-      const result = await generateBookDatabase2(
-        text,
-        provider,
-        { title, author },
-        (p) => send({ type: "progress", ...p }),
-        { signal: controller.signal },
-      );
+      const progress = (p: { stage: string; message: string; current: number; total: number }) => send({ type: "progress", ...p });
+      const result = req.body.analysis === "tree"
+        ? await generateBookDatabase2(text, provider, { title, author }, progress, { signal: controller.signal, treeOnly: true })
+        : await generateBookDatabase2(text, provider, { title, author }, progress, { signal: controller.signal });
       send({ type: "complete", result });
     } catch (err: any) {
       send({ type: "error", message: err.message || "Book Database 2.0 failed" });

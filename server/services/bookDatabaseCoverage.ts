@@ -18,7 +18,7 @@ export interface BookCoverage {
   totalParts: number;
   processedParts: number;
   chapters: { chapterIndex: number; title: string; partCount: number; processedParts: number; wordCount: number }[];
-  aggregation: "word-weighted";
+  aggregation: "word-weighted" | "not-applicable";
   assessment?: "whole-text-reconciled";
 }
 

@@ -121,6 +121,8 @@ function buildHarness(text: string, options: {
   invalidArgumentsAt?: number;
   cyclicPositionsAt?: number;
   missingIntermediateParentAt?: number;
+  quoteTransform?: (quote: string, index: number) => string;
+  extraUnmatchedQuote?: boolean;
 } = {}) {
   const segments = partitionBookText(text);
   const captured: PromptCapture = { tree: [], cleaning: [], assembly: [], reconciliation: [], calls: 0 };
@@ -230,11 +232,19 @@ function buildHarness(text: string, options: {
       relatedPositionIds: ["p-root", "p-child"],
     };
     if (options.invalidArgumentsAt === index) argument.premises = [""];
+    const quotes = [{
+      id: "q-local", text: options.quoteTransform ? options.quoteTransform(quote, index) : quote,
+      signalStrength: 8, whyHighSignal: "It states the chapter's inference.", relatedPositionIds: ["p-root"],
+    }];
+    if (options.extraUnmatchedQuote) quotes.push({
+      id: "q-unmatched", text: "This invented quotation does not occur in the source.",
+      signalStrength: 7, whyHighSignal: "Untrusted model proposal.", relatedPositionIds: ["p-root"],
+    });
     return JSON.stringify({
       positions,
-      quotes: [{ id: "q-local", text: quote, signalStrength: 8, whyHighSignal: "It states the chapter's inference.", relatedPositionIds: ["p-root"] }],
+      quotes,
       arguments: [argument],
-      conceptClusters: [{ id: "c-local", label: `Inference ${index + 1}`, description: "A chapter-local concept cluster.", relatedPositionIds: ["p-root"], relatedQuoteIds: ["q-local"] }],
+      conceptClusters: [{ id: "c-local", label: `Inference ${index + 1}`, description: "A chapter-local concept cluster.", relatedPositionIds: ["p-root"], relatedQuoteIds: quotes.map((item) => item.id) }],
       intelligence: metrics,
       stylometricThumbprint: {
         signaturePhrases: [`signature-${index + 1}`],
@@ -389,6 +399,92 @@ test("rejects malformed arguments instead of accepting invalid derived data", as
   );
   assert.equal(harness.captured.assembly.at(-1)!.segmentIndex, 2);
   assert.equal(harness.captured.reconciliation.length, 0);
+});
+
+test("a short work still completes when its only proposed quotation is not in the source", async () => {
+  const text = "Evidence constrains inference without mechanically determining every conclusion. ".repeat(12);
+  const harness = buildHarness(text, { quoteTransform: () => "A model invented this quotation." });
+  const stages: string[] = [];
+  const database = await generateBookDatabase2(text, "mock-provider", {}, (event) => stages.push(event.stage), { model: harness.model });
+  assert.equal(harness.segments.length, 1);
+  assert.ok(stages.includes("done"));
+  assert.equal(database.cleanedTree.length, 2);
+  assert.equal(database.positions.length, 2);
+  assert.equal(database.arguments.length, 1);
+  assert.equal(database.conceptClusters.length, 1);
+  assert.equal(database.quotes.length, 0);
+  assert.deepEqual(database.conceptClusters[0].relatedQuoteIds, []);
+  assert.equal(database.meta.coverage?.processedCharacters, text.length);
+  assert.equal(database.meta.quoteVerification?.verifiedCount, 0);
+  assert.equal(database.meta.quoteVerification?.rejectedQuotes.length, 1);
+  assert.equal(database.meta.quoteVerification?.rejectedQuotes[0].text, "A model invented this quotation.");
+});
+
+test("tree-only generation accepts a very short work and never calls quotation extraction", async () => {
+  const text = "Evidence supports tentative inference rather than certainty.";
+  const harness = buildHarness(text);
+  const stages: string[] = [];
+  const database = await generateBookDatabase2(text, "mock-provider", {}, (event) => stages.push(event.stage), {
+    model: harness.model, treeOnly: true,
+  });
+  assert.equal(database.meta.analysisMode, "tree");
+  assert.equal(database.cleanedTree.length, 2);
+  assert.equal(harness.captured.tree.length, 1);
+  assert.equal(harness.captured.cleaning.length, 1);
+  assert.equal(harness.captured.assembly.length, 0);
+  assert.equal(harness.captured.reconciliation.length, 0);
+  assert.equal(harness.captured.calls, 2);
+  assert.ok(stages.includes("done"));
+  assert.ok(!stages.includes("database"));
+  assert.equal(database.meta.coverage?.processedCharacters, text.length);
+  assert.equal(database.meta.coverage?.aggregation, "not-applicable");
+  assert.ok(!("quotes" in database));
+  assert.ok(!("intelligence" in database));
+});
+
+test("tree-only generation covers every segment of the attached eight-chapter source", async () => {
+  const text = readFileSync(samplePath, "utf8");
+  const harness = buildHarness(text);
+  const database = await generateBookDatabase2(text, "mock-provider", {}, () => {}, { model: harness.model, treeOnly: true });
+  assert.equal(database.meta.coverage?.chapters.length, 8);
+  assert.equal(database.meta.coverage?.processedCharacters, text.length);
+  assert.equal(database.meta.coverage?.processedParts, harness.segments.length);
+  assert.equal(database.cleanedTree.length, harness.segments.length * 2);
+  assert.equal(harness.captured.tree.length, harness.segments.length);
+  assert.equal(harness.captured.cleaning.length, harness.segments.length);
+  assert.equal(harness.captured.assembly.length, 0);
+  for (const call of harness.captured.tree) {
+    assert.equal(extractPromptBlock(call.prompt, "TEXT"), harness.segments[call.segmentIndex].text);
+  }
+});
+
+test("retains valid quotations and removes only links to rejected quotations", async () => {
+  const text = "Exact source quotation for chapter 1: evidence supports inference. " +
+    "Evidence constrains inference without mechanically determining every conclusion. ".repeat(8);
+  const harness = buildHarness(text, { extraUnmatchedQuote: true });
+  const database = await generateBookDatabase2(text, "mock-provider", {}, () => {}, { model: harness.model });
+  assert.equal(database.quotes.length, 1);
+  assert.ok(text.includes(database.quotes[0].text));
+  assert.deepEqual(database.conceptClusters[0].relatedQuoteIds, [database.quotes[0].id]);
+  assert.equal(database.meta.quoteVerification?.verifiedCount, 1);
+  assert.equal(database.meta.quoteVerification?.rejectedQuotes.length, 1);
+  assert.equal(database.arguments.length, 1);
+  assert.equal(database.cleanedTree.length, 2);
+});
+
+test("restores literal source typography and line breaks without discarding short-work analysis", async () => {
+  const exact = "“Evidence” supports an inference — not certainty.\n\nReason’s limits matter.";
+  const text = exact + "\n" + "The strength of an inference depends on the available evidence. ".repeat(8);
+  const harness = buildHarness(text, {
+    quoteTransform: () => "\"Evidence\" supports an inference - not certainty. Reason's limits matter.",
+  });
+  const database = await generateBookDatabase2(text, "mock-provider", {}, () => {}, { model: harness.model });
+  assert.equal(database.quotes.length, 1);
+  assert.equal(database.quotes[0].text, exact);
+  assert.ok(text.includes(database.quotes[0].text));
+  assert.equal(database.meta.quoteVerification?.correctedCount, 1);
+  assert.equal(database.meta.quoteVerification?.rejectedQuotes.length, 0);
+  assert.equal(database.cleanedTree.length, 2);
 });
 
 test("rejects cyclic position parent relationships", async () => {

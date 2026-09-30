@@ -2666,7 +2666,7 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
 
   // ── Book Database 2.0 handlers ────────────────────────────────────────────
 
-  const handleRunBookDatabase2 = async () => {
+  const handleRunBookDatabase2 = async (requestedTab = bookDb2Tab) => {
     if (!text.trim() || bookDb2RequestRef.current) return;
     const controller = new AbortController();
     bookDb2RequestRef.current = controller;
@@ -2687,6 +2687,7 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
           provider: selectedLLM,
           title: bookDb2Title,
           author: bookDb2Author,
+          analysis: requestedTab === "tree" ? "tree" : "database",
         }),
       });
       if (!response.ok) {
@@ -2848,7 +2849,9 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
   const openBookDb2Tab = (tab: string) => {
     setBookDb2Tab(tab);
     setShowBookDatabase2(true);
-    if (!bookDb2Data && !isRunningBookDb2) handleRunBookDatabase2();
+    if ((!bookDb2Data || (bookDb2Data.meta?.analysisMode === "tree" && tab !== "tree")) && !isRunningBookDb2) {
+      handleRunBookDatabase2(tab);
+    }
   };
 
   const handleStylometricsFileUploadB = (file: File) => {
@@ -9667,7 +9670,7 @@ Freedom is the ratio essendi of the moral law."
           <ResizableDialogHeader>
             <ResizableDialogTitle className="flex items-center gap-2">
               <GitBranch className="w-5 h-5 text-primary" />
-              BOOK DATABASE 2.0
+              {bookDb2Tab === "tree" ? "TRACTATUS TREE 2.0" : "BOOK DATABASE 2.0"}
               {bookDb2Data && (
                 <span className="ml-2 text-xs font-normal text-muted-foreground">
                   {bookDb2Data.meta?.wordCount?.toLocaleString()} words · {bookDb2Data.meta?.provider}
@@ -9675,7 +9678,9 @@ Freedom is the ratio essendi of the moral law."
               )}
             </ResizableDialogTitle>
             <ResizableDialogDescription>
-              {bookDb2Data
+              {bookDb2Tab === "tree"
+                ? "Builds and cleans a proposition tree from the complete input."
+                : bookDb2Data
                 ? "Cleaned intellectual skeleton derived from Tractatus Tree 2.0"
                 : "Runs a 4-stage pipeline: Tree → Cleaning → Database Assembly → Done"}
             </ResizableDialogDescription>
@@ -9736,13 +9741,13 @@ Freedom is the ratio essendi of the moral law."
             {/* ── Run button ── */}
             {!bookDb2Data && !isRunningBookDb2 && (
               <Button
-                onClick={handleRunBookDatabase2}
+                onClick={() => handleRunBookDatabase2()}
                 disabled={!text}
                 className="w-full h-12 bg-gradient-to-r from-primary to-secondary text-white font-semibold"
                 data-testid="button-run-book-database-2"
               >
                 <Sparkles className="w-5 h-5 mr-2" />
-                Generate Book Database 2.0
+                {bookDb2Tab === "tree" ? "Generate Tree 2.0" : "Generate Book Database 2.0"}
               </Button>
             )}
 
@@ -9762,13 +9767,34 @@ Freedom is the ratio essendi of the moral law."
                   ].map(t => (
                     <button
                       key={t.key}
-                      onClick={() => setBookDb2Tab(t.key)}
+                      onClick={() => openBookDb2Tab(t.key)}
                       className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${bookDb2Tab === t.key ? "bg-primary text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
                     >
                       {t.label}
                     </button>
                   ))}
                 </div>
+
+                {bookDb2Data.meta?.quoteVerification?.rejectedQuotes?.length > 0 && (
+                  <div className="border border-amber-300 rounded-lg p-3 bg-amber-50 text-sm" role="status" data-testid="book-db-quote-warning">
+                    <p>
+                      {bookDb2Data.meta.quoteVerification.rejectedQuotes.length} unmatched model quotation(s) excluded.
+                      {" "}The tree and other analyses are retained; only source-verified quotes are shown.
+                    </p>
+                    <details className="mt-2">
+                      <summary className="cursor-pointer text-xs font-medium">View excluded quotations</summary>
+                      <div className="mt-2 space-y-2 text-xs">
+                        {bookDb2Data.meta.quoteVerification.rejectedQuotes.map((quote: any, index: number) => (
+                          <div key={index} className="border-t border-amber-200 pt-2">
+                            <p className="text-muted-foreground">{formatBookDb2Source(quote.source)}</p>
+                            <p className="whitespace-pre-wrap">{quote.text}</p>
+                            <p className="text-muted-foreground">{quote.reason}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  </div>
+                )}
 
                 {/* Full-text coverage is explicit so legacy saved results aren't mistaken for complete runs. */}
                 {bookDb2Data.meta?.coverage ? (
@@ -9784,6 +9810,14 @@ Freedom is the ratio essendi of the moral law."
                           : bookDb2Data.meta.coverage.aggregation === "word-weighted" ? " · Word-weighted aggregation" : ""}
                       </p>
                     </div>
+                    {bookDb2Data.meta.quoteVerification && (
+                      <p className="text-xs text-muted-foreground">
+                        {bookDb2Data.meta.quoteVerification.verifiedCount} source-verified quotes
+                        {bookDb2Data.meta.quoteVerification.correctedCount > 0
+                          ? ` · ${bookDb2Data.meta.quoteVerification.correctedCount} restored to exact source typography`
+                          : ""}
+                      </p>
+                    )}
                     {Array.isArray(bookDb2Data.meta.coverage.chapters) && bookDb2Data.meta.coverage.chapters.length > 0 && (
                       <div className="border-t pt-2 space-y-1.5 max-h-40 overflow-auto">
                         {bookDb2Data.meta.coverage.chapters.map((chapter: any, i: number) => {
