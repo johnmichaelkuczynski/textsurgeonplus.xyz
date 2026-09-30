@@ -51,18 +51,10 @@ export function buildTractatusTree(statements: TractatusStatement[]): TractatusT
   }
   
   const maxDepth = Math.max(...statements.map(s => s.depth));
-  const minDepth = Math.min(...statements.map(s => s.depth));
-  const columns: TractatusStatement[][] = [];
-  
-  // Start from the minimum depth found (in case LLM starts at 1.1 instead of 1.0)
-  // progressively add more detail up to max depth
-  for (let depth = minDepth; depth <= maxDepth; depth++) {
-    const columnStatements = filterByMaxDepth(statements, depth);
-    // Only add non-empty columns
-    if (columnStatements.length > 0) {
-      columns.push(columnStatements);
-    }
-  }
+  // The first three columns show progressively deeper levels; the fourth
+  // contains the complete tree, including any useful detail beyond level four.
+  const columns = [0, 1, 2, Math.max(3, maxDepth)]
+    .map((depth) => filterByMaxDepth(statements, depth));
   
   return {
     columns,
@@ -91,7 +83,8 @@ Your task is to rewrite the following text as a series of hierarchically numbere
 CRITICAL RULES:
 - The TEXT TO TRANSFORM below is the ONLY source of substance. This request may be for one chapter of a much larger book: do not use, infer, search for, or import content from other chapters, prior generations, outside sources, or your own knowledge of the book.
 - If an idea is not supported by this exact supplied text, omit it, even if you know it appears elsewhere in the same book. Do not fill gaps with likely later developments.
-- Create a DEEP hierarchy with 3-5 levels of depth (e.g., statements like 2.3.4.1 or even 3.1.2.4.2)
+- Create a DEEP hierarchy with at least four levels, numbered 1.0, 1.1, 1.1.1, 1.1.1.1 (and corresponding numbers under other theses). Further detail is allowed when the source supports it; the complete hierarchy will appear in the fourth column.
+- This is ONE self-contained tree for ONLY the supplied text. Start its top-level numbering at 1.0, even if the text is a chapter of a larger book.
 - YOU MUST generate MULTIPLE top-level statements (1.0, 2.0, 3.0, 4.0, etc.) - at least ${Math.max(3, Math.min(10, Math.ceil(wordCount / 500)))} of them
 - Top-level statements (1.0, 2.0, 3.0, 4.0, 5.0, etc.) should be broad theses representing DIFFERENT major topics or arguments in the text
 - Do NOT put everything under 1.0 - identify the distinct major themes/sections and give each one its own top-level number
@@ -104,9 +97,11 @@ FORMAT:
 1.0 [Top-level thesis]
 1.1 [Elaboration of 1.0]
 1.1.1 [Specification of 1.1]
+1.1.1.1 [Further specification of 1.1.1]
 1.1.2 [Another specification of 1.1]
 1.2 [Another elaboration of 1.0]
 1.2.1 [Specification of 1.2]
+1.2.1.1 [Further specification of 1.2.1]
 2.0 [Second top-level thesis]
 ...
 
@@ -115,29 +110,20 @@ ${text}
 
 Generate the hierarchical Tractatus structure now:`;
 
-  const response = await callLLM(provider, prompt);
-  
-  onProgress?.({ current: 1, total: estimatedSections + 1, message: "Parsing hierarchical structure..." });
-  
-  const statements = parseTractatusOutput(response);
-  
-  if (statements.length === 0) {
-    const lines = response.split('\n').filter(l => l.trim());
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (line) {
-        statements.push({
-          number: `${Math.floor(i / 3) + 1}.${i % 3}`,
-          text: line.replace(/^[•\-\*\d\.]+\s*/, ''),
-          depth: 1
-        });
-      }
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const response = await callLLM(provider, attempt === 0 ? prompt :
+      `${prompt}\n\nYour previous response did not form at least four levels starting at 1.0. Retry with levels 1.0, 1.1, 1.1.1, and 1.1.1.1 present and one independent numbering sequence starting at 1.0.`);
+    onProgress?.({ current: 1, total: estimatedSections + 1, message: "Checking the four-level hierarchy..." });
+
+    const statements = parseTractatusOutput(response);
+    const depths = new Set(statements.map((statement) => statement.depth));
+    if (statements[0]?.number === "1.0" &&
+        [0, 1, 2, 3].every((depth) => depths.has(depth))) {
+      onProgress?.({ current: estimatedSections + 1, total: estimatedSections + 1, message: "Building four tree columns..." });
+      return buildTractatusTree(statements);
     }
   }
-  
-  onProgress?.({ current: estimatedSections + 1, total: estimatedSections + 1, message: "Building tree columns..." });
-  
-  return buildTractatusTree(statements);
+  throw new Error("The model did not produce a Tractatus Tree with at least four levels after a correction attempt.");
 }
 
 export function formatTreeColumn(statements: TractatusStatement[]): string {

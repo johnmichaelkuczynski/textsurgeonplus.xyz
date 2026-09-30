@@ -2273,9 +2273,6 @@ export default function Home() {
 
   const openTractatusTree = () => {
     setShowTractatusTree(true);
-    if (tractatusTreeColumns.length === 0 && !isGeneratingTree) {
-      void handleGenerateTractatusTree();
-    }
   };
 
   const handleGenerateSummary = async () => {
@@ -7821,7 +7818,7 @@ Freedom is the ratio essendi of the moral law."
               {tractatusTreeMode === "chapters" && (
                 <p className="text-xs text-muted-foreground">
                   Requires at least two substantial chapters with standalone “Chapter 1”, “Chapter Two”, or similar headings.
-                  Each chapter is sent separately in its own generation request.
+                  Each chapter generates its own independent four-column tree, starting again at 1.0.
                 </p>
               )}
             </div>

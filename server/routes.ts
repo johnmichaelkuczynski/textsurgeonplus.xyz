@@ -1222,7 +1222,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (let index = 0; index < chapters.length; index++) {
           const chapter = chapters[index];
           res.write(`data: ${JSON.stringify({ type: "progress", current: index, total: chapters.length, message: `Generating ${chapter.title} (${index + 1} of ${chapters.length})` })}\n\n`);
-          const result = await generateTractatusTree(chapter.text, provider || "openai");
+           let result;
+           try {
+             result = await generateTractatusTree(chapter.text, provider || "openai");
+           } catch (error: any) {
+             throw new Error(`${chapter.title}: ${error?.message || "generation failed"}`);
+           }
           res.write(`data: ${JSON.stringify({ type: "chapter-complete", index, title: chapter.title, total: chapters.length, result })}\n\n`);
         }
         res.write(`data: ${JSON.stringify({ type: "complete", chapterCount: chapters.length })}\n\n`);
