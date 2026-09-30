@@ -35,17 +35,19 @@ function parseMappedExamples(
   });
 }
 
-function parseSourceTiers(raw: string, source: string): FreshTreeStatement[] {
+function sourcePassages(source: string): string[] {
+  return source.split(/(?<=[.!?])\s+|\n+/).map((passage) => passage.trim()).filter(Boolean);
+}
+
+function parseSourceTiers(raw: string, passageCount: number): FreshTreeStatement[] {
   const statements: FreshTreeStatement[] = [];
-  const normalize = (value: string) => value.toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/[–—]/g, "-").replace(/\s+/g, " ");
-  const original = normalize(source);
   for (const line of raw.split("\n")) {
     if (!line.trim() || /^```/.test(line.trim())) continue;
-    const match = /^\s*(\d+)\.(0|[1-9]\d*)\s+(.+?)\s+\|\|\s+["“]?(.+?)["”]?\s*$/.exec(line);
+    const match = /^\s*(\d+)\.(0|[1-9]\d*)\s+(.+?)\s+\|\|\s+(\d+)\s*$/.exec(line);
     if (!match) throw new Error(`Source-only tree returned an invalid line: ${line.slice(0, 120)}`);
-    const excerpt = match[4].replace(/["”]+$/, "").trim();
-    if (!excerpt || !original.includes(normalize(excerpt))) {
-      throw new Error(`Source-only proposition ${match[1]}.${match[2]} lacks a matching source excerpt.`);
+    const passage = Number(match[4]);
+    if (!Number.isInteger(passage) || passage < 1 || passage > passageCount) {
+      throw new Error(`Source-only proposition ${match[1]}.${match[2]} cites a passage outside the supplied text.`);
     }
     statements.push({ number: `${match[1]}.${match[2]}`, text: match[3].trim(), depth: match[2] === "0" ? 0 : 1 });
   }
@@ -68,21 +70,25 @@ export async function generateFreshTree(
   onThesis: (statements: FreshTreeStatement[]) => void,
 ): Promise<FreshTreeStatement[]> {
   assertNotAborted(signal);
-  const prompt = `Build a Tractatus tree from this text with EXACTLY TWO TIERS: 1.0, 2.0 ... top theses and 1.1, 1.2, 2.1 ... sub-claims. Never write 1.1.1 or deeper. Give every top thesis at least one sub-claim. For each line append " || " and a contiguous character-for-character quote copied from the input supporting that particular claim; even a short quote is acceptable. Do not paraphrase or invent quotes. No other text.
+  // Cite passage numbers rather than asking the model to copy exact excerpts:
+  // a paraphrased or subtly altered quote must not reject an otherwise valid tree.
+  const passages = sourcePassages(source);
+  const indexedSource = passages.map((passage, index) => `${index + 1}: ${passage}`).join("\n");
+  const prompt = `Build a Tractatus tree from the numbered source passages with EXACTLY TWO TIERS: 1.0, 2.0 ... top theses and 1.1, 1.2, 2.1 ... sub-claims. Never write 1.1.1 or deeper. Give every top thesis at least one sub-claim. For each line append " || " and the NUMBER of a passage below that directly supports that claim (for example: 1.1 A claim || 3). Cite only numbered passages below. Omit any claim that no passage supports. Do not copy or invent supporting quotes. No other text.
 ${onlySource}
 <source>
-${source}
+${indexedSource}
 </source>`;
   let first = await callLLM("openai", prompt, signal);
   assertNotAborted(signal);
   let sourceTiers: FreshTreeStatement[];
   try {
-    sourceTiers = parseSourceTiers(first, source);
+    sourceTiers = parseSourceTiers(first, passages.length);
   } catch {
     assertNotAborted(signal);
-    first = await callLLM("openai", `${prompt}\nIMPORTANT: For EVERY line, copy the supporting excerpt exactly from the text between the source tags. Reject any candidate quote that does not occur verbatim.`, signal);
+    first = await callLLM("openai", `${prompt}\nIMPORTANT: Every line must end with || followed by ONE valid passage number from 1 to ${passages.length}, not a quotation.`, signal);
     assertNotAborted(signal);
-    sourceTiers = parseSourceTiers(first, source);
+    sourceTiers = parseSourceTiers(first, passages.length);
   }
   if (buildTractatusTree(sourceTiers).maxDepth !== 1) {
     throw new Error("Source-only tree did not contain exactly two tiers.");
@@ -91,16 +97,16 @@ ${source}
     const prefix = `${root.number.split(".")[0]}.`;
     if (sourceTiers.some((s) => s.depth === 1 && s.number.startsWith(prefix))) continue;
     assertNotAborted(signal);
-    const missing = await callLLM("openai", `Write exactly one source-grounded direct sub-claim for this top thesis, on one line beginning ${prefix}1, followed by " || " and an exact supporting quote from the source. No additional text.
+    const missing = await callLLM("openai", `Write exactly one source-grounded direct sub-claim for this top thesis, on one line beginning ${prefix}1, followed by " || " and the NUMBER of a passage that directly supports it. No quotation. No additional text.
 ${onlySource}
 Top thesis: ${root.number} ${root.text}
 <source>
-${source}
+${indexedSource}
 </source>`, signal);
     assertNotAborted(signal);
-    const match = new RegExp(`^\\s*${prefix.replace(".", "\\.")}1\\s+(.+?)\\s+\\|\\|\\s+["“]?(.+?)["”]?\\s*$`, "m").exec(missing);
-    const excerpt = match?.[2]?.replace(/["”]+$/, "").trim();
-    if (!match || !excerpt || !source.toLowerCase().replace(/\s+/g, " ").includes(excerpt.toLowerCase().replace(/\s+/g, " "))) {
+    const match = new RegExp(`^\\s*${prefix.replace(".", "\\.")}1\\s+(.+?)\\s+\\|\\|\\s+(\\d+)\\s*$`, "m").exec(missing);
+    const passage = Number(match?.[2]);
+    if (!match || !Number.isInteger(passage) || passage < 1 || passage > passages.length) {
       throw new Error(`Could not ground a sub-claim beneath ${root.number} in the supplied text.`);
     }
     sourceTiers.push({ number: `${prefix}1`, text: match[1].trim(), depth: 1 });

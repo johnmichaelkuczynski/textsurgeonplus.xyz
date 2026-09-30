@@ -2762,6 +2762,40 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadCleanTree = async () => {
+    const nodes = bookDb2Data?.cleanedTree;
+    if (!Array.isArray(nodes) || nodes.length === 0) return;
+    try {
+      const paragraphs: Paragraph[] = [
+        new Paragraph({
+          children: [new TextRun({ text: "TRACTATUS TREE 2.0 — CLEAN TREE", bold: true, size: 32 })],
+          heading: HeadingLevel.HEADING_1,
+          spacing: { after: 360 },
+        }),
+        ...nodes.map((node: { number: string; claim: string; depth: number; type: string }) =>
+          new Paragraph({
+            children: [
+              new TextRun({ text: `${node.number}  `, color: "808080", size: 20 }),
+              new TextRun({
+                text: node.claim,
+                bold: node.type === "core",
+                color: node.type === "core" ? "2256A8" : node.type === "doctrinal" ? "B46908" : "444444",
+                size: 20,
+              }),
+              new TextRun({ text: `  [${node.type}]`, color: "808080", size: 18 }),
+            ],
+            indent: { left: Math.max(0, Math.min(12, Number(node.depth) || 0)) * 280 },
+            spacing: { after: 120 },
+          }),
+        ),
+      ];
+      const blob = await Packer.toBlob(new Document({ sections: [{ children: paragraphs }] }));
+      saveAs(blob, "tractatus-tree-2-clean.docx");
+    } catch (error: any) {
+      toast({ title: "Download failed", description: error?.message || "Could not create the Word document.", variant: "destructive" });
+    }
+  };
+
   const openBookDb2Tab = (tab: string) => {
     setBookDb2Tab(tab);
     setShowBookDatabase2(true);
@@ -9803,17 +9837,23 @@ Freedom is the ratio essendi of the moral law."
 
                 {/* CLEAN TREE */}
                 {bookDb2Tab === "tree" && (
-                  <div className="font-mono text-xs space-y-1 bg-gray-50 rounded p-3 overflow-auto max-h-[60vh]">
-                    {(bookDb2Data.cleanedTree || []).length === 0 && (
-                      <p className="text-muted-foreground">No tree data.</p>
-                    )}
-                    {(bookDb2Data.cleanedTree || []).map((node: any, i: number) => (
-                      <div key={node.id || i} className={`flex gap-2 py-0.5 ${node.type === "core" ? "text-primary font-semibold" : node.type === "doctrinal" ? "text-amber-600" : "text-gray-600"}`} style={{ paddingLeft: `${node.depth * 16}px` }}>
-                        <span className="text-gray-400 select-none">{node.number}</span>
-                        <span>{node.claim}</span>
-                        <span className="ml-auto text-gray-400 text-xs">[{node.type}]</span>
-                      </div>
-                    ))}
+                  <div className="space-y-2">
+                    <Button size="sm" variant="outline" className="gap-1.5" onClick={handleDownloadCleanTree}
+                      disabled={!bookDb2Data.cleanedTree?.length} data-testid="button-download-clean-tree">
+                      <Download className="w-4 h-4" />Download Clean Tree (.docx)
+                    </Button>
+                    <div className="font-mono text-xs space-y-1 bg-gray-50 rounded p-3 overflow-auto max-h-[60vh]">
+                      {(bookDb2Data.cleanedTree || []).length === 0 && (
+                        <p className="text-muted-foreground">No tree data.</p>
+                      )}
+                      {(bookDb2Data.cleanedTree || []).map((node: any, i: number) => (
+                        <div key={node.id || i} className={`flex gap-2 py-0.5 ${node.type === "core" ? "text-primary font-semibold" : node.type === "doctrinal" ? "text-amber-600" : "text-gray-600"}`} style={{ paddingLeft: `${node.depth * 16}px` }}>
+                          <span className="text-gray-400 select-none">{node.number}</span>
+                          <span>{node.claim}</span>
+                          <span className="ml-auto text-gray-400 text-xs">[{node.type}]</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
