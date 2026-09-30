@@ -13,7 +13,7 @@ type Source = { node: string; url: string };
 type Tree = { index: number; title: string; statements: Statement[]; sources: Source[]; complete: boolean };
 const DEFAULT_INSTRUCTIONS = "Under each node, add 1 or 2 child nodes. Each must be a concrete example or fact that illustrates or supports its parent. It must be FRESH: do not use any example, name, case, or illustration from the source text. Prefer real, accurate, current scientific or factual examples; everyday examples are allowed; do not invent fake facts. One sentence per node. No commentary.";
 
-export function FreshTreeDialog({ open, onOpenChange, text, selection }: { open: boolean; onOpenChange: (open: boolean) => void; text: string; selection: string }) {
+export function FreshTreeDialog({ open, onOpenChange, text, selection, onSendToProsify }: { open: boolean; onOpenChange: (open: boolean) => void; text: string; selection: string; onSendToProsify: (tree: string) => void }) {
   const [mode, setMode] = useState<Mode>("A");
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [chosen, setChosen] = useState<number[]>([]);
@@ -144,7 +144,10 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection }: { open:
         <p className="mt-4 font-medium">Current depth: {depth} tiers</p>
         <Label htmlFor="fresh-tree-instructions">Instructions for the new nodes</Label>
         <Textarea id="fresh-tree-instructions" className="mt-1 min-h-28 bg-white" value={instructions} onChange={(event) => setInstructions(event.target.value)} disabled={running} />
-        <Button className="mt-3" disabled={running || !trees.some((tree) => tree.complete)} onClick={() => void run("next")} data-testid="fresh-tree-next">ADD NEXT TIER</Button>
+        <div className="flex gap-2 mt-3">
+          <Button disabled={running || !trees.some((tree) => tree.complete)} onClick={() => void run("next")} data-testid="fresh-tree-next">ADD NEXT TIER</Button>
+          <Button variant="outline" disabled={running} onClick={() => onSendToProsify(output)} data-testid="fresh-tree-send-prosify">→ SEND TO PROSIFY</Button>
+        </div>
       </div>}
       <div className="flex justify-end gap-2"><Button variant="outline" onClick={close} data-testid="fresh-tree-cancel">CANCEL</Button>
         <Button onClick={() => void run("generate")} disabled={running || ((mode === "B" || mode === "C") && (loadingChapters || !chapters.length))} data-testid="fresh-tree-generate">GENERATE</Button></div>
