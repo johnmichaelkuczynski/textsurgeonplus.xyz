@@ -156,7 +156,8 @@ function childCount(instructions: string, tier: number): { min: number; max: num
   return tier === 3 ? { min: 1, max: 2 } : { min: 1, max: 1 };
 }
 
-function parseTier(raw: string, parents: FreshTreeStatement[], tier: number, count: { min: number; max: number }): TierCandidate[] {
+function parseTier(raw: string, parents: FreshTreeStatement[], tier: number, count: { min: number; max: number },
+  allowMissing = false): TierCandidate[] {
   const start = raw.indexOf("{");
   const end = raw.lastIndexOf("}");
   if (start < 0 || end < start) throw new Error(`Tier ${tier} returned invalid structured output.`);
@@ -165,10 +166,15 @@ function parseTier(raw: string, parents: FreshTreeStatement[], tier: number, cou
   for (const parent of parents) {
     const children = parsed[parent.number];
     if (!Array.isArray(children) || children.length < count.min) {
+      if (allowMissing) continue;
       throw new Error(`Tier ${tier} is missing the required ${count.min === count.max ? count.min : `${count.min}-${count.max}`} children for ${parent.number}.`);
     }
-    children.slice(0, count.max).forEach((child: any, index: number) => {
-      if (typeof child?.text !== "string" || !child.text.trim()) throw new Error(`Tier ${tier} contains an invalid child for ${parent.number}.`);
+    const selected = children.slice(0, count.max);
+    if (selected.some((child: any) => typeof child?.text !== "string" || !child.text.trim())) {
+      if (allowMissing) continue;
+      throw new Error(`Tier ${tier} contains an invalid child for ${parent.number}.`);
+    }
+    selected.forEach((child: any, index: number) => {
       const number = `${parent.number}.${index + 1}`;
       statements.push({ number, parent: parent.number, text: child.text.trim(), depth: tier - 1,
         url: isReputableSource(child.url) ? child.url : undefined });
@@ -427,32 +433,34 @@ ${source}
       const answer = await research(prompt, signal, options.shouldStop);
       assertNotAborted(signal);
       if (options.shouldStop?.()) return true;
-      let parsed: TierCandidate[];
-      try {
-        parsed = parseTier(answer.text, group, tierNumber, count);
-      } catch {
-        const repaired = await callLLM("openai", `The prior tier response omitted or misnumbered a required parent. Return ONLY a JSON object with exactly these parent keys: ${group.map((item) => item.number).join(", ")}. Under each key put ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} child objects shaped {"text":"one concrete sentence establishing this exact parent","url":"direct reputable supporting source URL"}. Use facts from the research response below; do not invent claims or cite someone merely saying something.\n\n${NODE_LEGITIMACY_RULE}\n\nPARENTS:\n${group.map((item) => `${item.number} ${item.text}`).join("\n")}\n\nRESEARCH RESPONSE:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
+      const parseAvailable = (raw: string, requested: FreshTreeStatement[]) => {
+        try { return parseTier(raw, requested, tierNumber, count, true); }
+        catch { return [] as TierCandidate[]; }
+      };
+      const parsed = parseAvailable(answer.text, group);
+      let missing = group.filter((parent) => !parsed.some((child) => child.parent === parent.number));
+      if (missing.length) {
+        const repaired = await callLLM("openai", `The prior tier response omitted or misnumbered a required parent. Return ONLY a JSON object with exactly these parent keys: ${missing.map((item) => item.number).join(", ")}. Under each key put ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} child objects shaped {"text":"one concrete sentence establishing this exact parent","url":"direct reputable supporting source URL"}. Use facts from the research response below; do not invent claims or cite someone merely saying something.\n\n${NODE_LEGITIMACY_RULE}\n\nPARENTS:\n${missing.map((item) => `${item.number} ${item.text}`).join("\n")}\n\nRESEARCH RESPONSE:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
         assertNotAborted(signal);
         if (options.shouldStop?.()) return true;
-        try {
-          parsed = parseTier(repaired, group, tierNumber, count);
-        } catch {
-          const perParent: Record<string, Array<{ text: string; url?: string }>> = {};
-          for (const parent of group) {
+        parsed.push(...parseAvailable(repaired, missing));
+        missing = missing.filter((parent) => !parsed.some((child) => child.parent === parent.number));
+        for (const parent of missing) {
+          try {
             const individual = await callLLM("openai", `Return ONLY a JSON array of ${count.min} ${count.min === 1 ? "child" : "children"} for parent ${parent.number}: ${parent.text}. Each child is {"text":"one sentence establishing the exact parent by a concrete fact or full logical counterexample","url":"direct reputable source URL if factual"}. Use only facts supported by the research below, no examples from the source, no authority assertions.\n\n${NODE_LEGITIMACY_RULE}\n\nRESEARCH:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
             assertNotAborted(signal);
             if (options.shouldStop?.()) return true;
             const opening = individual.indexOf("[");
             const closing = individual.lastIndexOf("]");
             const children = opening >= 0 && closing > opening ? JSON.parse(individual.slice(opening, closing + 1)) : [];
-            if (!Array.isArray(children) || children.length < count.min) {
-              throw new Error(`Tier ${tierNumber} is missing children for ${parent.number} after a correction attempt.`);
-            }
-            perParent[parent.number] = children;
+            parsed.push(...parseTier(JSON.stringify({ [parent.number]: children }), [parent], tierNumber, count));
+          } catch (error: any) {
+            if (signal.aborted) throw error;
+            options.onWarning?.(`Node ${parent.number} has no legitimate support: the model did not supply a valid child.`);
           }
-          parsed = parseTier(JSON.stringify(perParent), group, tierNumber, count);
         }
       }
+      if (!parsed.length) throw new Error(`No valid child nodes were returned for thesis ${root.number}.`);
       const accepted = await reviewAndDeduplicate(parsed, existing, answer.text, source, signal);
       assertNotAborted(signal);
       if (options.shouldStop?.()) return true;
