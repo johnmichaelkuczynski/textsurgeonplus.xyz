@@ -63,3 +63,31 @@ mtime_ms = 1790543425474
 storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:aca50f88-eb4e-4e00-a7a8-de88e0c95892/5a8b13b9-722c-4fd8-b456-8e45b3e95d2e/a3da0c0f-8257-42a7-b91a-08bcd81657ea"
 storage_version_token = "1790543441225868"
 content_type = "text/plain"
+
+[[outputs]]
+id = "17QpSrktMLflMFujb2DYV"
+uri = "file://screenshots/fresh-tree-manual-finished.png"
+type = "image"
+title = "FRESH TREE — highlighted paragraph"
+description = "Finished three-tier tree visible in Preview for a highlighted paragraph."
+logical_id = "194fa793-561a-45a3-ac77-398cd8487143"
+content_hash = "sha256:6104b8427a7ba333a30675f3a8f464f2654f6fe9c6b0b804a799f8dbde14d5b2"
+size = 362523
+mtime_ms = 1790728439286
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:aca50f88-eb4e-4e00-a7a8-de88e0c95892/194fa793-561a-45a3-ac77-398cd8487143/92668df7-80ce-4a9c-b021-93b885aae860"
+storage_version_token = "1790728445116655"
+content_type = "image/png"
+
+[[outputs]]
+id = "-kTjHAWQg3dKUKt-WKppp"
+uri = "file://screenshots/fresh-tree-whole-book-finished.png"
+type = "image"
+title = "FRESH TREE — whole-book mode"
+description = "Finished three-tier tree visible in Preview for the complete two-chapter sample."
+logical_id = "dd6f65a3-2705-477a-9029-a03498b6f9e4"
+content_hash = "sha256:a863c90b86f7263640d47a50bf75cd5e64d72f6a0fa74316f101181b4ec3f515"
+size = 342725
+mtime_ms = 1790728439292
+storage_uri = "gcs://replit-rams-assets-spock/rams/assets/repl:aca50f88-eb4e-4e00-a7a8-de88e0c95892/dd6f65a3-2705-477a-9029-a03498b6f9e4/c7dce4d4-3f8c-4f88-8a0c-5854bfa16d20"
+storage_version_token = "1790728446194070"
+content_type = "image/png"
