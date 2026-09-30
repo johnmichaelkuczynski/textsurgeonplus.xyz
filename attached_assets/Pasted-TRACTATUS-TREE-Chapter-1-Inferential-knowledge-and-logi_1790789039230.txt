@@ -1,0 +1,407 @@
+TRACTATUS TREE — Chapter 1 Inferential knowledge and logical dependence Two kinds of knowledge: direct and indirect
+===================================================================================================================
+
+--- Level 1 (17 statements) ---
+
+1.0 Some knowledge is direct, and some knowledge is indirect.
+2.0 Dependence-relations are either logical or causal.
+3.0 Propositions are the objects of belief and knowledge.
+4.0 Knowledge is conceptually articulated awareness.
+5.0 Analytic truths are known through conceptual analysis rather than sensory observation.
+6.0 Observations are objectual awarenesses, but explanations concern truths.
+7.0 Causal relations are known empirically.
+8.0 Theoretical knowledge is inferential, but inferential knowledge need not be theoretical.
+9.0 A theory is a proposition describing a relatively comprehensive fact about the structure of the universe.
+10.0 Knowledge is justified true belief acquired through legitimate reasons.
+11.0 Evidence is grounded in causal dependence.
+12.0 Causal series, structure-preserving series, and information-bearing series are distinct.
+13.0 All information is evidence, but not all evidence is information.
+14.0 Information-transmission is the basis of knowledge.
+15.0 Causation constitutes temporal precedence.
+16.0 Continuity constitutes causation and information-transmission.
+17.0 Knowledge begins with information-transmission and extends to evidential dependence.
+
+
+--- Level 2 (62 statements) ---
+
+1.0 Some knowledge is direct, and some knowledge is indirect.
+1.1 Indirect knowledge is acquired through inference.
+1.2 Knowledge is not identical with inference.
+2.0 Dependence-relations are either logical or causal.
+2.1 Logical dependence-relations hold among propositions.
+2.2 Causal dependence-relations hold among states of affairs.
+2.3 Logical necessity differs from causal necessity.
+3.0 Propositions are the objects of belief and knowledge.
+3.1 Knowledge presupposes belief.
+3.2 Awareness may be directed toward non-propositions.
+4.0 Knowledge is conceptually articulated awareness.
+4.1 Awareness may be propositional or objectual.
+4.2 Knowledge requires concepts appropriate to what is known.
+5.0 Analytic truths are known through conceptual analysis rather than sensory observation.
+5.1 Analytic knowledge is always knowledge of dependence-relations.
+6.0 Observations are objectual awarenesses, but explanations concern truths.
+6.1 The contents of objectual awareness must be converted into propositions to be explained.
+6.2 Explaining an event is explaining the corresponding truth.
+7.0 Causal relations are known empirically.
+7.1 Causal relations can be known through the senses.
+7.2 Causal relations can be known through real-time awareness of one’s own psychological processes.
+7.3 Knowledge of causal relations is therefore empirical knowledge.
+8.0 Theoretical knowledge is inferential, but inferential knowledge need not be theoretical.
+8.1 Theoretical truths are necessarily known through inference.
+8.2 Some inferential knowledge is non-theoretical.
+9.0 A theory is a proposition describing a relatively comprehensive fact about the structure of the universe.
+9.1 Theoretical knowledge is knowledge of a theory.
+9.2 Theoretical knowledge is knowledge derived from a theory.
+10.0 Knowledge is justified true belief acquired through legitimate reasons.
+10.1 If one knows a proposition, one believes it.
+10.2 If one knows a proposition, the proposition is true.
+10.3 If one knows a proposition, one’s reasons for believing it are legitimate.
+10.4 Truth and justification alone do not constitute knowledge.
+10.5 A belief would be knowledge if it were acquired through being en rapport with the relevant realities.
+11.0 Evidence is grounded in causal dependence.
+11.1 A state of affairs \(e\) is evidence of a state of affairs \(e^*\) if and only if \(e\) and \(e^*\) are causally related in a way that gives knowledge of \(e\) reason to believe in \(e^*\).
+12.0 Causal series, structure-preserving series, and information-bearing series are distinct.
+12.1 A causal series consists of events \(e_1\) through \(e_n\) such that each event causes the next.
+12.2 A structure-preserving series is a series in which the first event transmits its structure to the final event.
+12.3 An information-bearing series is a structure-preserving series.
+13.0 All information is evidence, but not all evidence is information.
+13.1 Information is evidence because information-bearing series preserve structure.
+13.2 Evidence need not be information because causal dependence need not preserve structure.
+14.0 Information-transmission is the basis of knowledge.
+14.1 Sense-perceptions are isomorphs of the objects they represent.
+14.2 A perception-like experience is veridical if and only if it inherits its structure from its object.
+14.3 Perception-based beliefs are accurate only to the extent that perceptions inherit the structures of their external counterparts.
+14.4 A belief is knowledge only to the extent that it is linked to its corresponding reality by an information-transmissive series.
+14.5 Statistical reliability does not constitute knowledge.
+15.0 Causation constitutes temporal precedence.
+15.1 An event \(e\) precedes an event \(e^*\) if and only if a possible causal process begins with \(e\) and ends with \(e^*\).
+15.2 Two events are simultaneous if and only if no such causal process exists between them.
+16.0 Continuity constitutes causation and information-transmission.
+16.1 Effects are continuations of their causes.
+16.2 An event transmits information about its cause to the extent that it inherits its structure from that cause.
+16.3 Structure-preserving causation depends on the preservation of relations among concurrent causal lines.
+16.4 Structure-preserving effects can reveal their causes without circumstance-specific causal knowledge.
+16.5 Non-structure-preserving effects require ad hoc causal knowledge.
+17.0 Knowledge begins with information-transmission and extends to evidential dependence.
+17.1 Our thoughts inherit their structures from our perceptions.
+17.2 Initial information-transmissive knowledge enables knowledge of non-information-transmissive evidential relations.
+17.3 Knowledge of evidential relations therefore presupposes knowledge acquired through information-transmission.
+
+
+--- Level 3 (144 statements) ---
+
+1.0 Some knowledge is direct, and some knowledge is indirect.
+1.1 Indirect knowledge is acquired through inference.
+1.1.1 An inference forms a new belief on the basis of an old belief.
+1.1.2 A legitimate inference conforms to a legitimate rule of inference.
+1.1.3 A legitimate rule of inference corresponds to a dependence-relation.
+1.2 Knowledge is not identical with inference.
+1.2.1 Empirical knowledge may be direct or indirect.
+1.2.2 Analytic knowledge may be direct or indirect.
+2.0 Dependence-relations are either logical or causal.
+2.1 Logical dependence-relations hold among propositions.
+2.1.1 A proposition is either true or false.
+2.1.2 The proposition that \(x\) is a triangle depends logically on the proposition that \(x\) has three sides.
+2.1.3 Logical dependence is interpropositional dependence.
+2.2 Causal dependence-relations hold among states of affairs.
+2.2.1 A state of affairs is anything located in space-time.
+2.2.2 Smith’s passing the class depends causally on Smith’s studying.
+2.2.3 Causal dependence is objectual dependence.
+2.3 Logical necessity differs from causal necessity.
+2.3.1 Given that \(x\) is a triangle, it is logically necessary that \(x\) have three sides.
+2.3.2 Given that \(x\) is an ice-cube placed on a very hot surface, it is causally necessary that \(x\) begin to melt.
+3.0 Propositions are the objects of belief and knowledge.
+3.1 Knowledge presupposes belief.
+3.1.1 Whatever is known is believed.
+3.1.2 Whatever is believed is a proposition.
+3.2 Awareness may be directed toward non-propositions.
+3.2.1 Rocks, trees, and people may be objects of awareness.
+3.2.2 One does not know non-propositions in the relevant sense.
+3.2.3 One knows truths about non-propositions.
+4.0 Knowledge is conceptually articulated awareness.
+4.1 Awareness may be propositional or objectual.
+4.1.1 Visual perception of a dog is objectual awareness.
+4.1.2 Awareness of the tightness of one’s shoes is objectual awareness.
+4.1.3 Knowledge that a dog is in front of one is propositional awareness.
+4.1.4 Knowledge that one’s shoes are uncomfortably tight is propositional awareness.
+4.2 Knowledge requires concepts appropriate to what is known.
+4.2.1 Knowing that one’s shoes are uncomfortably tight requires concepts such as shoe, tightness, and discomfort.
+4.2.2 Awareness of uncomfortable tightness does not require those concepts.
+4.2.3 Knowledge of a truth is a conceptualization of awareness of the corresponding state of affairs.
+5.0 Analytic truths are known through conceptual analysis rather than sensory observation.
+5.1 Analytic knowledge is always knowledge of dependence-relations.
+5.1.1 The proposition “If \(P\), then either \(P\) or \(Q\)” expresses a logical dependence-relation.
+5.1.2 The proposition that there are infinitely many primes expresses a dependence-relation.
+5.1.3 The proposition that nothing can be numerate or literate without being sentient expresses a dependence-relation.
+5.1.4 The proposition that there are no laws where there is no government expresses a dependence-relation.
+5.1.5 The proposition that there is no recursive definition of the class of Dedekind-cuts expresses a dependence-relation.
+5.1.6 The proposition \(1+1=2\) expresses a dependence-relation.
+5.1.7 The proposition \(1+1\neq3\) expresses a dependence-relation.
+6.0 Observations are objectual awarenesses, but explanations concern truths.
+6.1 The contents of objectual awareness must be converted into propositions to be explained.
+6.1.1 Truths are explained.
+6.1.2 Truths are true propositions.
+6.2 Explaining an event is explaining the corresponding truth.
+6.2.1 Explaining an avalanche \(x\) is explaining why it is true that \(x\) occurred.
+6.2.2 Explaining a lightning-bolt \(x\) is explaining why it is true that \(x\) occurred.
+6.2.3 One is aware of avalanches and lightning-bolts.
+6.2.4 One explains the truths corresponding to those events.
+7.0 Causal relations are known empirically.
+7.1 Causal relations can be known through the senses.
+7.1.1 Sight and touch can provide knowledge of causal relations.
+7.2 Causal relations can be known through real-time awareness of one’s own psychological processes.
+7.3 Knowledge of causal relations is therefore empirical knowledge.
+8.0 Theoretical knowledge is inferential, but inferential knowledge need not be theoretical.
+8.1 Theoretical truths are necessarily known through inference.
+8.1.1 Knowledge of theoretical truths is inferential knowledge.
+8.2 Some inferential knowledge is non-theoretical.
+8.2.1 Observing that someone looks tired may support the belief that the person did not get enough sleep.
+8.2.2 Knowledge that someone did not get enough sleep may therefore be inferential without being theoretical.
+9.0 A theory is a proposition describing a relatively comprehensive fact about the structure of the universe.
+9.1 Theoretical knowledge is knowledge of a theory.
+9.1.1 Knowledge of evolutionary theory is theoretical knowledge.
+9.2 Theoretical knowledge is knowledge derived from a theory.
+9.2.1 Knowledge of a projectile’s future collision may be derived from the laws of mechanics and the projectile’s state of motion.
+10.0 Knowledge is justified true belief acquired through legitimate reasons.
+10.1 If one knows a proposition, one believes it.
+10.1.1 Knowledge entails belief.
+10.2 If one knows a proposition, the proposition is true.
+10.2.1 Knowledge entails truth.
+10.3 If one knows a proposition, one’s reasons for believing it are legitimate.
+10.3.1 Knowledge entails legitimate justification.
+10.4 Truth and justification alone do not constitute knowledge.
+10.4.1 A belief may be true and justified without being knowledge.
+10.4.2 A broken clock is correct twice a day.
+10.5 A belief would be knowledge if it were acquired through being en rapport with the relevant realities.
+10.5.1 Being en rapport with a reality means being linked to it by an information-transmissive structure.
+10.5.2 An information-transmissive structure differs from a merely evidence-generative structure.
+11.0 Evidence is grounded in causal dependence.
+11.1 A state of affairs \(e\) is evidence of a state of affairs \(e^*\) if and only if \(e\) and \(e^*\) are causally related in a way that gives knowledge of \(e\) reason to believe in \(e^*\).
+11.1.1 Knowledge that Smith is coughing up green phlegm gives reason to believe that Smith has a lung infection.
+11.1.2 Smith’s coughing up green phlegm is therefore evidence of Smith’s having a lung infection.
+12.0 Causal series, structure-preserving series, and information-bearing series are distinct.
+12.1 A causal series consists of events \(e_1\) through \(e_n\) such that each event causes the next.
+12.1.1 For every \(i\) between \(1\) and \(n\), \(e_i\) causes \(e_{i+1}\).
+12.2 A structure-preserving series is a series in which the first event transmits its structure to the final event.
+12.3 An information-bearing series is a structure-preserving series.
+12.3.1 Information-transmission is structure-preservation.
+12.3.2 In a telephone conversation, the structure of spoken sounds is coded into electrical signals.
+13.0 All information is evidence, but not all evidence is information.
+13.1 Information is evidence because information-bearing series preserve structure.
+13.2 Evidence need not be information because causal dependence need not preserve structure.
+13.2.1 An elevator’s stopping at the fifth floor may be evidence that someone pressed a particular elevator button.
+13.2.2 The elevator’s stopping and the button-pressing do not bear information about each other.
+14.0 Information-transmission is the basis of knowledge.
+14.1 Sense-perceptions are isomorphs of the objects they represent.
+14.1.1 External objects transmit their structures to sense-perceptions.
+14.2 A perception-like experience is veridical if and only if it inherits its structure from its object.
+14.2.1 A perception-like experience is a bona fide perception only if it inherits its structure from its object.
+14.2.2 The accuracy of a perception is proportional to the extent to which it inherits its object’s structure.
+14.3 Perception-based beliefs are accurate only to the extent that perceptions inherit the structures of their external counterparts.
+14.3.1 The relevant structures may be inherited by individual perceptions.
+14.3.2 The relevant structures may be inherited collectively by perceptions.
+14.4 A belief is knowledge only to the extent that it is linked to its corresponding reality by an information-transmissive series.
+14.4.1 Testimony-based belief is knowledge only if the testimony constitutes an information-transmissive link to the relevant externality.
+14.4.2 Testimony from a dishonest person can produce knowledge if the testimony is information-transmissive.
+14.4.3 Testimony from an honest person does not produce knowledge unless the testimony is information-transmissive.
+14.4.4 A belief based on an unreliable mechanism can be knowledge if that mechanism is information-transmissive in the relevant context.
+14.4.5 A belief based on a reliable mechanism is not knowledge unless that mechanism is information-transmissive in the relevant context.
+14.5 Statistical reliability does not constitute knowledge.
+14.5.1 The difference between a clock that seldom stops and a clock that often stops is statistical.
+14.5.2 The difference between a witness who seldom lies and a witness who often lies is statistical.
+14.5.3 The difference between knowledge and mere belief is not statistical.
+14.5.4 A belief is knowledge exactly if it is the end-result of an information-transmissive series.
+15.0 Causation constitutes temporal precedence.
+15.1 An event \(e\) precedes an event \(e^*\) if and only if a possible causal process begins with \(e\) and ends with \(e^*\).
+15.1.1 Temporal precedence consists in the possibility of a causal process from the earlier event to the later event.
+15.2 Two events are simultaneous if and only if no such causal process exists between them.
+16.0 Continuity constitutes causation and information-transmission.
+16.1 Effects are continuations of their causes.
+16.2 An event transmits information about its cause to the extent that it inherits its structure from that cause.
+16.2.1 An event transmits information about its cause to the extent that the cause’s structure is causally determinative of the event.
+16.3 Structure-preserving causation depends on the preservation of relations among concurrent causal lines.
+16.3.1 Multiple concurrent causal lines preserve their mutual relations in structure-preserving causation.
+16.3.2 A high-resolution image of a face can be transmitted between computers without loss of detail.
+16.4 Structure-preserving effects can reveal their causes without circumstance-specific causal knowledge.
+16.4.1 Knowledge of particular causal dependencies is not required to infer the nature of a cause from such an effect.
+16.5 Non-structure-preserving effects require ad hoc causal knowledge.
+16.5.1 Inferring that someone pushed a doorbell-button from the ringing of the bell requires circumstance-specific knowledge.
+17.0 Knowledge begins with information-transmission and extends to evidential dependence.
+17.1 Our thoughts inherit their structures from our perceptions.
+17.1.1 Our perceptions inherit their structures from corresponding externalities.
+17.1.2 Knowledge is initially acquired through information-transmissive series.
+17.2 Initial information-transmissive knowledge enables knowledge of non-information-transmissive evidential relations.
+17.2.1 Knowledge of non-information-transmissive evidential relations is acquired on the basis of prior knowledge.
+17.2.2 Prior knowledge is grounded in information-transmission.
+17.3 Knowledge of evidential relations therefore presupposes knowledge acquired through information-transmission.
+
+
+--- Level 4 (165 statements) ---
+
+1.0 Some knowledge is direct, and some knowledge is indirect.
+1.1 Indirect knowledge is acquired through inference.
+1.1.1 An inference forms a new belief on the basis of an old belief.
+1.1.2 A legitimate inference conforms to a legitimate rule of inference.
+1.1.3 A legitimate rule of inference corresponds to a dependence-relation.
+1.2 Knowledge is not identical with inference.
+1.2.1 Empirical knowledge may be direct or indirect.
+1.2.2 Analytic knowledge may be direct or indirect.
+2.0 Dependence-relations are either logical or causal.
+2.1 Logical dependence-relations hold among propositions.
+2.1.1 A proposition is either true or false.
+2.1.2 The proposition that \(x\) is a triangle depends logically on the proposition that \(x\) has three sides.
+2.1.2.1 The proposition that \(x\) is a triangle cannot be true unless the proposition that \(x\) has three sides is true.
+2.1.3 Logical dependence is interpropositional dependence.
+2.2 Causal dependence-relations hold among states of affairs.
+2.2.1 A state of affairs is anything located in space-time.
+2.2.2 Smith’s passing the class depends causally on Smith’s studying.
+2.2.2.1 Smith cannot pass the class unless Smith studies.
+2.2.3 Causal dependence is objectual dependence.
+2.2.3.1 Objectual dependence holds between occupants of the space-time manifold.
+2.2.3.2 Objects are understood relative to some delineation of the term “object.”
+2.3 Logical necessity differs from causal necessity.
+2.3.1 Given that \(x\) is a triangle, it is logically necessary that \(x\) have three sides.
+2.3.2 Given that \(x\) is an ice-cube placed on a very hot surface, it is causally necessary that \(x\) begin to melt.
+3.0 Propositions are the objects of belief and knowledge.
+3.1 Knowledge presupposes belief.
+3.1.1 Whatever is known is believed.
+3.1.2 Whatever is believed is a proposition.
+3.2 Awareness may be directed toward non-propositions.
+3.2.1 Rocks, trees, and people may be objects of awareness.
+3.2.2 One does not know non-propositions in the relevant sense.
+3.2.3 One knows truths about non-propositions.
+4.0 Knowledge is conceptually articulated awareness.
+4.1 Awareness may be propositional or objectual.
+4.1.1 Visual perception of a dog is objectual awareness.
+4.1.2 Awareness of the tightness of one’s shoes is objectual awareness.
+4.1.3 Knowledge that a dog is in front of one is propositional awareness.
+4.1.4 Knowledge that one’s shoes are uncomfortably tight is propositional awareness.
+4.2 Knowledge requires concepts appropriate to what is known.
+4.2.1 Knowing that one’s shoes are uncomfortably tight requires concepts such as shoe, tightness, and discomfort.
+4.2.2 Awareness of uncomfortable tightness does not require those concepts.
+4.2.3 Knowledge of a truth is a conceptualization of awareness of the corresponding state of affairs.
+5.0 Analytic truths are known through conceptual analysis rather than sensory observation.
+5.1 Analytic knowledge is always knowledge of dependence-relations.
+5.1.1 The proposition “If \(P\), then either \(P\) or \(Q\)” expresses a logical dependence-relation.
+5.1.2 The proposition that there are infinitely many primes expresses a dependence-relation.
+5.1.2.1 A set’s having finitely many members depends on its not having the set of prime numbers as a subset.
+5.1.3 The proposition that nothing can be numerate or literate without being sentient expresses a dependence-relation.
+5.1.3.1 An entity’s being numerate or literate depends on its being sentient.
+5.1.4 The proposition that there are no laws where there is no government expresses a dependence-relation.
+5.1.4.1 The presence of law depends on the presence of government.
+5.1.5 The proposition that there is no recursive definition of the class of Dedekind-cuts expresses a dependence-relation.
+5.1.5.1 A set’s having finitely or denumerably many members depends on its not having a cardinality equal to or greater than the cardinality of the class of Dedekind-cuts.
+5.1.6 The proposition \(1+1=2\) expresses a dependence-relation.
+5.1.6.1 A set’s being a couple depends on its being the union of two non-overlapping unit sets.
+5.1.7 The proposition \(1+1\neq3\) expresses a dependence-relation.
+5.1.7.1 A set’s being a triple depends on its not being the union of two non-overlapping unit sets.
+6.0 Observations are objectual awarenesses, but explanations concern truths.
+6.1 The contents of objectual awareness must be converted into propositions to be explained.
+6.1.1 Truths are explained.
+6.1.2 Truths are true propositions.
+6.2 Explaining an event is explaining the corresponding truth.
+6.2.1 Explaining an avalanche \(x\) is explaining why it is true that \(x\) occurred.
+6.2.2 Explaining a lightning-bolt \(x\) is explaining why it is true that \(x\) occurred.
+6.2.3 One is aware of avalanches and lightning-bolts.
+6.2.4 One explains the truths corresponding to those events.
+7.0 Causal relations are known empirically.
+7.1 Causal relations can be known through the senses.
+7.1.1 Sight and touch can provide knowledge of causal relations.
+7.2 Causal relations can be known through real-time awareness of one’s own psychological processes.
+7.3 Knowledge of causal relations is therefore empirical knowledge.
+8.0 Theoretical knowledge is inferential, but inferential knowledge need not be theoretical.
+8.1 Theoretical truths are necessarily known through inference.
+8.1.1 Knowledge of theoretical truths is inferential knowledge.
+8.2 Some inferential knowledge is non-theoretical.
+8.2.1 Observing that someone looks tired may support the belief that the person did not get enough sleep.
+8.2.2 Knowledge that someone did not get enough sleep may therefore be inferential without being theoretical.
+9.0 A theory is a proposition describing a relatively comprehensive fact about the structure of the universe.
+9.1 Theoretical knowledge is knowledge of a theory.
+9.1.1 Knowledge of evolutionary theory is theoretical knowledge.
+9.2 Theoretical knowledge is knowledge derived from a theory.
+9.2.1 Knowledge of a projectile’s future collision may be derived from the laws of mechanics and the projectile’s state of motion.
+9.2.1.1 The derived knowledge concerns the projectile’s collision with a surface in approximately two hours.
+10.0 Knowledge is justified true belief acquired through legitimate reasons.
+10.1 If one knows a proposition, one believes it.
+10.1.1 Knowledge entails belief.
+10.2 If one knows a proposition, the proposition is true.
+10.2.1 Knowledge entails truth.
+10.3 If one knows a proposition, one’s reasons for believing it are legitimate.
+10.3.1 Knowledge entails legitimate justification.
+10.4 Truth and justification alone do not constitute knowledge.
+10.4.1 A belief may be true and justified without being knowledge.
+10.4.2 A broken clock is correct twice a day.
+10.4.2.1 A belief that it is noon based on a broken clock is not knowledge merely because the clock indicates noon at the correct time.
+10.4.2.2 The belief is not knowledge even if the believer knows the clock to be relatively reliable.
+10.5 A belief would be knowledge if it were acquired through being en rapport with the relevant realities.
+10.5.1 Being en rapport with a reality means being linked to it by an information-transmissive structure.
+10.5.2 An information-transmissive structure differs from a merely evidence-generative structure.
+11.0 Evidence is grounded in causal dependence.
+11.1 A state of affairs \(e\) is evidence of a state of affairs \(e^*\) if and only if \(e\) and \(e^*\) are causally related in a way that gives knowledge of \(e\) reason to believe in \(e^*\).
+11.1.1 Knowledge that Smith is coughing up green phlegm gives reason to believe that Smith has a lung infection.
+11.1.2 Smith’s coughing up green phlegm is therefore evidence of Smith’s having a lung infection.
+12.0 Causal series, structure-preserving series, and information-bearing series are distinct.
+12.1 A causal series consists of events \(e_1\) through \(e_n\) such that each event causes the next.
+12.1.1 For every \(i\) between \(1\) and \(n\), \(e_i\) causes \(e_{i+1}\).
+12.2 A structure-preserving series is a series in which the first event transmits its structure to the final event.
+12.3 An information-bearing series is a structure-preserving series.
+12.3.1 Information-transmission is structure-preservation.
+12.3.2 In a telephone conversation, the structure of spoken sounds is coded into electrical signals.
+12.3.2.1 The receiving telephone converts the electrical signals into isomorphic sounds.
+12.3.2.2 The second sound-class bears information about the first sound-class.
+13.0 All information is evidence, but not all evidence is information.
+13.1 Information is evidence because information-bearing series preserve structure.
+13.2 Evidence need not be information because causal dependence need not preserve structure.
+13.2.1 An elevator’s stopping at the fifth floor may be evidence that someone pressed a particular elevator button.
+13.2.2 The elevator’s stopping and the button-pressing do not bear information about each other.
+13.2.2.1 The events have different structures.
+13.2.2.2 The first event did not transmit its structure to the second event.
+14.0 Information-transmission is the basis of knowledge.
+14.1 Sense-perceptions are isomorphs of the objects they represent.
+14.1.1 External objects transmit their structures to sense-perceptions.
+14.2 A perception-like experience is veridical if and only if it inherits its structure from its object.
+14.2.1 A perception-like experience is a bona fide perception only if it inherits its structure from its object.
+14.2.2 The accuracy of a perception is proportional to the extent to which it inherits its object’s structure.
+14.3 Perception-based beliefs are accurate only to the extent that perceptions inherit the structures of their external counterparts.
+14.3.1 The relevant structures may be inherited by individual perceptions.
+14.3.2 The relevant structures may be inherited collectively by perceptions.
+14.4 A belief is knowledge only to the extent that it is linked to its corresponding reality by an information-transmissive series.
+14.4.1 Testimony-based belief is knowledge only if the testimony constitutes an information-transmissive link to the relevant externality.
+14.4.2 Testimony from a dishonest person can produce knowledge if the testimony is information-transmissive.
+14.4.3 Testimony from an honest person does not produce knowledge unless the testimony is information-transmissive.
+14.4.4 A belief based on an unreliable mechanism can be knowledge if that mechanism is information-transmissive in the relevant context.
+14.4.5 A belief based on a reliable mechanism is not knowledge unless that mechanism is information-transmissive in the relevant context.
+14.5 Statistical reliability does not constitute knowledge.
+14.5.1 The difference between a clock that seldom stops and a clock that often stops is statistical.
+14.5.2 The difference between a witness who seldom lies and a witness who often lies is statistical.
+14.5.3 The difference between knowledge and mere belief is not statistical.
+14.5.4 A belief is knowledge exactly if it is the end-result of an information-transmissive series.
+14.5.4.1 The origins of other beliefs are irrelevant to whether a given belief is knowledge.
+15.0 Causation constitutes temporal precedence.
+15.1 An event \(e\) precedes an event \(e^*\) if and only if a possible causal process begins with \(e\) and ends with \(e^*\).
+15.1.1 Temporal precedence consists in the possibility of a causal process from the earlier event to the later event.
+15.2 Two events are simultaneous if and only if no such causal process exists between them.
+16.0 Continuity constitutes causation and information-transmission.
+16.1 Effects are continuations of their causes.
+16.2 An event transmits information about its cause to the extent that it inherits its structure from that cause.
+16.2.1 An event transmits information about its cause to the extent that the cause’s structure is causally determinative of the event.
+16.3 Structure-preserving causation depends on the preservation of relations among concurrent causal lines.
+16.3.1 Multiple concurrent causal lines preserve their mutual relations in structure-preserving causation.
+16.3.2 A high-resolution image of a face can be transmitted between computers without loss of detail.
+16.3.2.1 Each represented facial feature generates its own causal series.
+16.3.2.2 The mutual relations among those causal series are preserved.
+16.3.2.3 The structure of the effect therefore preserves the structure of the cause.
+16.4 Structure-preserving effects can reveal their causes without circumstance-specific causal knowledge.
+16.4.1 Knowledge of particular causal dependencies is not required to infer the nature of a cause from such an effect.
+16.5 Non-structure-preserving effects require ad hoc causal knowledge.
+16.5.1 Inferring that someone pushed a doorbell-button from the ringing of the bell requires circumstance-specific knowledge.
+17.0 Knowledge begins with information-transmission and extends to evidential dependence.
+17.1 Our thoughts inherit their structures from our perceptions.
+17.1.1 Our perceptions inherit their structures from corresponding externalities.
+17.1.2 Knowledge is initially acquired through information-transmissive series.
+17.2 Initial information-transmissive knowledge enables knowledge of non-information-transmissive evidential relations.
+17.2.1 Knowledge of non-information-transmissive evidential relations is acquired on the basis of prior knowledge.
+17.2.2 Prior knowledge is grounded in information-transmission.
+17.3 Knowledge of evidential relations therefore presupposes knowledge acquired through information-transmission.
+
+

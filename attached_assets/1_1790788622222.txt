@@ -1,0 +1,689 @@
+TRACTATUS TREE
+==============
+
+--- Level 1 (22 statements) ---
+
+1.0 Some knowledge is direct, and some knowledge is indirect.
+2.0 Knowledge concerns propositions rather than objects.
+3.0 Analytic knowledge concerns logical dependence-relations.
+4.0 Knowledge is justified true belief acquired through the appropriate connection with reality.
+5.0 Information is structure-preserving causal transmission.
+6.0 Continuity is the basis of causation and information-transmission.
+7.0 Deduction is inference from entailment, whereas induction is inference from confirmation.
+8.0 Natural laws are conditional principles with broad explanatory scope.
+9.0 Causation is a relation among events rather than objects.
+10.0 Psychological causation often involves thresholds and overdetermination.
+11.0 Counterfactuals express logical or causal dependence.
+12.0 The Regularity Analysis of Causation confuses causal continuity with succession.
+13.0 Scientific explanation cannot be reduced to the deductive-nomological model.
+14.0 The Raven Paradox results from confusing extensional coincidence with intensional law.
+15.0 Enumerative induction is not a legitimate form of inference.
+16.0 Explanation consists in eliminating discontinuities.
+17.0 Determinism is law-governed temporal determination.
+18.0 Supervenience is dependence without identity.
+19.0 Physical law does not exhaust higher-order explanation.
+20.0 Measurement is comparison with a standard rather than enumeration.
+21.0 Measurement conventions are not sufficient to determine natural laws.
+22.0 Causal continuity grounds knowledge, explanation, induction, and measurement.
+
+
+--- Level 2 (134 statements) ---
+
+1.0 Some knowledge is direct, and some knowledge is indirect.
+1.1 Indirect knowledge is acquired through inference.
+1.2 Dependence-relations are either logical or causal.
+1.3 A triangle depends logically on having three sides.
+2.0 Knowledge concerns propositions rather than objects.
+2.1 A belief has a proposition as its object.
+2.2 Knowledge is conceptually articulated awareness.
+2.3 Explanation concerns truths rather than objects.
+3.0 Analytic knowledge concerns logical dependence-relations.
+3.1 Analytic truths are known through conceptual analysis rather than sensory observation.
+3.2 Causal knowledge is empirical.
+3.3 Theoretical knowledge is inferential.
+4.0 Knowledge is justified true belief acquired through the appropriate connection with reality.
+4.1 Knowledge entails belief, truth, and legitimate justification.
+4.2 The relevant connection is information-transmissive.
+4.3 Reliability is not sufficient for knowledge.
+5.0 Information is structure-preserving causal transmission.
+5.1 A causal series consists of events in which each event causes the next.
+5.2 All information is evidence, but not all evidence is information.
+5.3 Perception depends on information-transmission.
+5.4 Knowledge based on testimony requires an information-transmissive link to the relevant reality.
+6.0 Continuity is the basis of causation and information-transmission.
+6.1 An effect is a continuation of its cause.
+6.2 Temporal precedence is defined causally.
+6.3 Causal continuity underlies knowledge.
+7.0 Deduction is inference from entailment, whereas induction is inference from confirmation.
+7.1 \(P\) entails \(Q\) when \(Q\) is a logical consequence of \(P\).
+7.2 \(P\) confirms \(Q\) when \(P\) increases the likelihood of \(Q\).
+7.3 Inductive inference requires explanatory superiority.
+7.4 Entailment is transitive and monotonic.
+7.5 Confirmation is non-transitive and non-monotonic.
+8.0 Natural laws are conditional principles with broad explanatory scope.
+8.1 A conditional has the form “if \(P\), then \(Q\).”
+8.2 Laws are commonly universal generalizations.
+8.3 Natural laws may concern merely possible objects.
+8.4 Scientific knowledge of imperceptibles is conditional knowledge.
+8.5 Imperceptibility may arise from severed causal access, limited scale, or natural impossibility.
+8.6 Laws are more important to science than singular facts.
+8.7 Meaningful generalizations have a systemic basis.
+9.0 Causation is a relation among events rather than objects.
+9.1 Objects have causal properties but are not themselves causes or effects.
+9.2 Conditions are stable patterns of events.
+9.3 Ordinary changes are often meta-changes.
+9.4 Explanation, prediction, and control depend on causal knowledge.
+9.5 Stable event-patterns make explanation possible.
+10.0 Psychological causation often involves thresholds and overdetermination.
+10.1 Mental illness may have several causally distinct contributors.
+10.2 Psychological overdetermination is the convergence of independently meaningful events.
+10.3 Threshold effects distinguish discontinuous from continuous change.
+10.4 An INUS condition is an insufficient but non-redundant part of an unnecessary but sufficient condition.
+11.0 Counterfactuals express logical or causal dependence.
+11.1 A causal counterfactual states that one event would not have occurred without another.
+11.2 A logical counterfactual expresses entailment.
+11.3 Lewis’s analysis of counterfactuals is rejected.
+11.4 Program-causality permits causal redundancy.
+11.5 The Counterfactual Analysis of Causality identifies causation with counterfactual dependence.
+11.6 CAC cannot be rescued by describing events more precisely.
+12.0 The Regularity Analysis of Causation confuses causal continuity with succession.
+12.1 Hume identifies direct causation with regular succession.
+12.2 Causal processes are either transeunt or immanent.
+12.3 Continuity is the essence of immanent causation.
+12.4 Hume mistakes causal disruption for causation itself.
+12.5 Hume-worlds are not observationally equivalent to genuine causal worlds.
+12.6 The Regularity Analysis fails because temporal order presupposes causal order.
+12.7 The Regularity Analysis fails because correlation is not causation.
+12.8 The Regularity Analysis fails because every event sequence instantiates some regularity.
+13.0 Scientific explanation cannot be reduced to the deductive-nomological model.
+13.1 DN explains an event by deriving it from circumstances and laws.
+13.2 DN presupposes causal relevance.
+13.3 The distinction between nomic and accidental generalizations is causal.
+13.4 DN becomes circular when laws are defined by counterfactual support.
+13.5 Causal knowledge is differential knowledge.
+13.6 Scientific explanation is high-resolution causal knowledge.
+13.7 Laws do not consist in perfect regularities.
+13.8 The psychological failure of DN is especially clear.
+13.9 DN has a limited sphere of application.
+14.0 The Raven Paradox results from confusing extensional coincidence with intensional law.
+14.1 Logical equivalence should entail confirmational equivalence.
+14.2 “All ravens are black” and “All non-black things are non-ravens” appear to generate a paradox.
+14.3 Hempel’s solution fails.
+14.4 The paradox disappears when generalizations are read intensionally or extensionally.
+14.5 The Raven Paradox is a product of the Regularity Analysis.
+15.0 Enumerative induction is not a legitimate form of inference.
+15.1 Enumerative induction infers that unknown \(\phi\)s are \(\psi\)s from known \(\phi\)s being \(\psi\)s.
+15.2 Inference to the Best Explanation differs from enumerative induction.
+15.3 Apparent enumerative induction is either IBE or no inference.
+15.4 Repeated outcomes support prediction only through causal structure.
+16.0 Explanation consists in eliminating discontinuities.
+16.1 An IBE eliminates anomalies in the available data.
+16.2 To explain an event is to restore its continuity with the prior universe.
+16.3 IBE is justified by the structure of space-time.
+16.4 The uniformity of nature is not justified by enumerative induction.
+16.5 The Uniformity Principle is a precondition of inductive reasoning.
+16.6 Objects are causal series.
+17.0 Determinism is law-governed temporal determination.
+17.1 Determinism states that the world’s state at one time fixes its state at later times.
+17.2 Interference limits predictability.
+17.3 Sensory knowledge prevents complete knowledge of initial conditions.
+17.4 No creature can predict exactly how its knowledge will grow.
+18.0 Supervenience is dependence without identity.
+18.1 One class of facts supervenes on another when change in the first requires change in the second.
+18.2 Higher-order properties may be multiply realizable.
+18.3 Psychological supervenience differs from biological supervenience.
+19.0 Physical law does not exhaust higher-order explanation.
+19.1 Physical constraint is not physical explanation.
+19.2 A statue is not identical with the clay constituting it.
+19.3 A computer is not identical with its atoms.
+19.4 Program-determinism differs from implementation-determinism.
+19.5 Statistical trends reflect mechanisms without constituting probabilities.
+19.6 Probability is causal possibility.
+20.0 Measurement is comparison with a standard rather than enumeration.
+20.1 Length has no minimal units.
+20.2 Measurement relativizes a magnitude to a standard.
+20.3 Absolute length is standardized relative length.
+20.4 Measurement requires an ordered magnitude relation.
+20.5 Scalar magnitudes are represented by single numbers.
+20.6 Congruence defines equality of magnitude.
+20.7 Standards are provisional and tested by measurement.
+20.8 Triangulation extends measurement beyond direct instruments.
+20.9 Metrical knowledge develops from approximation to precision.
+20.10 Duration is measured through periodic processes.
+20.11 Magnitudes may be extensive or intensive.
+20.12 Relativity reveals the non-additivity of scalar quantities.
+20.13 Direct measurement yields rational numbers.
+21.0 Measurement conventions are not sufficient to determine natural laws.
+21.1 Metrical conventionalism treats the choice of standard as conventional.
+21.2 Nomic conventionalism claims that laws depend on metrical standards.
+21.3 Strict conventionalism is distinct from ordinary conventionalism.
+21.4 Conventionalism defeats itself when standards produce causal anomalies.
+22.0 Causal continuity grounds knowledge, explanation, induction, and measurement.
+22.1 Causal series are continuous series.
+22.2 Explanations eliminate discontinuities.
+22.3 Inductive inference is justified by continuity rather than enumeration.
+22.4 Measurement becomes knowledge when standards preserve causal consistency.
+
+
+--- Level 3 (518 statements) ---
+
+1.0 Some knowledge is direct, and some knowledge is indirect.
+1.1 Indirect knowledge is acquired through inference.
+1.1.1 An inference forms a new belief on the basis of an old belief.
+1.1.2 A legitimate inference conforms to a legitimate rule of inference.
+1.1.3 A legitimate rule of inference corresponds to a dependence-relation.
+1.2 Dependence-relations are either logical or causal.
+1.2.1 Logical dependence holds between propositions.
+1.2.2 Causal dependence holds between states of affairs.
+1.2.3 A proposition is either true or false.
+1.2.4 A state of affairs occupies space-time.
+1.3 A triangle depends logically on having three sides.
+1.3.1 Smith’s passing depends causally on Smith’s studying.
+1.3.2 Logical dependence is interpropositional.
+1.3.3 Causal dependence is objectual.
+2.0 Knowledge concerns propositions rather than objects.
+2.1 A belief has a proposition as its object.
+2.1.1 Whatever is known is believed.
+2.1.2 Whatever is believed is a proposition.
+2.1.3 Rocks, trees, and people may be objects of awareness without being objects of knowledge.
+2.1.4 One knows truths about objects rather than objects themselves.
+2.2 Knowledge is conceptually articulated awareness.
+2.2.1 Awareness may be propositional or objectual.
+2.2.2 Objectual awareness does not require possession of the concepts that articulate it.
+2.2.3 Propositional awareness requires conceptual articulation.
+2.3 Explanation concerns truths rather than objects.
+2.3.1 An observation is an objectual awareness.
+2.3.2 An observation must be converted into a proposition to be explained.
+2.3.3 Explaining an avalanche is explaining why it is true that the avalanche occurred.
+3.0 Analytic knowledge concerns logical dependence-relations.
+3.1 Analytic truths are known through conceptual analysis rather than sensory observation.
+3.1.1 Analytic knowledge may be direct or inferential.
+3.1.2 The truth that \(P\) implies \(P\) or \(Q\) expresses a logical dependence.
+3.1.3 Arithmetic truths express dependence-relations among sets or numerical structures.
+3.1.4 Conceptual truths may concern mathematics, language, sentience, government, or definitions.
+3.2 Causal knowledge is empirical.
+3.2.1 Causal relations are known through the senses or through real-time awareness of one’s own psychological processes.
+3.2.2 Causal necessity differs from logical necessity.
+3.2.3 A triangle’s having three sides is logically necessary.
+3.2.4 An ice-cube’s melting on a hot surface is causally necessary.
+3.3 Theoretical knowledge is inferential.
+3.3.1 Not every inferential belief is theoretical knowledge.
+3.3.2 A theory is a proposition describing a relatively comprehensive fact about the structure of the universe.
+3.3.3 Knowledge of a theory is theoretical knowledge.
+3.3.4 Knowledge derived from a theory is also theoretical knowledge.
+4.0 Knowledge is justified true belief acquired through the appropriate connection with reality.
+4.1 Knowledge entails belief, truth, and legitimate justification.
+4.1.1 Truth and justification alone do not guarantee knowledge.
+4.1.2 A broken clock may yield a true belief without producing knowledge.
+4.1.3 A belief is knowledge only if it was acquired through the relevant reality.
+4.2 The relevant connection is information-transmissive.
+4.2.1 An information-transmissive structure preserves the structure of its source.
+4.2.2 A merely evidence-generative relation need not preserve structure.
+4.2.3 The difference between knowledge and belief is not statistical.
+4.2.4 A belief is knowledge exactly when it terminates an information-transmissive series.
+4.3 Reliability is not sufficient for knowledge.
+4.3.1 An unreliable mechanism may yield knowledge in a context where it transmits information.
+4.3.2 A reliable mechanism may fail to yield knowledge in a context where it does not transmit information.
+4.3.3 An honest witness does not provide knowledge unless the testimony transmits information.
+4.3.4 A dishonest witness may provide knowledge if the testimony transmits information.
+5.0 Information is structure-preserving causal transmission.
+5.1 A causal series consists of events in which each event causes the next.
+5.1.1 A structure-preserving series transmits the structure of its initial event to its terminal event.
+5.1.2 An information-bearing series is a structure-preserving series.
+5.1.3 Information-transmission is structure-preservation.
+5.2 All information is evidence, but not all evidence is information.
+5.2.1 Evidence exists when one state of affairs gives reason to believe in another through a causal relation.
+5.2.2 Evidence need not preserve the structure of what it indicates.
+5.2.3 An elevator’s stopping may evidence someone’s pressing a button without transmitting the button-press’s structure.
+5.3 Perception depends on information-transmission.
+5.3.1 Sense-perceptions are structurally related to the objects they represent.
+5.3.2 A perception is veridical when it inherits its structure from its object.
+5.3.3 A perception is accurate to the extent that it preserves the object’s structure.
+5.3.4 Perception-based beliefs are accurate to the extent that their structures are inherited from external realities.
+5.4 Knowledge based on testimony requires an information-transmissive link to the relevant reality.
+5.4.1 Knowledge of evidential relations presupposes knowledge acquired through information-transmission.
+6.0 Continuity is the basis of causation and information-transmission.
+6.1 An effect is a continuation of its cause.
+6.1.1 An event transmits information about its cause to the extent that it inherits the cause’s structure.
+6.1.2 Causal information-transmission preserves the mutual relations among concurrent causal lines.
+6.1.3 Structure-preserving causation allows the cause to be inferred from the effect without ad hoc knowledge.
+6.2 Temporal precedence is defined causally.
+6.2.1 One event precedes another when a possible causal process begins with the first and ends with the second.
+6.2.2 Two events are simultaneous when no such causal process connects them.
+6.3 Causal continuity underlies knowledge.
+6.3.1 Thoughts inherit their structures from perceptions.
+6.3.2 Perceptions inherit their structures from external realities.
+6.3.3 Knowledge of non-information-transmissive evidence depends on prior information-transmissive knowledge.
+7.0 Deduction is inference from entailment, whereas induction is inference from confirmation.
+7.1 \(P\) entails \(Q\) when \(Q\) is a logical consequence of \(P\).
+7.1.1 If \(P\) is true and entails \(Q\), then \(Q\) is true.
+7.1.2 Inferring \(Q\) from \(P\) on the basis of their entailment is deductive inference.
+7.2 \(P\) confirms \(Q\) when \(P\) increases the likelihood of \(Q\).
+7.2.1 Confirmation does not by itself license inference.
+7.2.2 \(P\) may confirm both \(Q\) and a proposition incompatible with \(Q\).
+7.2.3 \(P\) may increase the probability of \(Q\) without making \(Q\) probable.
+7.2.4 A further truth may combine with \(P\) to disconfirm \(Q\).
+7.3 Inductive inference requires explanatory superiority.
+7.3.1 \(Q\) may be inferred from \(P\) when \(P\) and not-\(Q\) have fewer unexplained consequences than \(P\) and \(Q\).
+7.3.2 \(Q\) may be inferred from \(P\) when \(P\) has fewer unexplained consequences than not-\(P\).
+7.3.3 Knowledge of these conditions makes the inference legitimate.
+7.4 Entailment is transitive and monotonic.
+7.4.1 If \(P\) entails \(Q\), and \(Q\) entails \(R\), then \(P\) entails \(R\).
+7.4.2 If \(P\) entails \(Q\), adding \(R\) does not defeat the entailment.
+7.5 Confirmation is non-transitive and non-monotonic.
+7.5.1 \(P\)’s confirming \(Q\), together with \(Q\)’s confirming \(R\), does not imply that \(P\) confirms \(R\).
+7.5.2 \(P\)’s confirming \(Q\), together with \(R\)’s truth, does not imply that \(P\) and \(R\) confirm \(Q\).
+8.0 Natural laws are conditional principles with broad explanatory scope.
+8.1 A conditional has the form “if \(P\), then \(Q\).”
+8.1.1 Expressions such as “given that” and “assuming that” also introduce conditionals.
+8.1.2 Entailment is logical, whereas confirmation is explanatory.
+8.1.3 A proposition is counterlogical when its structure prevents its truth.
+8.1.4 A proposition is counterexplanatory when its truth has more unexplained consequences than its falsity.
+8.2 Laws are commonly universal generalizations.
+8.2.1 A law such as “copper expands when heated” concerns a class of conditionals.
+8.2.2 A law applies to any object satisfying its antecedent.
+8.2.3 A law supports predictions, counterfactuals, and explanations.
+8.3 Natural laws may concern merely possible objects.
+8.3.1 Some laws concern classes with no actual members.
+8.3.2 Some laws concern limiting cases prohibited by the laws themselves.
+8.3.3 Actual behavior is understood through approximation to such limiting cases.
+8.4 Scientific knowledge of imperceptibles is conditional knowledge.
+8.4.1 Knowledge of the future is conditional.
+8.4.2 Knowledge of the past is conditional.
+8.4.3 Knowledge of the non-actual possible is conditional.
+8.4.4 Knowledge of the present imperceptible is conditional.
+8.5 Imperceptibility may arise from severed causal access, limited scale, or natural impossibility.
+8.5.1 An object may be imperceptible because an information-bearing process cannot reach the observer.
+8.5.2 An object may be imperceptible because it is too small for available technology.
+8.5.3 An object may be imperceptible because natural law prevents its perception.
+8.6 Laws are more important to science than singular facts.
+8.6.1 A singular fact matters scientifically insofar as it instantiates a general principle.
+8.6.2 A law may be place- and time-sensitive.
+8.6.3 A law need not be perfectly universal to support principled inference.
+8.6.4 Limited and defeasible generalizations may function as laws while knowledge remains incomplete.
+8.7 Meaningful generalizations have a systemic basis.
+8.7.1 A law is not merely a perfect statistical regularity.
+8.7.2 A law is grounded in the system constituting the relevant properties.
+8.7.3 A statistically normal occurrence may be a singularity if it is not systemically grounded.
+8.7.4 A law makes its antecedent dispositive of its consequent through relatively non-context-specific structure.
+9.0 Causation is a relation among events rather than objects.
+9.1 Objects have causal properties but are not themselves causes or effects.
+9.1.1 A rock’s weight gives it causal properties.
+9.1.2 Events involving the rock, rather than the rock itself, are causes or effects.
+9.1.3 The rock is a product of prior events rather than an effect in the relevant sense.
+9.2 Conditions are stable patterns of events.
+9.2.1 A condition is an event-plurality.
+9.2.2 A condition persists when its constitutive events remain within certain limits.
+9.2.3 Constant temperature consists in stable patterns of molecular change.
+9.2.4 A change in temperature is a change in the pattern of those changes.
+9.3 Ordinary changes are often meta-changes.
+9.3.1 Stable constitutive changes are usually ignored.
+9.3.2 A reported change commonly means a change in an underlying pattern of change.
+9.4 Explanation, prediction, and control depend on causal knowledge.
+9.4.1 Scientific knowledge explains past events.
+9.4.2 Scientific knowledge predicts future events.
+9.4.3 Scientific knowledge enables limited control over events.
+9.5 Stable event-patterns make explanation possible.
+9.5.1 Rogue events cannot be explained or predicted reliably.
+9.5.2 Stable structures and conditions support explanation and prediction.
+9.5.3 Explanation commonly identifies a program-cause rather than an immediate cause.
+9.5.4 A program-cause predisposes a system toward an immediate event.
+10.0 Psychological causation often involves thresholds and overdetermination.
+10.1 Mental illness may have several causally distinct contributors.
+10.1.1 A precondition describes the subject’s state before illness.
+10.1.2 A specific cause makes a slight disturbance sufficient for illness.
+10.1.3 A concurrent cause operates independently of the precondition.
+10.1.4 A precipitating cause pushes the subject across the illness threshold.
+10.2 Psychological overdetermination is the convergence of independently meaningful events.
+10.2.1 Each contributing psychological event may justify the final event’s occurrence.
+10.2.2 No single contributing event need be sufficient by itself.
+10.2.3 The final event occurs when enough reasons accumulate.
+10.3 Threshold effects distinguish discontinuous from continuous change.
+10.3.1 A threshold mechanism remains inactive until a critical condition is reached.
+10.3.2 Discontinuous change has a digital structure.
+10.3.3 Continuous change has an analogue structure.
+10.3.4 Causes may be insufficient individually but non-redundant within a sufficient conjunction.
+10.4 An INUS condition is an insufficient but non-redundant part of an unnecessary but sufficient condition.
+10.4.1 A switch-flip may be insufficient without intact circuitry.
+10.4.2 The whole operative conjunction may be sufficient without being necessary.
+10.4.3 Ordinary causal claims often identify INUS conditions.
+11.0 Counterfactuals express logical or causal dependence.
+11.1 A causal counterfactual states that one event would not have occurred without another.
+11.1.1 “If Kennedy had not been assassinated, troop withdrawal would have occurred earlier” expresses causal dependence.
+11.1.2 “If Smith had not fallen, his leg would not have broken” expresses causal dependence.
+11.2 A logical counterfactual expresses entailment.
+11.2.1 “If Smith had more than ten dollars, he would have more than five dollars” expresses logical dependence.
+11.2.2 Every counterfactual affirms some form of necessitation.
+11.3 Lewis’s analysis of counterfactuals is rejected.
+11.3.1 Lewis evaluates counterfactuals by comparison with similar possible worlds.
+11.3.2 An event has deep causal roots extending through many prior conditions.
+11.3.3 Removing such an event may alter the world too radically for the proposed similarity relation to hold.
+11.3.4 Counterfactual truth depends on the causal and logical structure of the actual world.
+11.4 Program-causality permits causal redundancy.
+11.4.1 Boiling water causes a vessel to crack by programming high-speed molecular collisions.
+11.4.2 The exact molecular collisions need not occur for the cracking to occur.
+11.4.3 A causal truth need not entail a corresponding counterfactual.
+11.4.4 Causal redundancy prevents causal claims from being reduced to simple counterfactuals.
+11.5 The Counterfactual Analysis of Causality identifies causation with counterfactual dependence.
+11.5.1 According to CAC, \(e\) causes \(e^*\) exactly when \(e^*\) would not have occurred without \(e\).
+11.5.2 CAC is motivated by the desire to preserve causal claims without positing unobserved forces.
+11.5.3 CAC is extensionally false because causal redundancy defeats its counterfactual condition.
+11.5.4 CAC is intensionally false because causal claims explain counterfactuals rather than being explained by them.
+11.6 CAC cannot be rescued by describing events more precisely.
+11.6.1 Threshold effects may produce the same event through different antecedents.
+11.6.2 A software event may be implemented by physically different processes.
+11.6.3 A program-caused event may occur through different micro-event sequences.
+11.6.4 Event identity need not depend on the exact composition of its causes.
+12.0 The Regularity Analysis of Causation confuses causal continuity with succession.
+12.1 Hume identifies direct causation with regular succession.
+12.1.1 A direct cause is regularly adjacent to its immediately posterior effect.
+12.1.2 An indirect cause is linked to an effect through a regular sequence.
+12.1.3 Laws are therefore treated as regularities.
+12.1.4 Causes are therefore treated as antecedents rather than productive structures.
+12.2 Causal processes are either transeunt or immanent.
+12.2.1 Transeunt causation involves interaction between causal series.
+12.2.2 Immanent causation consists in persistence within a causal series.
+12.2.3 Immanent causation preserves structure.
+12.2.4 Transeunt causation disrupts structure discontinuously.
+12.3 Continuity is the essence of immanent causation.
+12.3.1 An enduring object is a causal series of structurally similar states.
+12.3.2 A stable object is constituted by continuous causal persistence.
+12.3.3 A collision alters causal structure discontinuously.
+12.3.4 A melting object loses structure continuously.
+12.3.5 A smashed object loses structure discontinuously.
+12.4 Hume mistakes causal disruption for causation itself.
+12.4.1 Causal explanation is needed when continuity is disrupted.
+12.4.2 A causal explanation should identify the continuity preserved through the disruption.
+12.4.3 The effect is causally related to the cause through an underlying continuous process.
+12.5 Hume-worlds are not observationally equivalent to genuine causal worlds.
+12.5.1 A hidden magnet would produce observable effects distinct from collision-based motion.
+12.5.2 Genuine causal processes are continuous rather than merely contiguous.
+12.5.3 A pseudo-causal sequence lacks a single continuous process connecting its events.
+12.6 The Regularity Analysis fails because temporal order presupposes causal order.
+12.6.1 An event precedes another when a causal process connects them.
+12.6.2 Simultaneity and spatial adjacency are also defined through causal possibilities.
+12.6.3 Spatiotemporal relations have significance only as causal relations.
+12.7 The Regularity Analysis fails because correlation is not causation.
+12.7.1 Repeated images may be adjacent without causing one another.
+12.7.2 A projector may cause both images in a repeated film sequence.
+12.7.3 Epiphenomenal causation is pseudo-causation.
+12.7.4 Software activity may cause visible desktop events that merely appear causally related.
+12.8 The Regularity Analysis fails because every event sequence instantiates some regularity.
+12.8.1 Any event can be placed in a category containing only itself.
+12.8.2 Any neighboring events can therefore be described as regular successors.
+12.8.3 Regular succession alone cannot establish causation.
+13.0 Scientific explanation cannot be reduced to the deductive-nomological model.
+13.1 DN explains an event by deriving it from circumstances and laws.
+13.1.1 The circumstances describe the conditions in which the event occurred.
+13.1.2 The laws describe the principles operative in those circumstances.
+13.1.3 The event is explained when it is a logical consequence of both.
+13.2 DN presupposes causal relevance.
+13.2.1 Not every prior condition is relevant to an event.
+13.2.2 A condition is relevant only insofar as it caused the event.
+13.2.3 Identifying relevant conditions already identifies causal information.
+13.2.4 DN therefore requires an explanation before it can construct an explanation.
+13.3 The distinction between nomic and accidental generalizations is causal.
+13.3.1 “Metal expands when heated” is nomic because heating causes expansion.
+13.3.2 “Every coin in my pocket is a quarter” is accidental because pocket-location does not cause quarter-status.
+13.3.3 If DN excludes causal content from laws, it cannot distinguish the two generalizations.
+13.4 DN becomes circular when laws are defined by counterfactual support.
+13.4.1 Counterfactuals are covert causal claims.
+13.4.2 A law supports a counterfactual because its antecedent causes its consequent.
+13.4.3 Explaining laws through counterfactual support therefore presupposes causal knowledge.
+13.4.4 Scientific explanation cannot be universally law-based if laws themselves depend on prior causal explanations.
+13.5 Causal knowledge is differential knowledge.
+13.5.1 Effects vary in proportion to relevant causal differences.
+13.5.2 Laws express relations of proportionality rather than simple succession.
+13.5.3 Statistics track causal structure only when they reflect the relevant causal differences.
+13.5.4 A singular cause may be identified by its proportional relation to a singular effect.
+13.6 Scientific explanation is high-resolution causal knowledge.
+13.6.1 A low-resolution explanation identifies what caused an event.
+13.6.2 A high-resolution explanation identifies how the cause produced the event.
+13.6.3 Knowledge of why is high-resolution knowledge of what.
+13.6.4 Scientific explanations presuppose non-scientific causal explanations.
+13.7 Laws do not consist in perfect regularities.
+13.7.1 A cause may fail to produce its effect when intervening conditions differ.
+13.7.2 Laws express proportional dependencies among parameters.
+13.7.3 Natural laws dispose systems toward regularities without being identical with them.
+13.7.4 Regularities arise only under exceptional conditions of equilibrium or isolation.
+13.8 The psychological failure of DN is especially clear.
+13.8.1 A person may know that an insult caused a tantrum without knowing a perfect psychological law.
+13.8.2 Imperfect statistical regularities do not establish psychological causation.
+13.8.3 A behavior may be caused by an event even when most similar events do not produce it.
+13.9 DN has a limited sphere of application.
+13.9.1 DN may describe scientific explanation when both cause and mechanism are known.
+13.9.2 DN does not describe all explanations.
+13.9.3 DN cannot identify causal relevance without presupposing causal knowledge.
+14.0 The Raven Paradox results from confusing extensional coincidence with intensional law.
+14.1 Logical equivalence should entail confirmational equivalence.
+14.1.1 Two propositions are logically equivalent when each entails the other.
+14.1.2 Two propositions are confirmationally equivalent when every datum confirms them equally.
+14.1.3 Logical equivalence entails confirmational equivalence.
+14.2 “All ravens are black” and “All non-black things are non-ravens” appear to generate a paradox.
+14.2.1 A pink piano confirms the second formulation but not the first in ordinary reasoning.
+14.2.2 The same structure appears in “heated metal expands” and “heated non-expanders are not metal.”
+14.2.3 A shrinking cube steak appears to confirm only the second formulation.
+14.3 Hempel’s solution fails.
+14.3.1 Hempel attributes the difference to background beliefs.
+14.3.2 Hempel therefore treats a pink piano as equally confirmatory of both raven statements.
+14.3.3 Hempel’s solution implies that studying pianos can teach us about ravens.
+14.3.4 Hempel’s solution is therefore false.
+14.4 The paradox disappears when generalizations are read intensionally or extensionally.
+14.4.1 An intensional generalization states that a law makes all \(\phi\)s \(\psi\)s.
+14.4.2 An extensional generalization states that all \(\phi\)s happen to be \(\psi\)s.
+14.4.3 “Heated metal expands” is naturally intensional.
+14.4.4 Its contraposed formulation is not equivalent when read as a causal law.
+14.5 The Raven Paradox is a product of the Regularity Analysis.
+14.5.1 If laws were mere extensional regularities, irrelevant observations would confirm them.
+14.5.2 Irrelevant observations do not confirm causal laws.
+14.5.3 The paradox arises from denying causal structure.
+15.0 Enumerative induction is not a legitimate form of inference.
+15.1 Enumerative induction infers that unknown \(\phi\)s are \(\psi\)s from known \(\phi\)s being \(\psi\)s.
+15.1.1 The observed regularity may be accidental.
+15.1.2 Accidental repetition does not justify projection to unknown cases.
+15.1.3 The inference becomes legitimate only when supported by an explanatory hypothesis.
+15.2 Inference to the Best Explanation differs from enumerative induction.
+15.2.1 IBE posits an unknown entity, structure, or mechanism.
+15.2.2 The hypothesis is proposed because it removes anomalies in the available data.
+15.2.3 A hypothesis explains a datum when it makes the datum continuous with the rest of reality.
+15.3 Apparent enumerative induction is either IBE or no inference.
+15.3.1 A person may project past success because he believes in a causal mechanism.
+15.3.2 A gambler’s belief in luck is an IBE about a mechanism called Lady Luck.
+15.3.3 Pavlovian association produces expectation without judgment or inference.
+15.3.4 A person who explicitly denies causal connection has no rational basis for projection.
+15.4 Repeated outcomes support prediction only through causal structure.
+15.4.1 Repeated sixes rationally support another six when a mechanism disposes the die toward sixes.
+15.4.2 Repeated sixes do not support another six when they are treated as pure coincidence.
+15.4.3 The apparent induction is therefore either explanatory or irrational.
+16.0 Explanation consists in eliminating discontinuities.
+16.1 An IBE eliminates anomalies in the available data.
+16.1.1 False hypotheses may fit limited data.
+16.1.2 False hypotheses tend not to fit expanded data.
+16.1.3 Additional data exposes hypotheses that cannot preserve continuity.
+16.2 To explain an event is to restore its continuity with the prior universe.
+16.2.1 An event is anomalous when it has no causal roots in prior conditions.
+16.2.2 A cause is an antecedent that makes the effect continuous with the prior state of the universe.
+16.2.3 A ball emerging from an opaque tunnel is explained by positing its continuous motion through the tunnel.
+16.2.4 Explanation identifies a process of which the observed events are fragments.
+16.3 IBE is justified by the structure of space-time.
+16.3.1 Two events belong to one manifold only if they are causally connected.
+16.3.2 A completely discontinuous post-event universe would not be a continuation of the earlier universe.
+16.3.3 Memory-like contents without causal roots would not be memories.
+16.3.4 Unobserved continuities must be posited when observed events belong to one manifold but their connection is unseen.
+16.4 The uniformity of nature is not justified by enumerative induction.
+16.4.1 The laws of physics constitute the space-time manifold.
+16.4.2 A change in the laws would destroy the continuity of objects, properties, and events.
+16.4.3 A universe with different laws would be a different universe.
+16.4.4 The persistence of the universe presupposes the persistence of its laws.
+16.5 The Uniformity Principle is a precondition of inductive reasoning.
+16.5.1 If the laws changed, the objects making inferences would not persist.
+16.5.2 If the objects making inferences persist, the operative laws remain uniform.
+16.5.3 Inductive inference is legitimate when it fails through incompetence rather than through a defect in induction itself.
+16.6 Objects are causal series.
+16.6.1 Rocks, trees, stars, and natural kinds are stable event-patterns.
+16.6.2 Objects exist through the forces and laws governing their parts.
+16.6.3 A change in laws would terminate the objects constituted by those laws.
+16.6.4 No pre-change event could cause a post-change event if the governing laws had ceased.
+17.0 Determinism is law-governed temporal determination.
+17.1 Determinism states that the world’s state at one time fixes its state at later times.
+17.1.1 Indeterminism denies that the earlier state uniquely determines the later state.
+17.1.2 The world is deterministic to the extent that laws determine later states.
+17.1.3 Determinism does not entail complete predictability.
+17.2 Interference limits predictability.
+17.2.1 Learning about a system requires causal interaction with it.
+17.2.2 Causal interaction changes the system being studied.
+17.2.3 Questions may alter a person’s mental state.
+17.2.4 Entering a cave and illuminating it may alter the bats being observed.
+17.2.5 Complete prediction would require knowledge that does not interfere with its object.
+17.3 Sensory knowledge prevents complete knowledge of initial conditions.
+17.3.1 Perception requires an information-bearing causal process.
+17.3.2 Learning about microphysical objects requires interactions that alter them.
+17.3.3 No observer can acquire complete knowledge of the world’s microstructure.
+17.3.4 Prediction requires knowledge of initial conditions and laws.
+17.3.5 Complete prediction is therefore impossible.
+17.4 No creature can predict exactly how its knowledge will grow.
+17.4.1 If a creature knows now what it will learn later, it already knows it now.
+17.4.2 What a creature learns affects what it does.
+17.4.3 What it does affects the world.
+17.4.4 No creature can therefore predict exactly what it will do or how the world will change.
+18.0 Supervenience is dependence without identity.
+18.1 One class of facts supervenes on another when change in the first requires change in the second.
+18.1.1 Biological differences require relevant microphysical differences.
+18.1.2 Physical identity does not entail identity of higher-order properties.
+18.2 Higher-order properties may be multiply realizable.
+18.2.1 Physically different objects may share aesthetic properties.
+18.2.2 Physically different systems may share biological properties.
+18.2.3 Hardware-distinct systems may be software-identical.
+18.2.4 Hardware identity does not permit software difference.
+18.3 Psychological supervenience differs from biological supervenience.
+18.3.1 Physiological identity may fix psychological identity as a matter of law.
+18.3.2 Psychological difference under physiological identity is counternomic rather than conceptually incoherent.
+19.0 Physical law does not exhaust higher-order explanation.
+19.1 Physical constraint is not physical explanation.
+19.1.1 Nothing violates physical law.
+19.1.2 It does not follow that every higher-order fact is explained by physical law.
+19.2 A statue is not identical with the clay constituting it.
+19.2.1 Constitution is distinct from identity.
+19.2.2 The statue and the clay have different modal properties.
+19.3 A computer is not identical with its atoms.
+19.3.1 Physical laws describe the behavior of the atoms.
+19.3.2 Physical laws do not thereby describe computation or storage.
+19.3.3 Software concepts are invisible to physics as such.
+19.3.4 Software-identical systems may have physically different realizations.
+19.4 Program-determinism differs from implementation-determinism.
+19.4.1 A deterministic program assigns at most one output to each relevant input.
+19.4.2 Machine error is failure to implement the program.
+19.4.3 Program determinism can persist despite physical implementation errors.
+19.4.4 Higher-order laws may remain deterministic despite lower-order indeterminism.
+19.5 Statistical trends reflect mechanisms without constituting probabilities.
+19.5.1 Microphysical deviations may cancel at higher levels.
+19.5.2 A higher-order system may behave deterministically despite indeterministic components.
+19.5.3 Coincidental regularity may conceal the underlying probability.
+19.5.4 Statistics are evidence of probabilities rather than probabilities themselves.
+19.5.5 Causal mechanisms determine actual probabilities even when statistics misrepresent them.
+19.6 Probability is causal possibility.
+19.6.1 A malfunction has positive probability when the laws and construction permit it.
+19.6.2 A behavior may be statistically certain without being causally necessary.
+19.6.3 A behavior may be causally probable despite never occurring in the observed statistics.
+20.0 Measurement is comparison with a standard rather than enumeration.
+20.1 Length has no minimal units.
+20.1.1 Between any two lengths there are intermediate lengths.
+20.1.2 No object’s length can be determined merely by counting constituent units.
+20.1.3 Enumeration presupposes knowledge that length is additive.
+20.1.4 Length is not generally additive.
+20.2 Measurement relativizes a magnitude to a standard.
+20.2.1 “Longer than” gives a context-relative comparison.
+20.2.2 “Two meters long” compares an object with a universal standard.
+20.2.3 Every measurement is comparison with respect to some standard.
+20.3 Absolute length is standardized relative length.
+20.3.1 A standard is stipulated to have one unit of length.
+20.3.2 An object’s measured length is its relation to that standard.
+20.3.3 Rational ratios may be determined by finite subdivision.
+20.3.4 Irrational ratios may be approximated but not directly enumerated.
+20.4 Measurement requires an ordered magnitude relation.
+20.4.1 If \(L_1\) exceeds \(L_2\), and \(L_2\) exceeds \(L_3\), then \(L_1\) exceeds \(L_3\).
+20.4.2 Distinct lengths must stand in one direction of comparison.
+20.4.3 Equality of length must be transitive.
+20.4.4 Numerical measurement is meaningful only when these relations hold.
+20.5 Scalar magnitudes are represented by single numbers.
+20.5.1 Length, mass, temperature, density, pressure, speed, and conductivity are scalar magnitudes.
+20.5.2 Velocity is a vector magnitude because it includes direction.
+20.5.3 A scalar magnitude is one-dimensional as a magnitude even when its object is four-dimensional.
+20.6 Congruence defines equality of magnitude.
+20.6.1 Length-congruent objects share endpoint relations and constant separation when juxtaposed.
+20.6.2 One object is longer than another when the latter is congruent with a proper segment of the former.
+20.6.3 Without congruence, claims of equal or greater length lack truth-values.
+20.6.4 Congruence may hold among objects of any dimensionality.
+20.7 Standards are provisional and tested by measurement.
+20.7.1 A provisional standard permits measurements of other objects.
+20.7.2 Those measurements reveal physical laws.
+20.7.3 The laws determine which standards yield consistent measurements.
+20.7.4 A standard may be replaced when another produces greater consistency.
+20.8 Triangulation extends measurement beyond direct instruments.
+20.8.1 Small distances may be measured by rods or light.
+20.8.2 Large distances may be measured by light when rods cannot be used.
+20.8.3 Agreement within overlapping ranges establishes a common magnitude.
+20.8.4 Approximate measurements support increasingly precise laws.
+20.9 Metrical knowledge develops from approximation to precision.
+20.9.1 Everyday experience supplies approximate measurements.
+20.9.2 Approximate measurements reveal correlations.
+20.9.3 Correlations enable measurements otherwise unavailable.
+20.9.4 Refined measurements reveal precise physical laws.
+20.10 Duration is measured through periodic processes.
+20.10.1 Non-simultaneous events cannot be directly juxtaposed.
+20.10.2 Their durations are compared by counting installments of a shared periodic process.
+20.10.3 A valid duration standard must produce consistent measurements.
+20.10.4 Convention alone cannot make an erratic process regular.
+20.11 Magnitudes may be extensive or intensive.
+20.11.1 An extensive magnitude exceeds the magnitude of its parts under suitable combination.
+20.11.2 An additive magnitude equals the arithmetic sum of its parts under suitable combination.
+20.11.3 Length and mass are extensive and approximately additive within limits.
+20.11.4 Temperature and density are intensive.
+20.11.5 Speed is extensive but not generally additive.
+20.12 Relativity reveals the non-additivity of scalar quantities.
+20.12.1 The speed of light is invariant relative to every framework.
+20.12.2 Ordinary velocities do not add arithmetically in all circumstances.
+20.12.3 Length and volume are consequently non-additive in general.
+20.13 Direct measurement yields rational numbers.
+20.13.1 Finite subdivision can determine only rational ratios.
+20.13.2 Irrational magnitudes may nevertheless be inferred geometrically.
+20.13.3 A diagonal may have a ratio of \(\sqrt{2}\).
+20.13.4 A circumference-to-diameter ratio may be \(\pi\).
+21.0 Measurement conventions are not sufficient to determine natural laws.
+21.1 Metrical conventionalism treats the choice of standard as conventional.
+21.1.1 A standard cannot be validated by comparison with another standard without regress.
+21.1.2 Practical simplicity may favor one standard over another.
+21.1.3 Practical preference does not by itself establish physical truth.
+21.2 Nomic conventionalism claims that laws depend on metrical standards.
+21.2.1 Measurements are relations between standards and empirical events.
+21.2.2 If standards are conventional, laws may be standard-relative.
+21.2.3 This does not make empirical relations themselves conventional.
+21.3 Strict conventionalism is distinct from ordinary conventionalism.
+21.3.1 Strict conventionalism makes laws entirely products of convention.
+21.3.2 If laws were convention-determined, measurement would not be needed to identify them.
+21.3.3 Measurement outcomes remain empirical even when standards are stipulated.
+21.3.4 Ordinary conventionalism therefore makes laws convention-based rather than convention-determined.
+21.4 Conventionalism defeats itself when standards produce causal anomalies.
+21.4.1 A viable standard must yield consistent measurements.
+21.4.2 Variable standards produce inconsistent measurement results.
+21.4.3 Optical standards yield fewer inconsistencies than variable physical standards.
+21.4.4 A standard that generates contradictions cannot represent the laws governing nature.
+21.4.5 The standard that best preserves causal continuity is epistemically preferred.
+22.0 Causal continuity grounds knowledge, explanation, induction, and measurement.
+22.1 Causal series are continuous series.
+22.1.1 Information-bearing series are continuous structure-preserving series.
+22.1.2 Knowledge is produced when beliefs inherit structure through such series.
+22.2 Explanations eliminate discontinuities.
+22.2.1 A hypothesis is correct when it restores continuity among observed events.
+22.2.2 A scientific hypothesis is explanatory when it belongs to the continuity it posits.
+22.2.3 Explanation identifies causes and the structures through which they operate.
+22.3 Inductive inference is justified by continuity rather than enumeration.
+22.3.1 Unknown continuities are posited when observed events belong to one manifold.
+22.3.2 Natural laws preserve the continuity constituting that manifold.
+22.3.3 The legitimacy of induction follows from the persistence of the law-governed world.
+22.4 Measurement becomes knowledge when standards preserve causal consistency.
+22.4.1 A standard is acceptable when it supports coherent, repeatable relations.
+22.4.2 Physical laws refine metrical practices by identifying stable continuities.
+22.4.3 The elimination of causal anomalies is the ultimate constraint on convention.
+
+
