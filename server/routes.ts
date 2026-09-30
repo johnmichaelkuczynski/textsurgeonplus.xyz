@@ -1277,78 +1277,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/fresh-tree", async (req, res) => {
-    const { text, selection, mode, indices, phase = "generate", trees } = req.body || {};
-    if (typeof text !== "string" || !text.trim() || !["A", "B", "C", "D"].includes(mode) ||
-        !["generate", "fourth"].includes(phase)) {
-      return res.status(400).json({ error: "Valid text, mode, and phase are required." });
+    const { text, selection, mode, indices, action = "generate", trees, instructions } = req.body || {};
+    if (typeof text !== "string" || !text.trim() || !["A", "B", "C", "D"].includes(mode) || !["generate", "next"].includes(action)) {
+      return res.status(400).json({ error: "Valid text, mode, and action are required." });
     }
-    if (mode === "D" && (typeof selection !== "string" || !selection.trim() || !text.includes(selection))) {
-      return res.status(400).json({ error: "Highlight text in the main text box first." });
+    if (mode === "D" && (typeof selection !== "string" || !selection || !text.includes(selection))) {
+      return res.status(400).json({ error: "Highlight text in the main text box first" });
     }
     const chapters = mode === "B" || mode === "C" ? splitBookChapters(text, true) : [];
-    if ((mode === "B" || mode === "C") && !chapters.length) {
-      return res.status(400).json({ error: "No body chapters were detected. Check the chapter headings." });
-    }
-    if (mode === "C" && (!Array.isArray(indices) || !indices.length ||
-        indices.some((index: unknown) => !Number.isInteger(index) || (index as number) < 0 || (index as number) >= chapters.length))) {
+    if ((mode === "B" || mode === "C") && !chapters.length) return res.status(400).json({ error: "No body chapters were detected. Check the chapter headings." });
+    if (mode === "C" && (!Array.isArray(indices) || !indices.length || indices.some((index: unknown) => !Number.isInteger(index) || (index as number) < 0 || (index as number) >= chapters.length))) {
       return res.status(400).json({ error: "Tick at least one detected chapter." });
     }
-    const selected = mode === "C" ? Array.from(new Set(indices as number[])).sort((a, b) => a - b) :
-      mode === "B" ? chapters.map((_, index) => index) : [0];
-    let units = selected.map((index) => ({
-      index,
-      title: mode === "A" ? "Whole book" : mode === "D" ? "Selected text" : chapters[index].title,
-      source: mode === "A" ? text : mode === "D" ? selection as string : chapters[index].text,
-    }));
-    if (phase === "fourth") {
-      if (!Array.isArray(trees) || !trees.length || trees.some((tree: any) =>
-        !units.some((unit) => unit.index === tree?.index) ||
-        !Array.isArray(tree?.statements) || tree.statements.some((item: any) =>
-          typeof item?.number !== "string" || typeof item?.text !== "string" ||
-          ![0, 1, 2].includes(item?.depth))) ||
-        new Set(trees.map((tree: any) => tree.index)).size !== trees.length) {
-        return res.status(400).json({ error: "Completed third-tier trees are required to add a fourth tier." });
-      }
-      units = units.filter((unit) => trees.some((tree: any) => tree.index === unit.index));
+    const selected = mode === "C" ? [...new Set(indices as number[])].sort((a, b) => a - b) : mode === "B" ? chapters.map((_, index) => index) : [0];
+    let units = selected.map((index) => ({ index, title: mode === "A" ? "Whole book" : mode === "D" ? "Selected text" : chapters[index].title,
+      source: mode === "A" ? text : mode === "D" ? selection as string : chapters[index].text }));
+    if (action === "next") {
+      if (!Array.isArray(trees) || !trees.length) return res.status(400).json({ error: "Existing trees are required to add the next tier." });
+      units = units.filter((unit) => trees.some((tree: any) => tree?.index === unit.index && Array.isArray(tree.statements)));
+      if (!units.length) return res.status(400).json({ error: "No completed trees are available for the next tier." });
     }
 
     const controller = new AbortController();
-    const abort = () => { if (!res.writableEnded) controller.abort(); };
-    req.once("aborted", abort);
-    res.once("close", abort);
+    req.once("aborted", () => controller.abort());
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-store");
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
-    const send = (event: unknown) => {
-      if (!controller.signal.aborted && !res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`);
-    };
+    const send = (event: unknown) => { if (!controller.signal.aborted && !res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`); };
     try {
-      const { generateFreshTree, addFourthTier } = await import("./services/freshTree");
-      for (let unitIndex = 0; unitIndex < units.length; unitIndex++) {
-        const unit = units[unitIndex];
+      const { generateFreshTree, addNextTier } = await import("./services/freshTree");
+      for (let position = 0; position < units.length; position++) {
+        const unit = units[position];
         if (controller.signal.aborted) break;
-        send({ type: "progress", message: `${phase === "fourth" ? "Adding fourth tier" : "Building tree"}: ${unit.title} (${unitIndex + 1}/${units.length})` });
+        send({ type: "progress", message: `${action === "next" ? "Adding next tier" : "Building tree"}: ${unit.title} (${position + 1}/${units.length})` });
         try {
-          if (phase === "fourth") {
-            await addFourthTier(unit.source, trees.find((tree: any) => tree.index === unit.index).statements, controller.signal, (statements) =>
-              send({ type: "fourth", index: unit.index, title: unit.title, statements }));
+          if (action === "generate") {
+            const statements = await generateFreshTree(unit.source, controller.signal);
+            send({ type: "tree", index: unit.index, title: unit.title, statements });
           } else {
-            await generateFreshTree(unit.source, controller.signal, (statements) =>
-              send({ type: "thesis", index: unit.index, title: unit.title, statements }));
+            const tree = trees.find((item: any) => item.index === unit.index);
+            await addNextTier(unit.source, tree.statements, typeof instructions === "string" ? instructions : "", controller.signal,
+              (statements, sources) => send({ type: "tier", index: unit.index, title: unit.title, statements, sources }));
           }
           send({ type: "chapter-complete", index: unit.index, title: unit.title });
         } catch (error: any) {
-          if (controller.signal.aborted) break;
-          send({ type: "chapter-error", index: unit.index, title: unit.title, error: error?.message || "Generation failed" });
+          if (!controller.signal.aborted) send({ type: "chapter-error", index: unit.index, title: unit.title, error: error?.message || "Generation failed" });
         }
       }
       send({ type: "complete" });
     } catch (error: any) {
       send({ type: "error", error: error?.message || "Fresh Tree failed" });
     } finally {
-      req.off("aborted", abort);
-      res.off("close", abort);
       if (!res.writableEnded) res.end();
     }
   });
