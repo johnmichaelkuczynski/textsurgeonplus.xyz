@@ -5,3 +5,4 @@
 - [Document-bound analyses](document-bound-analyses.md) — derived outputs must be tied to the exact current source, not merely to the page session.
 - [Removed fresh-support tree](removed-fresh-support-tree.md) — keep the rejected extension removed; the later, separately requested FRESH TREE is distinct.
 - [Grounded generative output](grounded-generative-format.md) — live tree models may invent quotes, omit children, or ignore numbering; validate and use keyed output.
+- [New API routes and live Vite](vite-api-route-activation.md) — frontend hot reload can expose controls before a newly merged server route is active; HTML 200 is not an SSE success.
