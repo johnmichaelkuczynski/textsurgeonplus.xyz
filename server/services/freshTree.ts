@@ -37,6 +37,10 @@ type AddTierOptions = {
   shouldStop?: () => boolean;
   onProgress?: (tier: number, thesis: number, totalTheses: number) => void;
   onWarning?: (message: string) => void;
+  tierNumber?: number;
+  completedTheses?: string[];
+  onThesisComplete?: (tierNumber: number, thesisNumber: string, statements: FreshTreeStatement[], sources: FreshTreeSource[]) => void;
+  research?: (prompt: string, signal: AbortSignal, shouldStop?: () => boolean) => Promise<{ text: string; searched: boolean }>;
 };
 
 function assertNotAborted(signal: AbortSignal) {
@@ -58,6 +62,10 @@ export function parseTreeLines(raw: string, maximumParts: number): FreshTreeStat
     result.push({ number: match[1], text: match[2].trim(), depth });
   }
   return result;
+}
+
+export function freshTreeParentsAtTier(existing: FreshTreeStatement[], tierNumber: number): FreshTreeStatement[] {
+  return existing.filter((item) => item.depth === tierNumber - 2);
 }
 
 export async function generateFreshTree(source: string, signal: AbortSignal): Promise<FreshTreeStatement[]> {
@@ -384,14 +392,15 @@ function superscript(value: number): string {
 
 export async function addNextTier(source: string, existing: FreshTreeStatement[], instructions: string, signal: AbortSignal,
   onTier: (statements: FreshTreeStatement[], sources: FreshTreeSource[]) => void, options: AddTierOptions = {}): Promise<boolean> {
+  if (!existing.length) throw new Error("The existing tree has no statements.");
   const deepest = Math.max(...existing.map((item) => item.depth));
-  const tierNumber = deepest + 2;
-  const parents = existing.filter((item) => item.depth === deepest);
-  if (!parents.length) throw new Error("The existing tree has no deepest-tier nodes.");
-  const roots = existing.filter((item) => item.number.endsWith(".0")).filter((root) => {
-    const prefix = root.number.split(".")[0] + ".";
-    return parents.some((item) => item.number.startsWith(prefix));
-  });
+  const tierNumber = options.tierNumber ?? deepest + 2;
+  if (!Number.isInteger(tierNumber) || tierNumber < 3) throw new Error("The requested tier number must be 3 or greater.");
+  const parents = freshTreeParentsAtTier(existing, tierNumber);
+  if (!parents.length && options.tierNumber === undefined) throw new Error("The existing tree has no deepest-tier nodes.");
+  const completed = new Set(options.completedTheses || []);
+  const roots = existing.filter((item) => item.number.endsWith(".0")).filter((root) => !completed.has(root.number));
+  if (!roots.length) return false;
   const maxTheses = roots.length;
   const count = childCount(instructions, tierNumber);
   const effectiveInstructions = !instructions.trim() || instructions.trim() === DEFAULT_FRESH_INSTRUCTIONS
@@ -407,14 +416,16 @@ export async function addNextTier(source: string, existing: FreshTreeStatement[]
       String("⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit))));
     return Number.isFinite(numeric) ? Math.max(max, numeric) : max;
   }, 0);
-  let emitted = 0;
   for (let rootIndex = 0; rootIndex < roots.length; rootIndex++) {
     const root = roots[rootIndex];
     assertNotAborted(signal);
     if (options.shouldStop?.()) return true;
     const prefix = root.number.split(".")[0] + ".";
     const group = parents.filter((item) => item.number.startsWith(prefix));
-    if (!group.length) continue;
+    if (!group.length) {
+      options.onThesisComplete?.(tierNumber, root.number, [], []);
+      continue;
+    }
     options.onProgress?.(tierNumber, rootIndex + 1, maxTheses);
     const prompt = `Search exactly once for this top-level thesis. Build focused search queries from EACH immediate parent's complete, specific claim—not generic topic words—then add exactly one new tier. Follow the user's instructions. Return ONLY a JSON object keyed by every exact parent number. Each value is an array of ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} objects shaped {"text":"one sentence","url":"direct supporting source URL"}. Include every parent exactly once. Do not put links in text.
 
@@ -439,7 +450,7 @@ SOURCE TEXT (reference and freshness exclusion list):
 ${source}
 </source>`;
     try {
-      const answer = await research(prompt, signal, options.shouldStop);
+      const answer = await (options.research || research)(prompt, signal, options.shouldStop);
       assertNotAborted(signal);
       if (options.shouldStop?.()) return true;
       const parseAvailable = (raw: string, requested: FreshTreeStatement[]) => {
@@ -470,7 +481,7 @@ ${source}
         }
       }
       if (!parsed.length) throw new Error(`No valid child nodes were returned for thesis ${root.number}.`);
-      const accepted = await reviewAndDeduplicate(parsed, existing, answer.text, source, signal);
+      const accepted = parsed.length ? await reviewAndDeduplicate(parsed, existing, answer.text, source, signal) : [];
       assertNotAborted(signal);
       if (options.shouldStop?.()) return true;
       const supported = await enforceLegitimacy(
@@ -497,16 +508,11 @@ ${source}
           statements.push({ ...statement, text: factualText });
         }
       }
-      if (statements.length) {
-        onTier(statements, sources);
-        emitted += statements.length;
-      }
+      if (statements.length) onTier(statements, sources);
+      options.onThesisComplete?.(tierNumber, root.number, statements, sources);
     } catch (error: any) {
       throw new Error(`Tier ${tierNumber}, thesis ${root.number}: ${error?.message || "generation failed"}`);
     }
-  }
-  if (!emitted) {
-    throw new Error(`Tier ${tierNumber}, thesis ${roots[0]?.number || "unknown"}: no legitimate children remained after review.`);
   }
   return false;
 }
