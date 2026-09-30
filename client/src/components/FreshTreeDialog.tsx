@@ -24,12 +24,21 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection }: { open:
   const [loadingChapters, setLoadingChapters] = useState(false);
   const [running, setRunning] = useState(false);
   const request = useRef<AbortController | null>(null);
+  const wasOpen = useRef(false);
+  const treesRef = useRef<Tree[]>([]);
+
+  useEffect(() => { treesRef.current = trees; }, [trees]);
 
   useEffect(() => {
-    if (open) {
-      setMode(selection ? "D" : "A"); setChosen([]); setTrees([]); setErrors([]); setProgress(""); setInstructions(DEFAULT_INSTRUCTIONS);
-    } else request.current?.abort();
-  }, [open, selection]);
+    if (open && !wasOpen.current) {
+      if (!treesRef.current.length) setMode(selection ? "D" : "A");
+      setErrors([]);
+      setProgress("");
+    } else if (!open) request.current?.abort();
+    wasOpen.current = open;
+    // Selection can change when focus moves into the dialog. It must never
+    // reinitialize the session or erase tiers that have already been shown.
+  }, [open]);
 
   useEffect(() => {
     if (!open || (mode !== "B" && mode !== "C")) return;
@@ -82,8 +91,13 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection }: { open:
             if (!found && data.type === "chapter-complete") return old;
             const updated: Tree = found ? { ...found, statements: [...found.statements], sources: [...found.sources] }
               : { index: data.index, title: data.title, statements: [], sources: [], complete: false };
-            if (data.type === "tree") updated.statements = data.statements;
-            if (data.type === "tier") { updated.statements.push(...data.statements); updated.sources.push(...data.sources); }
+            if (data.type === "tree" && !updated.statements.length) updated.statements = data.statements;
+            if (data.type === "tier") {
+              const existingNumbers = new Set(updated.statements.map((statement) => statement.number));
+              updated.statements.push(...data.statements.filter((statement: Statement) => !existingNumbers.has(statement.number)));
+              const existingSources = new Set(updated.sources.map((source) => `${source.node}\n${source.url}`));
+              updated.sources.push(...data.sources.filter((source: Source) => !existingSources.has(`${source.node}\n${source.url}`)));
+            }
             if (data.type === "chapter-complete") updated.complete = true;
             return [...old.filter((tree) => tree.index !== data.index), updated].sort((a, b) => a.index - b.index);
           });
@@ -112,7 +126,7 @@ export function FreshTreeDialog({ open, onOpenChange, text, selection }: { open:
   return <Dialog open={open} onOpenChange={(next) => next ? onOpenChange(true) : close()}>
     <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto [&>button]:hidden" data-testid="fresh-tree-dialog">
       <DialogHeader><DialogTitle>FRESH TREE</DialogTitle></DialogHeader>
-      <RadioGroup value={mode} onValueChange={(value) => { if (!running) { setMode(value as Mode); setTrees([]); setErrors([]); } }}>
+      <RadioGroup value={mode} onValueChange={(value) => { if (!running) { setMode(value as Mode); setErrors([]); } }}>
         {[["A", "Whole book — one tree"], ["B", "Whole book — each chapter gets its own tree"], ["C", "Selected chapters — each gets its own tree"], ["D", "Manual select"]].map(([value, label]) =>
           <label key={value} className="flex items-center gap-2 text-sm cursor-pointer"><RadioGroupItem value={value} disabled={running} data-testid={`fresh-tree-mode-${value}`} />{label}</label>)}
       </RadioGroup>
