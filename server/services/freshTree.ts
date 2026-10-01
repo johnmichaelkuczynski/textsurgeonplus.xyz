@@ -11,21 +11,28 @@ type TierCandidate = FreshTreeStatement & {
   reviewFailure?: { label: LegitimacyResult["label"]; reason: string };
 };
 
-export const DEFAULT_FRESH_INSTRUCTIONS = "Under each node, add 1 or 2 child nodes. Each must be a concrete example or fact that illustrates or supports its parent. It must be FRESH: do not use any example, name, case, or illustration from the source text. Prefer real, accurate, current scientific or factual examples; everyday examples are allowed; do not invent fake facts. One sentence per node. No commentary.";
+export const DEFAULT_FRESH_INSTRUCTIONS = 
+  "Under each node, add 1 or 2 child nodes that ESTABLISH that exact parent. Prefer a logical child when the parent is a distinction, definition, or inference: restate the author's own contrast or example in one sentence, or give a full mini-derivation. Prefer an empirical child only when the parent is an empirical claim. Fresh means: do not paraphrase the parent and do not repeat a child already in the tree. Source examples are ALLOWED when they are the author's proof of that parent. One sentence per node. No commentary.";
 export const NODE_LEGITIMACY_RULE = `Every node must ESTABLISH its parent, by evidence or by logic:
 (a) EMPIRICAL: a specific fact, measurement, experiment, observed case, or real-world instance, stated concretely (what, where, when, how much).
 (b) LOGICAL: a derivation, a demonstration, or a counterexample, stated in full.
 A node that reports what someone SAYS, ARGUES, or BELIEVES establishes nothing and is forbidden. A person may appear only as part of a fact (e.g. 'In 1847 Semmelweis cut maternal deaths in his ward from about 18% to about 2% by requiring handwashing'), never as an authority (e.g. 'Semmelweis argued that handwashing matters').
 Vague appeals are forbidden: 'studies show', 'research indicates', 'a study found', 'experts agree', 'it is widely accepted', 'a classic illustration', 'a well-known example'.
 The node must support its parent's EXACT claim, not a neighboring claim that shares a word with it.
-Citations are allowed only as a footnote marker (¹, ², ...) at the end of a factual node. The citation never replaces the fact.`;
+Citations are allowed only as a footnote marker (¹, ², ...) at the end of a factual node. The citation never replaces the fact. A sentence of the form "Author (year) demonstrated/showed/found that P" is AUTHORITY unless P is an observable result (a measurement, contrast, intervention, or raw performance) that is identical with the parent's claim, not with the parent's topic.
+If the parent is a distinction (A not B, framework not contents, trigger not instruct, cognitive not merely physiological), the child must use both poles of that distinction. A paper about only one pole is OFF-TARGET.`;
 
 const AUTHORITY_PATTERNS = [
   /\bargued\b/i, /\bargues\b/i, /\bposits\b/i, /\bposited\b/i, /\bcontends\b/i, /\bmaintains that\b/i,
   /\bclaims that\b/i, /\baccording to\b/i, /\bas noted in\b/i, /\bas discussed in\b/i, /\bis discussed in\b/i,
   /\bhighlights\b/i, /\bemphasizes\b/i, /\bsuggests that\b/i, /\bstates that\b/i, /\bnotes that\b/i,
   /\bthe article\b/i, /\bthe paper\b/i, /\bthe book\b/i, /\bthe encyclopedia\b/i, /\bstanford encyclopedia\b/i,
-  /\binternet encyclopedia\b/i, /\bSEP\b/i, /\bIEP\b/i,
+  /\binternet encyclopedia\b/i, /\bSEP\b/i, /\bIEP\b/i,/\bdemonstrated that\b/i,
+  /\bshowed that\b/i,
+  /\bfound that\b/i,
+  /\bobserved that\b/i,
+  /\brevealed that\b/i,
+  /\bet al\.\b/i,
 ];
 const VAGUE_PATTERNS = [
   /\bstudies show\b/i, /\bresearch indicates\b/i,
@@ -146,9 +153,23 @@ export function wordOverlap(proposed: string, comparison: string): number {
   proposedWords.forEach((word) => { if (comparisonWords.has(word)) shared++; });
   return shared / proposedWords.size;
 }
+function studyKey(text: string): string | undefined {
+  const year = text.match(/\b(19|20)\d{2}\b/);
+  const who = text.match(/\b([A-Z][a-z]+(?:\s+and\s+[A-Z][a-z]+)?(?:\s+et al\.?)?)\b/);
+  if (!year || !who) return undefined;
+  return `${who[1].toLowerCase()}|${year[0]}`;
+}
 
+function sameStudy(a: string, b: string): boolean {
+  const ka = studyKey(a);
+  const kb = studyKey(b);
+  return Boolean(ka && kb && ka === kb);
+}
 function duplicatesAny(candidate: TierCandidate, lines: Array<{ text: string }>): boolean {
-  return lines.some((line) => wordOverlap(candidate.text, line.text) > 0.6);
+  return lines.some((line) =>
+    wordOverlap(candidate.text, line.text) > 0.6 ||
+    sameStudy(candidate.text, line.text)
+  );
 }
 
 function childCount(instructions: string, tier: number): { min: number; max: number } {
@@ -203,8 +224,8 @@ async function reviewAndDeduplicate(candidates: TierCandidate[], existing: Fresh
 - For these code-detected duplicates, regenerate the text ONCE: ${duplicateNumbers.join(", ") || "none"}.
 - A regenerated node must use a concrete fact already present in the WEB RESEARCH RESULT and must retain the candidate's meaning and source; do not introduce an unsupported fact.
 - Leave every nonduplicate node's text exactly unchanged.
-- Every node must add specific new information: a named study, experiment, case, number, mechanism, place, or person.
-- A restatement or paraphrase of its parent or any tree line is forbidden. Never say merely "a study found"; name the study, researchers, or case.
+- A child may be LOGICAL (author's contrast, definition, derivation, or source example) or EMPIRICAL (a concrete result that is the parent's claim). Named studies are required only for EMPIRICAL children.
+- A restatement or paraphrase of its parent or any other tree line is forbidden.
 
 PARENTS AND PROPOSED CHILDREN:
 ${candidates.map((item) => `${item.parent} ${existing.find((line) => line.number === item.parent)?.text}\n${item.number} ${item.text}`).join("\n")}
@@ -427,9 +448,9 @@ export async function addNextTier(source: string, existing: FreshTreeStatement[]
       continue;
     }
     options.onProgress?.(tierNumber, rootIndex + 1, maxTheses);
-    const prompt = `Search exactly once for this top-level thesis. Build focused search queries from EACH immediate parent's complete, specific claim—not generic topic words—then add exactly one new tier. Follow the user's instructions. Return ONLY a JSON object keyed by every exact parent number. Each value is an array of ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} objects shaped {"text":"one sentence","url":"direct supporting source URL"}. Include every parent exactly once. Do not put links in text.
+    const prompt = `For EACH parent listed under PARENTS FOR THIS CALL, search separately using that parent's full sentence as the query. Do not search the top-level thesis topic. Do not reuse one paper for two parents. If a parent is a distinction, definition, or inference, you may return a LOGICAL child with url "". A LOGICAL child may use the source example that proves that parent. Follow the user's instructions. Return ONLY a JSON object keyed by every exact parent number. Each value is an array of ${count.min === count.max ? count.min : `${count.min} or ${count.max}`} objects shaped {"text":"one sentence","url":"direct supporting source URL"}. Include every parent exactly once. Do not put links in text.
 
-Every node must add NEW, SPECIFIC information beyond its parent: a named study, experiment, case, number, mechanism, place, or person. It must directly support its IMMEDIATE parent's specific claim. A restatement or paraphrase of its parent or any other tree line is forbidden. "Current" means scientifically up to date and not superseded, not merely recent; classic and recent findings are allowed. Never write "a study found": name the study, researchers, or case. Prefer vivid, memorable, concrete cases over generic summaries.
+A child may be LOGICAL (author's contrast, definition, derivation, or source example) or EMPIRICAL (a concrete result that is the parent's claim). Named studies are required only for EMPIRICAL children. It must directly support its IMMEDIATE parent's specific claim. A restatement or paraphrase of its parent or any other tree line is forbidden.
 
 Use only primary or reputable sources: journals, universities, government agencies, or major science outlets. Never use career sites, content farms, or pop-psychology explainer sites. Confirm that each source's date and content match the node's claim.
 
@@ -467,7 +488,7 @@ ${source}
         missing = missing.filter((parent) => !parsed.some((child) => child.parent === parent.number));
         for (const parent of missing) {
           try {
-            const individual = await callFreshTreeLLM(`Return ONLY a JSON array of ${count.min} ${count.min === 1 ? "child" : "children"} for parent ${parent.number}: ${parent.text}. Each child is {"text":"one sentence establishing the exact parent by a concrete fact or full logical counterexample","url":"direct reputable source URL if factual"}. Use only facts supported by the research below, no examples from the source, no authority assertions.\n\n${NODE_LEGITIMACY_RULE}\n\nRESEARCH:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
+            const individual = await callFreshTreeLLM(`Return ONLY a JSON array of ${count.min} ${count.min === 1 ? "child" : "children"} for parent ${parent.number}: ${parent.text}. Each child is {"text":"one sentence establishing the exact parent by a concrete fact or full logical counterexample","url":"direct reputable source URL if factual"}. Use only facts supported by the research below, no authority assertions.\n\n${NODE_LEGITIMACY_RULE}\n\nRESEARCH:\n${answer.text}\n\nSOURCE TEXT (freshness exclusion list):\n${source}`, signal);
             assertNotAborted(signal);
             if (options.shouldStop?.()) return true;
             const opening = individual.indexOf("[");
