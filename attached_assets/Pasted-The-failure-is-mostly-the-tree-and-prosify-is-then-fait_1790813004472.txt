@@ -1,0 +1,81 @@
+The failure is mostly the tree, and prosify is then faithfully flattening a bad tree. Prosify is not the main bug.
+Pipeline as you described it
+
+Source essay
+freshTree → numbered Tractatus tree; levels 1–2 stay close to you; depth 3+ is instructed to add science
+prosify → linear prose of that tree
+
+So “four tier” = n, n.n, n.n.n, n.n.n.n. That matches the tree file (1.1.1 and 1.1.1.1 are the science inserts).
+Is the tree good?
+Levels 1.0–1.5 and 2.0–2.2 are usable. They keep the two theses, POS, rock/chair, trigger, framework vs object of awareness, deep vs Freudian unconscious, physiology vs cognition.
+From 1.1.1 / 2.1.1 down, the tree is the problem. Those nodes do not support the parent claims. They replace them with nearby-sounding papers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Parent claim (yours)Child “enhancement”FitPOS: same stimulus, rock/dog get nothingBerwick 2011 on English question-formation constraintsRelated to POS in the literature, not to your contrastInnate structure as triggerLidz & Waxman 2004 infant syntax; Heil & López 2020 L2 infinitivesCompatible with nativism, silent on trigger vs instructFramework is the mind; not an object of awarenessBerwick againDoes not touch subject/objectDeep unconscious ≠ FreudianPye 2012 Mayan acquisitionAcquisition-from-thin-input again; not depth-of-unconsciousSystematicity/productivity of understood recombinationsJohns instance-memory model that emits grammatical sentences without explicit rulesThat model is an empiricist systematicity story; it fights 2.1Structures not themselves the thoughtsRose 2005 PFC congruency without awarenessUnconscious evaluation of outcomes, not framework-as-subjectPure physiology → stereotypes onlyMerrick involuntary thought sequencesOpposite direction: stimulus-triggered trains of thought
+Also: hotel / factory / John–Sally–Fred recombinations are absent. Those were the load-bearing examples. The tree never numbered them, so they cannot survive into prose.
+Duplicates: Lidz appears under 1.2.1 and 1.4.1; Berwick under 1.1.1, 1.6.1, and the 1.1.1.1 / 1.6.1.1 echoes; Rose is 2.3.1, 2.4.1, 2.6.1 and all three .1 children. That is tree-generation repetition, not a prose bug.
+Wrong PubMed pairing in the source list (two different PMIDs both labeled Rose) is extractor slop in the tree stage, not prosify.
+Is prosify doing its job?
+Yes, in the narrow sense. The prose file is the tree in reading order, with numbering stripped:
+
+Same sentence cores
+Same papers, same double-says (Berwick stated twice back-to-back; Heil twice; Lidz twice; Rose three times)
+Same missing analogies
+No new errors of doctrine that were not already in the tree
+
+If the tree were correct, this prosify would be dull but faithful. It is dull and unfaithful because the tree already was.
+What to fix first
+Do not start in prosify.ts.
+Fix freshTree.ts / freshTreeProvider.ts (the prompt that builds depth ≥3):
+
+Depth-3+ may cite science only if it instantiates the parent node, not if it is “about innateness” or “about unconscious processing.”
+Ban repeating the same paper under two parents.
+Ban children that contradict the parent (Johns under systematicity-as-innate-structure).
+Force retention of source examples as supporting nodes (rock/dog; trigger; hotel/factory; John loves Sally …).
+Distinguish three unconsciouses in the prompt: Freudian contents, subliminal semantics/fMRI, framework-constitutive. Only the third may support 1.6–1.7 and 2.3.
+
+Then re-run this essay and look at the tree alone. If 1.1.1 still does not entail 1.1, prosify will keep looking like the last file.
+Send freshTree.ts when you have it. That is the file that decides whether “enhancement” means support or citation padding.

@@ -1,0 +1,46 @@
+1.0 Noam Chomsky argues for the existence of pre-experiential knowledge.
+1.1 The poverty of stimulus argument posits that mere exposure to auditory and visual stimuli is insufficient for language acquisition.
+1.1.1 In a 2011 study, Berwick et al. demonstrated that certain constraints on question formation in English cannot be learned solely from environmental input, supporting the poverty of the stimulus argument.¹
+1.1.1.1 Berwick et al.'s 2011 study experimentally showed that humans can recognize and apply question formation rules in English that are absent from the actual spoken input they receive, providing evidence for the poverty of the stimulus argument.⁶
+1.2 Objects like rocks or chairs exposed to similar stimuli cannot learn language, suggesting that humans must have innate structures for this purpose.
+1.2.1 Research by Lidz and Waxman in 2004 showed that 18-month-old infants understand complex syntactic structures without explicit instruction, indicating innate linguistic capabilities.
+1.3 Human language proficiency, despite limited stimuli, indicates an innate cognitive structure acting as a trigger for knowledge acquisition.
+1.3.1 A 2020 study by Heil and López found that adult second language learners acquire certain English infinitive constructions despite their rarity in input, suggesting an innate cognitive framework facilitating language learning.
+1.3.1.1 The 2020 study by Heil and López observed that despite the infrequency of certain English infinitive constructions in the input, adult second language learners successfully acquire these forms, supporting the notion of an innate cognitive framework for language learning.
+1.4 If humans did not possess an a priori cognitive framework, no amount of teaching would result in language knowledge.
+1.4.1 Research by Lidz and Waxman in 2004 showed that 18-month-old infants understand complex syntactic structures without explicit instruction, indicating innate linguistic capabilities.
+1.5 Cognitive competence is derived from pre-experiential structures that organize experiences, forming a foundation for further learning.
+1.6 Chomsky distinguishes between knowledge existing as the cognitive framework itself, and knowledge as an object of awareness.
+1.6.1 Berwick et al.'s 2011 paper revisits the poverty of stimulus argument, illustrating how certain linguistic invariances reflect innate human endowment rather than learned experience.²
+1.6.1.1 In a 2011 study, Berwick et al. demonstrated that certain constraints on question formation in English cannot be learned solely from environmental input, supporting the poverty of the stimulus argument.⁷
+1.7 The deeply unconscious operations of learning, according to Chomsky, contrast with Freudian unconscious contents, emphasizing a cognitive basis for understanding.
+1.7.1 A 2012 study by Pye examined Mayan languages, demonstrating that children acquire complex grammatical structures not evident in their input, highlighting deeply unconscious cognitive operations distinct from Freudian unconscious contents.³
+1.8 These innate cognitive frameworks must be distinguished from physiology, as they allow for novel thought and genuine learning beyond mere operant conditioning.
+1.8.1 The 2012 study by Pye on Mayan languages demonstrated that children acquire complex grammatical structures not evident in their input, highlighting an innate cognitive framework for language acquisition distinct from mere physiological processes.
+2.0 Chomsky argues for the existence of sub-personal thought.
+2.1 Sub-personal cognitive framework enables systematic and productive use of language, reflecting structures inherent in the mind.
+2.1.1 Brendan T. Johns and colleagues developed an instance memory model that produces grammatically correct sentences without explicit grammatical rules, reflecting the systematicity inherent in cognitive structures.
+2.2 Language's productivity and systematicity mirror these cognitive structures, allowing complex sentence comprehension and generation.
+2.3 Cognitive structures operate beneath conscious awareness, forming a basis for thoughts and perceptions but are not the thoughts themselves.
+2.3.1 Michael Rose's fMRI study revealed that the prefrontal cortex evaluates congruency between expected and actual outcomes without conscious awareness, indicating cognitive structures operate beneath conscious awareness.⁴
+2.3.1.1 A 2005 fMRI study by Michael Rose and colleagues discovered that the prefrontal cortex non-consciously assesses congruency between expected and actual results, revealing operations of cognitive structures beneath conscious awareness.⁸
+2.4 The physiological mediation of cognitive structures involves encoding intelligence and logical relations, essential for flexibility and learning.
+2.4.1 The fMRI study by Michael Rose demonstrated that the prefrontal cortex's unconscious evaluation of congruency between expected and actual outcomes plays a role in encoding logical relations for cognitive flexibility and learning.⁵
+2.4.1.1 The 2005 fMRI study by Michael Rose and colleagues empirically demonstrated that the prefrontal cortex actively evaluates the congruency between expected and actual outcomes, which supports its role in encoding logical relations and maintaining cognitive flexibility required for learning.⁹
+2.5 Pure physiology limits responses to stereotyped patterns, whereas cognitive structures enable adaptation and genuine understanding.
+2.5.1 Christina Merrick's study demonstrated that external stimuli can involuntarily trigger sequences of thoughts, showing that pure physiology limits responses to stereotyped patterns, whereas cognitive structures enable adaptation and genuine understanding.
+2.6 Chomsky identifies deeply unconscious cognitive structures as necessary for language acquisition and cognitive competence beyond mere physiological processes.
+2.6.1 Michael Rose's fMRI study revealed that the prefrontal cortex evaluates congruency between expected and actual outcomes without conscious awareness, indicating cognitive structures operate beneath conscious awareness.
+2.6.1.1 The 2005 fMRI study by Michael Rose and colleagues demonstrated that the prefrontal cortex processes congruency between expected and actual outcomes without any conscious awareness, suggesting that cognitive evaluation can occur outside of conscious perception.¹⁰
+
+Sources
+¹ (1.1.1) — https://pubmed.ncbi.nlm.nih.gov/21824178/
+² (1.6.1) — https://pubmed.ncbi.nlm.nih.gov/21824178/
+³ (1.7.1) — https://pubmed.ncbi.nlm.nih.gov/21854670/
+⁴ (2.3.1) — https://pubmed.ncbi.nlm.nih.gov/15969909/
+⁵ (2.4.1) — https://pubmed.ncbi.nlm.nih.gov/15533197/
+⁶ (1.1.1.1) — https://onlinelibrary.wiley.com/doi/10.1111/j.1551-6709.2011.01189.x
+⁷ (1.6.1.1) — https://onlinelibrary.wiley.com/doi/10.1111/j.1551-6709.2011.01189.x
+⁸ (2.3.1.1) — https://pubmed.ncbi.nlm.nih.gov/15969909/
+⁹ (2.4.1.1) — https://pubmed.ncbi.nlm.nih.gov/15969909/
+¹⁰ (2.6.1.1) — https://pubmed.ncbi.nlm.nih.gov/15969909/
