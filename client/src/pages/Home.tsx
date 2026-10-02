@@ -50,6 +50,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ProsifyDialog } from "@/components/ProsifyDialog";
+import { TractatusReplacementControls } from "@/components/TractatusReplacementControls";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -114,6 +115,9 @@ type TractatusChapterResult = {
   columns: TractatusTreeStatement[][];
   maxDepth: number;
   totalStatements: number;
+  replacementToken?: string;
+  nextReplacementLevel?: number | null;
+  replacementUnavailableReason?: string;
 };
 
 function getOrCreateVisitorId(): string {
@@ -466,6 +470,10 @@ export default function Home() {
   const [tractatusTreeColumns, setTractatusTreeColumns] = useState<{number: string, text: string, depth: number}[][]>([]);
   const [tractatusTreeMaxDepth, setTractatusTreeMaxDepth] = useState(0);
   const [isGeneratingTree, setIsGeneratingTree] = useState(false);
+  const [isReplacingTree, setIsReplacingTree] = useState(false);
+  const [treeReplacementCheckpoint, setTreeReplacementCheckpoint] = useState<{
+    replacementToken?: string; nextReplacementLevel?: number | null; replacementUnavailableReason?: string;
+  }>({});
   const [tractatusTreeTitle, setTractatusTreeTitle] = useState("TRACTATUS TREE");
   const [tractatusTreeMode, setTractatusTreeMode] = useState<"whole" | "chapters">("whole");
   const [chapterTrees, setChapterTrees] = useState<TractatusChapterResult[]>([]);
@@ -619,6 +627,7 @@ export default function Home() {
     setIsGeneratingTree(false);
     setTractatusTreeColumns([]);
     setTractatusTreeMaxDepth(0);
+    setTreeReplacementCheckpoint({});
     setTractatusTreeProgress(null);
     setChapterTrees([]);
     setSelectedChapterIndex(0);
@@ -2143,7 +2152,7 @@ export default function Home() {
   };
 
   const handleGenerateTractatusTree = async () => {
-    if (treeRequestRef.current) return;
+    if (treeRequestRef.current || isReplacingTree) return;
     const runMode = tractatusTreeMode;
     const wordCount = text.split(/\s+/).filter(Boolean).length;
     if (wordCount < 100) {
@@ -2158,6 +2167,7 @@ export default function Home() {
     const controller = new AbortController();
     treeRequestRef.current = controller;
     setIsGeneratingTree(true);
+    setTreeReplacementCheckpoint({});
     setTractatusTreeColumns([]);
     setChapterTrees([]);
     setSelectedChapterIndex(0);
@@ -2222,17 +2232,22 @@ export default function Home() {
                 columns: parsed.result.columns || [],
                 maxDepth: parsed.result.maxDepth || 0,
                 totalStatements: parsed.result.totalStatements || 0,
+                replacementToken: parsed.result.replacementToken,
+                nextReplacementLevel: parsed.result.nextReplacementLevel,
+                replacementUnavailableReason: parsed.result.replacementUnavailableReason,
               };
               setChapterTrees((previous) => [...previous, chapter]);
               if (parsed.index === 0) {
                 setTractatusTreeColumns(chapter.columns);
                 setTractatusTreeMaxDepth(chapter.maxDepth);
+                setTreeReplacementCheckpoint(chapter);
               }
             } else if (parsed.type === 'complete') {
               completed = true;
               if (runMode === 'whole') {
                 setTractatusTreeColumns(parsed.result.columns || []);
                 setTractatusTreeMaxDepth(parsed.result.maxDepth || 0);
+                setTreeReplacementCheckpoint(parsed.result);
                 setTractatusTreeProgress({ current: 3, total: 3, message: `Complete: ${parsed.result.totalStatements} statements across ${parsed.result.columns?.length || 0} abstraction levels` });
                 toast({
                   title: "Tractatus Tree Complete",
@@ -7833,8 +7848,9 @@ Freedom is the ratio essendi of the moral law."
                   setChapterTrees([]);
                   setSelectedChapterIndex(0);
                   setTractatusTreeProgress(null);
+                  setTreeReplacementCheckpoint({});
                 }}
-                disabled={isGeneratingTree}
+                disabled={isGeneratingTree || isReplacingTree}
               >
                 <SelectTrigger id="tractatus-tree-mode" className="max-w-lg" data-testid="select-tractatus-tree-mode">
                   <SelectValue />
@@ -7883,7 +7899,9 @@ Freedom is the ratio essendi of the moral law."
                     setSelectedChapterIndex(index);
                     setTractatusTreeColumns(chapter.columns);
                     setTractatusTreeMaxDepth(chapter.maxDepth);
+                    setTreeReplacementCheckpoint(chapter);
                   }}
+                  disabled={isGeneratingTree || isReplacingTree}
                 >
                   <SelectTrigger id="tractatus-chapter-result" className="max-w-lg" data-testid="select-tractatus-chapter-result">
                     <SelectValue />
@@ -7902,6 +7920,26 @@ Freedom is the ratio essendi of the moral law."
 
             {tractatusTreeColumns.length > 0 && (
               <div className="space-y-4">
+                <TractatusReplacementControls
+                  key={`${tractatusTreeMode}-${selectedChapterIndex}`}
+                  tree={{
+                    columns: tractatusTreeColumns, maxDepth: tractatusTreeMaxDepth,
+                    totalStatements: tractatusTreeColumns[tractatusTreeColumns.length - 1]?.length || 0,
+                    ...treeReplacementCheckpoint,
+                  }}
+                  provider={selectedLLM}
+                  disabled={isGeneratingTree}
+                  onBusyChange={setIsReplacingTree}
+                  onReplaced={(result) => {
+                    setTractatusTreeColumns(result.columns);
+                    setTractatusTreeMaxDepth(result.maxDepth);
+                    setTreeReplacementCheckpoint(result);
+                    if (tractatusTreeMode === "chapters") {
+                      setChapterTrees((previous) => previous.map((chapter, index) =>
+                        index === selectedChapterIndex ? { ...chapter, ...result } : chapter));
+                    }
+                  }}
+                />
                 <div className="flex gap-2 items-center justify-between">
                   <div className="text-sm text-muted-foreground">
                     {tractatusTreeColumns.length} abstraction levels | Max depth: {tractatusTreeMaxDepth}
@@ -8014,7 +8052,7 @@ Freedom is the ratio essendi of the moral law."
 
             <Button
               onClick={() => handleGenerateTractatusTree()}
-              disabled={isGeneratingTree || !text || text.split(/\s+/).filter(Boolean).length < 100}
+              disabled={isGeneratingTree || isReplacingTree || !text || text.split(/\s+/).filter(Boolean).length < 100}
               className="w-full bg-gradient-to-r from-yellow-600 to-amber-600 hover:from-yellow-700 hover:to-amber-700"
               data-testid="button-generate-tractatus-tree"
             >

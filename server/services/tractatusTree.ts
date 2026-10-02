@@ -10,6 +10,9 @@ export interface TractatusTreeResult {
   columns: TractatusStatement[][];
   maxDepth: number;
   totalStatements: number;
+  replacementToken?: string;
+  nextReplacementLevel?: number | null;
+  replacementUnavailableReason?: string;
 }
 
 function parseTractatusNumber(numStr: string): number[] {

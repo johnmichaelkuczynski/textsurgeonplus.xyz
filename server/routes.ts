@@ -1223,6 +1223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const { generateTractatusTree } = await import("./services/tractatusTree");
+      const { initializeTreeReplacement } = await import("./services/tractatusReplacement");
       let result: Awaited<ReturnType<typeof generateTractatusTree>> | undefined;
       if (mode === "chapters") {
         for (let index = 0; index < chapters.length; index++) {
@@ -1231,6 +1232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let result;
           try {
             result = await generateTractatusTree(chapter.text, provider || "openai");
+            result = initializeTreeReplacement(result);
           } catch (error: any) {
             throw new Error(`${chapter.title}: ${error?.message || "generation failed"}`);
           }
@@ -1245,6 +1247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             res.write(`data: ${JSON.stringify({ type: 'progress', ...progress })}\n\n`);
           }
         );
+        result = initializeTreeReplacement(result);
         res.write(`data: ${JSON.stringify({ type: 'complete', result })}\n\n`);
       }
 
@@ -1272,6 +1275,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.write(`data: ${JSON.stringify({ type: 'error', error: error.message || 'Generation failed' })}\n\n`);
     } finally {
       res.end();
+    }
+  });
+
+  app.post("/api/tractatus-tree/replace-level", async (req, res) => {
+    const { tree, level, provider = "openai", instructions = "" } = req.body || {};
+    if (!tree || !Number.isInteger(level) || level < 3) {
+      return res.status(400).json({ error: "A generated tree and subordinate level (3 or deeper) are required. Levels 1 and 2 are locked." });
+    }
+    if (typeof provider !== "string" || typeof instructions !== "string" || instructions.length > 20000) {
+      return res.status(400).json({ error: "Provide a valid model and at most 20,000 characters of requirements or evidence." });
+    }
+    const controller = new AbortController();
+    req.once("aborted", () => controller.abort());
+    res.once("close", () => { if (!res.writableEnded) controller.abort(); });
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders();
+    const send = (event: unknown) => {
+      if (!controller.signal.aborted && !res.writableEnded) res.write(`data: ${JSON.stringify(event)}\n\n`);
+    };
+    const heartbeat = setInterval(() => {
+      if (!controller.signal.aborted && !res.writableEnded) res.write(": keep-alive\n\n");
+    }, 15000);
+    try {
+      const { replaceTractatusLevel } = await import("./services/tractatusReplacement");
+      const result = await replaceTractatusLevel(tree, level, provider, instructions, {
+        signal: controller.signal, onProgress: (message) => send({ type: "progress", message }),
+      });
+      send({ type: "complete", result });
+    } catch (error: any) {
+      send({ type: "error", error: error?.message || "Replacement failed. The original tree has been retained." });
+    } finally {
+      clearInterval(heartbeat);
+      if (!res.writableEnded) res.end();
     }
   });
 

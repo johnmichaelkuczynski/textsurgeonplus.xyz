@@ -6,3 +6,4 @@
 - [Removed Fresh Tree](removed-fresh-support-tree.md) — Fresh Tree and the rejected fresh-support extension must stay removed unless explicitly requested again.
 - [Grounded generative output](grounded-generative-format.md) — live tree models may invent quotes, omit children, or ignore numbering; validate and use keyed output.
 - [New API routes and live Vite](vite-api-route-activation.md) — frontend hot reload can expose controls before a newly merged server route is active; HTML 200 is not an SSE success.
+- [Tractatus subordinate replacements](tractatus-subordinate-replacements.md) — replace deepest levels upward; levels 1–2 stay locked; inspect actual novelty and immediate-parent support.
