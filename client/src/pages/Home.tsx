@@ -2251,7 +2251,7 @@ export default function Home() {
                 setTractatusTreeProgress({ current: 3, total: 3, message: `Complete: ${parsed.result.totalStatements} statements across ${parsed.result.columns?.length || 0} abstraction levels` });
                 toast({
                   title: "Tractatus Tree Complete",
-                  description: `Generated ${parsed.result.totalStatements} statements with ${parsed.result.maxDepth + 1} levels of depth`,
+                  description: `Generated ${parsed.result.totalStatements} statements across ${parsed.result.columns?.length || 0} levels`,
                 });
               } else {
                 setTractatusTreeProgress({ current: parsed.chapterCount, total: parsed.chapterCount, message: `Complete: ${parsed.chapterCount} separate chapter trees` });

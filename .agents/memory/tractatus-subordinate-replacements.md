@@ -9,6 +9,12 @@ In the existing Tractatus Tree, users may replace subordinate material from the 
 
 **How to apply:** Preserve numbering and untouched levels. Replace rather than append. Support may take the form of genuinely fresh argument, proof, evidence, data or vivid explanation; do not reduce this to citation collection or to paraphrasing the previous material.
 
+User-facing replacement levels refer to the four displayed columns. There is no separate Level 5 replacement action, even when column four contains deeper decimal numbering.
+
+**Why:** The user corrected a “Replace Level 5” button in a tree showing only Levels 1–4.
+
+**How to apply:** Start at Level 4, then Level 3; keep Levels 1 and 2 locked. Preserve deeper explanatory detail and its parent alignment rather than deleting it to make the numbers fit.
+
 LLM support reviews are evidence to inspect, not a guarantee of logical correctness or novelty. A reviewer may approve a longer version of the original reasoning as “fresh,” or confuse sequential relations with set membership.
 
 **Why:** Live replacements and same-model reviewers repeatedly accepted expanded original inferential steps as fresh despite explicit instructions, and approved chain-of-command/manufacturing metaphors for a set-inclusion proposition. Syntactic validation did not expose those semantic failures.

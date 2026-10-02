@@ -38,7 +38,7 @@ function sign(statements: TractatusStatement[], nextLevel: number | null): strin
 export function initializeTreeReplacement(tree: TractatusTreeResult): TractatusTreeResult {
   try {
     const statements = canonicalStatements(tree);
-    const deepest = Math.max(...statements.map((node) => node.depth)) + 1;
+    const deepest = Math.min(4, Math.max(...statements.map((node) => node.depth)) + 1);
     const nextReplacementLevel = deepest >= 3 ? deepest : null;
     return { ...tree, nextReplacementLevel, replacementToken: sign(statements, nextReplacementLevel) };
   } catch (error) {
@@ -89,6 +89,7 @@ export async function replaceTractatusLevel(
   } = {},
 ): Promise<TractatusTreeResult & { replacements: { number: string; parentNumber: string; previousText: string; text: string; reason: string }[] }> {
   if (!Number.isInteger(level) || level < 3) throw new Error("Levels 1 and 2 are locked and cannot be changed.");
+  if (level > 4) throw new Error("This tree has four displayed levels. Replace Level 4, then Level 3.");
   const statements = canonicalStatements(tree);
   if (typeof tree.replacementToken !== "string" || !/^[a-f0-9]{64}$/.test(tree.replacementToken) ||
       !(tree.nextReplacementLevel === null || Number.isInteger(tree.nextReplacementLevel))) {
@@ -98,9 +99,12 @@ export async function replaceTractatusLevel(
   if (!timingSafeEqual(expected, Buffer.from(tree.replacementToken, "hex"))) {
     throw new Error("The tree checkpoint has changed or expired. Generate a new tree before replacing levels.");
   }
-  const deepest = Math.max(...statements.map((node) => node.depth)) + 1;
-  if (level !== (tree.nextReplacementLevel ?? deepest)) {
-    throw new Error(`Replace Level ${tree.nextReplacementLevel ?? deepest} first; replacements proceed from the deepest level upward.`);
+  const deepest = Math.min(4, Math.max(...statements.map((node) => node.depth)) + 1);
+  // Verify the original signature above, then interpret older checkpoints that
+  // counted extra detail as Level 5+ using the four visible columns.
+  const expectedLevel = Math.min(4, tree.nextReplacementLevel ?? deepest);
+  if (level !== expectedLevel) {
+    throw new Error(`Replace Level ${expectedLevel} first; replacements proceed from the deepest level upward.`);
   }
   const targets = statements.filter((node) => node.depth === level - 1);
   if (!targets.length) throw new Error("This tree has no nodes at the requested level.");

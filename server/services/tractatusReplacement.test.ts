@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHmac } from "node:crypto";
 import { buildTractatusTree, type TractatusStatement } from "./tractatusTree";
 import { initializeTreeReplacement, replaceTractatusLevel } from "./tractatusReplacement";
 import type { callLLM } from "../llm";
@@ -209,14 +210,36 @@ test("upper replacements require an individual direct-support review for every p
   }
 });
 
-test("trees deeper than four levels begin at their actual deepest level", async () => {
+test("extra numbering inside column 4 never creates a Level 5 replacement action", async () => {
   const tree = initializeTreeReplacement(buildTractatusTree([...nodes, {
-    number: "1.1.1.1.1", text: "An original fifth-level illustration to replace.", depth: 4,
+    number: "1.1.1.1.1", text: "Extra explanatory detail within the fourth column.", depth: 4,
   }]));
-  assert.equal(tree.nextReplacementLevel, 5);
-  const result = await replaceTractatusLevel(tree, 5, "test", "", { model: goodModel() });
-  assert.equal(result.nextReplacementLevel, 4);
-  assert.equal(result.replacements.length, 1);
+  assert.equal(tree.columns.length, 4);
+  assert.equal(tree.nextReplacementLevel, 4);
+  await assert.rejects(replaceTractatusLevel(tree, 5, "test", "", {
+    model: async () => assert.fail("Level 5 must not call a provider."),
+  }), /four displayed levels/);
+  const result = await replaceTractatusLevel(tree, 4, "test", "", { model: goodModel() });
+  assert.equal(result.nextReplacementLevel, 3);
+  assert.equal(result.replacements.length, 3);
+  assert.deepEqual(flat(result).find((node) => node.depth === 4), flat(tree).find((node) => node.depth === 4));
+  assert.deepEqual(result.columns.slice(0, 3), tree.columns.slice(0, 3));
+});
+
+test("an existing signed Level 5 checkpoint works as Level 4 without regenerating the tree", async () => {
+  const tree = initializeTreeReplacement(buildTractatusTree([...nodes, {
+    number: "1.1.1.1.1", text: "Existing deeper detail retained in column four.", depth: 4,
+  }]));
+  tree.nextReplacementLevel = 5;
+  tree.replacementToken = createHmac("sha256", process.env.SESSION_SECRET!)
+    .update(JSON.stringify({ statements: flat(tree).map(({ number, text, depth }) => ({ number, text, depth })), nextLevel: 5 }))
+    .digest("hex");
+  await assert.rejects(replaceTractatusLevel(tree, 3, "test", "", { model: goodModel() }), /Replace Level 4 first/);
+  const fourth = await replaceTractatusLevel(tree, 4, "test", "", { model: goodModel() });
+  assert.equal(fourth.nextReplacementLevel, 3);
+  const third = await replaceTractatusLevel(fourth, 3, "test", "", { model: goodModel() });
+  assert.equal(third.nextReplacementLevel, null);
+  assert.deepEqual(third.columns.slice(0, 2), tree.columns.slice(0, 2));
 });
 
 test("an invalid hierarchy retains generated output but explicitly disables replacement", () => {

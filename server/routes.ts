@@ -1280,8 +1280,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tractatus-tree/replace-level", async (req, res) => {
     const { tree, level, provider = "openai", instructions = "" } = req.body || {};
-    if (!tree || !Number.isInteger(level) || level < 3) {
-      return res.status(400).json({ error: "A generated tree and subordinate level (3 or deeper) are required. Levels 1 and 2 are locked." });
+    if (!tree || !Number.isInteger(level) || level < 3 || level > 4) {
+      return res.status(400).json({ error: "A generated tree and Level 3 or 4 are required. Levels 1 and 2 are locked." });
     }
     if (typeof provider !== "string" || typeof instructions !== "string" || instructions.length > 20000) {
       return res.status(400).json({ error: "Provide a valid model and at most 20,000 characters of requirements or evidence." });

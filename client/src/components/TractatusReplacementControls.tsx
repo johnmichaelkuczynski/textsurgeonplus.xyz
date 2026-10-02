@@ -21,8 +21,9 @@ export function TractatusReplacementControls({ tree, provider, disabled, onRepla
     request.current?.abort();
     onBusyChange(false);
   }, [onBusyChange]);
-  const deepest = tree.maxDepth + 1;
-  const level = tree.nextReplacementLevel ?? deepest;
+  // Extra decimal numbering is detail inside column 4, not another UI level.
+  const deepest = Math.min(4, tree.maxDepth + 1);
+  const level = Math.min(4, tree.nextReplacementLevel ?? deepest);
   const run = async () => {
     if (request.current || disabled || !tree.replacementToken || level < 3) return;
     const controller = new AbortController();
