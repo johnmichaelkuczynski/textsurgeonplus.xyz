@@ -49,7 +49,6 @@ import {
   MessageCircle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { FreshTreeDialog } from "@/components/FreshTreeDialog";
 import { ProsifyDialog } from "@/components/ProsifyDialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -461,8 +460,6 @@ export default function Home() {
 
   // Tractatus Tree state
   const [showTractatusTree, setShowTractatusTree] = useState(false);
-  const [showFreshTree, setShowFreshTree] = useState(false);
-  const [freshTreeSelection, setFreshTreeSelection] = useState("");
   const [showProsify, setShowProsify] = useState(false);
   const [prosifyTree, setProsifyTree] = useState("");
   const [tractatusTreeProgress, setTractatusTreeProgress] = useState<{current: number, total: number, message: string} | null>(null);
@@ -625,7 +622,6 @@ export default function Home() {
     setTractatusTreeProgress(null);
     setChapterTrees([]);
     setSelectedChapterIndex(0);
-    setFreshTreeSelection("");
     setBookDb2Data(null);
     setBookDb2Progress(null);
     setBookDb2Error(null);
@@ -4684,12 +4680,7 @@ ${parsed.analyzer}`);
                 placeholder="Enter text, paste content, or drag files here to begin analysis..." 
                 className={`min-h-[65vh] md:min-h-[70vh] flex-none resize-y border-none focus-visible:ring-0 p-6 text-xl leading-relaxed font-serif bg-transparent placeholder:text-gray-400 ${isDragging ? 'pointer-events-none' : ''}`}
                 value={text}
-                onChange={(e) => { setText(e.target.value); setFreshTreeSelection(""); }}
-                onSelect={(e) => {
-                  const field = e.currentTarget;
-                  setFreshTreeSelection(field.selectionStart < field.selectionEnd
-                    ? field.value.slice(field.selectionStart, field.selectionEnd) : "");
-                }}
+                onChange={(e) => setText(e.target.value)}
                 data-testid="input-text"
               />
               
@@ -5201,15 +5192,6 @@ ${parsed.analyzer}`);
                   >
                     <GitBranch className="w-5 h-5 mr-2" />
                     TRACTATUS TREE
-                  </Button>
-                  <Button
-                    onClick={() => setShowFreshTree(true)}
-                    disabled={isProcessing || !text}
-                    className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-yellow-600 to-amber-600 text-white hover:shadow-lg transition-all hover:scale-105"
-                    data-testid="button-fresh-tree"
-                  >
-                    <GitBranch className="w-5 h-5 mr-2" />
-                    FRESH TREE
                   </Button>
                   <Button 
                     onClick={() => {
@@ -7808,11 +7790,6 @@ Freedom is the ratio essendi of the moral law."
       </ResizableDialog>
 
       {/* Tractatus Tree Dialog */}
-      <FreshTreeDialog open={showFreshTree} onOpenChange={setShowFreshTree}
-        text={text} selection={freshTreeSelection} onSendToProsify={(tree) => {
-          setProsifyTree(tree);
-          setShowProsify(true);
-        }} />
       <ProsifyDialog open={showProsify} onOpenChange={setShowProsify}
         tree={prosifyTree} onTreeChange={setProsifyTree} />
       <ResizableDialog open={showTractatusTree} onOpenChange={(open) => {

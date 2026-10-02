@@ -32,7 +32,7 @@ export function ProsifyDialog({ open, onOpenChange, tree, onTreeChange }: {
 
   const run = async () => {
     if (request.current) return;
-    if (!tree.trim()) { setError("Send a tree from FRESH TREE or paste one here"); return; }
+    if (!tree.trim()) { setError("Paste a numbered tree here"); return; }
     const usedInstructions = instructions;
     const controller = new AbortController();
     request.current = controller;

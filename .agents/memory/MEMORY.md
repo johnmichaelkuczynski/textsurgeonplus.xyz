@@ -3,7 +3,6 @@
 - [Author corpus credentials](author-corpus-credentials.md) — preserve distinct author keys; a shared-key search cannot verify them individually.
 - [Live Vite file replacement](vite-hmr-file-replacement.md) — avoid transient deletion of imported pages during hot updates; it can crash the running preview.
 - [Document-bound analyses](document-bound-analyses.md) — derived outputs must be tied to the exact current source, not merely to the page session.
-- [Removed fresh-support tree](removed-fresh-support-tree.md) — keep the rejected extension removed; the later, separately requested FRESH TREE is distinct.
+- [Removed Fresh Tree](removed-fresh-support-tree.md) — Fresh Tree and the rejected fresh-support extension must stay removed unless explicitly requested again.
 - [Grounded generative output](grounded-generative-format.md) — live tree models may invent quotes, omit children, or ignore numbering; validate and use keyed output.
 - [New API routes and live Vite](vite-api-route-activation.md) — frontend hot reload can expose controls before a newly merged server route is active; HTML 200 is not an SSE success.
-- [Fresh Tree partial output](fresh-tree-partial-output.md) — STOP was used because long processing looked idle; show live progress and retain only validated streamed nodes.
