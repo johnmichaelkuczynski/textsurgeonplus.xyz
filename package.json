@@ -9,6 +9,7 @@
     "build": "vite build && esbuild server/index-prod.ts --platform=node --packages=external --bundle --format=esm --outfile=dist/index.js",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
+    "test:fresh-tree:browser": "node --test tests/fresh-tree-browser.test.mjs",
     "db:push": "drizzle-kit push"
   },
   "notes": "removed framer motion dependency",

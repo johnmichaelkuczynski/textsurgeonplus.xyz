@@ -7,3 +7,4 @@
 - [Grounded generative output](grounded-generative-format.md) — live tree models may invent quotes, omit children, or ignore numbering; validate and use keyed output.
 - [New API routes and live Vite](vite-api-route-activation.md) — frontend hot reload can expose controls before a newly merged server route is active; HTML 200 is not an SSE success.
 - [Tractatus subordinate replacements](tractatus-subordinate-replacements.md) — replace deepest levels upward; levels 1–2 stay locked; inspect actual novelty and immediate-parent support.
+- [Browser regression isolation](browser-regression-isolation.md) — controlled SSE tests must not disturb live generation; component passes do not verify production orchestration.
