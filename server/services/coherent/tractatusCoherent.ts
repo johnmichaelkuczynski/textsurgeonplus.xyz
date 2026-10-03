@@ -1,5 +1,6 @@
 import { processDocumentSequentially } from "./coherenceProcessor";
 import { ProgressUpdate } from "./stateSchemas";
+import { splitTractatusChapters } from "../tractatusChapters";
 
 export interface TractatusResult {
   documentId: string;
@@ -14,6 +15,14 @@ export async function tractatusCoherent(
   onProgress?: (progress: ProgressUpdate) => void,
   userId?: number
 ): Promise<TractatusResult> {
+  let chapters: ReturnType<typeof splitTractatusChapters> = [];
+  try {
+    chapters = splitTractatusChapters(text);
+  } catch (error) {
+    // Explicit XXX chapter markers are user-authored structure and must be valid.
+    throw error;
+  }
+
   const ragSection = options.ragContext ? `
 ${options.ragContext}
 
@@ -57,7 +66,10 @@ EXAMPLE:
     "rewrite",
     instructions,
     onProgress,
-    userId
+    userId,
+    chapters.length > 1
+      ? chapters.map((chapter, index) => ({ ...chapter, chapterNumber: index + 1 }))
+      : undefined
   );
 
   return {

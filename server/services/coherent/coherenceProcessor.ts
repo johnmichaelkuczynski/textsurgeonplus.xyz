@@ -80,6 +80,73 @@ export function chunkText(text: string, maxWords: number = 1000): string[] {
   return chunks;
 }
 
+export interface CoherenceSection {
+  text: string;
+  chapterNumber?: number;
+  title?: string;
+}
+
+interface WorkChunk {
+  text: string;
+  chapterNumber?: number;
+  chapterTitle?: string;
+  chapterChunkIndex: number;
+  chapterChunkCount: number;
+}
+
+export function buildWorkChunks(text: string, sections?: CoherenceSection[], maxWords = 1000): WorkChunk[] {
+  if (!sections?.length) {
+    const chunks = chunkText(text, maxWords);
+    return chunks.map((chunk, index) => ({
+      text: chunk,
+      chapterChunkIndex: index,
+      chapterChunkCount: chunks.length
+    }));
+  }
+
+  return sections.flatMap((section) => {
+    const chunks = chunkText(section.text, maxWords);
+    return chunks.map((chunk, index) => ({
+      text: chunk,
+      chapterNumber: section.chapterNumber,
+      chapterTitle: section.title,
+      chapterChunkIndex: index,
+      chapterChunkCount: chunks.length
+    }));
+  });
+}
+
+/** A Tractatus rewrite is all propositions: never headings, commentary, or copied prose. */
+export function validateTractatusOutput(value: unknown, expectedChapter?: number): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error("The model returned no Tractatus propositions");
+  }
+
+  const lines = value.replace(/```(?:text|markdown)?/gi, "").replace(/```/g, "")
+    .split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  const proposition = /^[•*-]?\s*(\d+)(?:\.(?:\d+))*\.?\s+\S/;
+  for (const line of lines) {
+    const match = proposition.exec(line);
+    if (!match) throw new Error(`Non-proposition text in Tractatus output: ${line.slice(0, 80)}`);
+    if (expectedChapter !== undefined && Number(match[1]) !== expectedChapter) {
+      throw new Error(`Expected chapter ${expectedChapter} proposition, received chapter ${match[1]}`);
+    }
+  }
+  return lines.join("\n");
+}
+
+function parseJsonResponse(response: string): any {
+  const unfenced = response.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
+  try {
+    return JSON.parse(unfenced);
+  } catch {
+    const start = unfenced.indexOf("{");
+    const end = unfenced.lastIndexOf("}");
+    if (start >= 0 && end > start) return JSON.parse(unfenced.slice(start, end + 1));
+    throw new Error("The model did not return a JSON object");
+  }
+}
+
 export async function autoDetectMode(firstChunk: string, provider: string): Promise<CoherenceModeType> {
   const prompt = `Analyze this text and determine its primary coherence mode.
 
@@ -182,18 +249,31 @@ async function processChunk(
   totalChunks: number,
   provider: string,
   taskType: "rewrite" | "evaluate",
-  instructions?: string
+  instructions?: string,
+  workChunk?: WorkChunk,
+  previousTractatusOutput?: string
 ): Promise<{ output: string; evaluation: ChunkEvaluationResult }> {
   const stateDescription = formatStateForPrompt(mode, state);
 
   let prompt: string;
   
   const lastChapterNum = (state as any).lastChapterNumber ?? 0;
-  const nextChapter = chunkIndex === 0 ? 1 : lastChapterNum + 1;
+  const fixedChapter = workChunk?.chapterNumber;
+  const nextChapter = fixedChapter ?? (chunkIndex === 0 ? 1 : lastChapterNum + 1);
   const isTractatus = instructions?.includes("Tractatus") || instructions?.includes("Wittgenstein");
   
   if (taskType === "rewrite") {
-    const chapterInstruction = isTractatus ? `
+    const chapterInstruction = isTractatus && fixedChapter !== undefined ? `
+CRITICAL SOURCE-CHAPTER NUMBERING RULES (MUST FOLLOW):
+- This material is from source chapter ${fixedChapter}${workChunk?.chapterTitle ? ` (${workChunk.chapterTitle})` : ""}.
+- EVERY proposition in this response must begin with ${fixedChapter}. No other leading chapter number is allowed.
+- This is part ${(workChunk?.chapterChunkIndex ?? 0) + 1} of ${workChunk?.chapterChunkCount ?? 1} for source chapter ${fixedChapter}.
+${workChunk?.chapterChunkIndex === 0
+  ? `- Begin the chapter with ${fixedChapter}. and its subordinate propositions.`
+  : `- Continue the existing chapter hierarchy. Do not restart with a duplicate ${fixedChapter}. proposition.`}
+${previousTractatusOutput ? `- The previous propositions ended as follows; continue without duplicating their numbers:\n${previousTractatusOutput}` : ""}
+- Include "lastChapterNumber": ${fixedChapter} in state_update.
+` : isTractatus ? `
 CRITICAL NUMBERING RULES (MUST FOLLOW):
 - This is chunk ${chunkIndex + 1} of the document
 ${chunkIndex === 0 ? `- THIS IS THE FIRST CHUNK - START NUMBERING AT 1. (not any other number)` : `- The previous chunk ended at chapter ${lastChapterNum}`}
@@ -249,18 +329,28 @@ Return JSON:
 }`;
   }
 
-  const response = await callLLMWithRetry(provider, prompt);
-  
-  try {
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const result = JSON.parse(jsonMatch[0]);
+  let lastParseError: Error | undefined;
+  for (let formatAttempt = 1; formatAttempt <= 3; formatAttempt++) {
+    const repairInstruction = formatAttempt === 1 ? "" : `
+
+YOUR PREVIOUS RESPONSE COULD NOT BE USED: ${lastParseError?.message || "invalid format"}.
+Return one valid JSON object only. JSON-escape all newlines in rewritten_text. Do not include markdown fences or commentary.`;
+    const response = await callLLMWithRetry(provider, prompt + repairInstruction);
+    try {
+      const result = parseJsonResponse(response);
       
       if (taskType === "rewrite") {
         const stateUpdate = result.state_update || {};
+        let rewrittenText = result.rewritten_text;
+
+        if (isTractatus) {
+          rewrittenText = validateTractatusOutput(rewrittenText, fixedChapter);
+        } else if (typeof rewrittenText !== "string" || !rewrittenText.trim()) {
+          throw new Error("The model returned no rewritten_text");
+        }
         
-        if (isTractatus && result.rewritten_text) {
-          const chapterMatches = result.rewritten_text.match(/^\s*[•\-*]*\s*(\d+)\./gm);
+        if (isTractatus) {
+          const chapterMatches = rewrittenText.match(/^\s*[•\-*]*\s*(\d+)\./gm);
           if (chapterMatches) {
             const chapters = chapterMatches.map((m: string) => {
               const match = m.match(/(\d+)\./);
@@ -274,7 +364,7 @@ Return JSON:
         }
         
         return {
-          output: result.rewritten_text || chunk,
+          output: rewrittenText,
           evaluation: {
             status: "preserved",
             violations: [],
@@ -293,20 +383,15 @@ Return JSON:
           }
         };
       }
+    } catch (error: any) {
+      lastParseError = error instanceof Error ? error : new Error(String(error));
+      console.error(`Failed to parse chunk result (format attempt ${formatAttempt}/3):`, lastParseError.message);
     }
-  } catch (e) {
-    console.error("Failed to parse chunk result:", e);
   }
 
-  return {
-    output: chunk,
-    evaluation: {
-      status: "preserved",
-      violations: [],
-      repairs: [],
-      state_update: {}
-    }
-  };
+  // Never pass the input chunk through as a rewrite: that silently leaks source prose
+  // into generated documents and makes an incomplete rewrite look successful.
+  throw new Error(`Unable to produce a valid rewritten chunk after 3 format attempts: ${lastParseError?.message || "invalid model response"}`);
 }
 
 export async function processDocumentSequentially(
@@ -316,10 +401,12 @@ export async function processDocumentSequentially(
   taskType: "rewrite" | "evaluate",
   instructions?: string,
   onProgress?: (progress: ProgressUpdate) => void,
-  userId?: number
+  userId?: number,
+  sections?: CoherenceSection[]
 ): Promise<ProcessingResult> {
   const docId = generateDocumentId();
-  const chunks = chunkText(text, 1000);
+  const workChunks = buildWorkChunks(text, sections, 1000);
+  const chunks = workChunks.map((chunk) => chunk.text);
   const wordCount = text.split(/\s+/).length;
 
   onProgress?.({ documentId: docId, phase: "detecting", message: "Detecting coherence mode..." });
@@ -335,12 +422,13 @@ export async function processDocumentSequentially(
   await initializeCoherenceRun(docId, resolvedMode, initialState, wordCount, chunks.length, userId);
 
   const chunk0Result = await processChunk(
-    resolvedMode, initialState, chunks[0], 0, chunks.length, provider, taskType, instructions
+    resolvedMode, initialState, chunks[0], 0, chunks.length, provider, taskType, instructions, workChunks[0]
   );
   await writeChunkEvaluation(docId, resolvedMode, 0, chunks[0], chunk0Result.output, chunk0Result.evaluation, initialState);
 
   const outputs: string[] = [chunk0Result.output];
   let currentState = applyStateUpdate(initialState, chunk0Result.evaluation.state_update);
+  let previousTractatusOutput = chunk0Result.output.split("\n").slice(-12).join("\n");
 
   for (let i = 1; i < chunks.length; i++) {
     onProgress?.({
@@ -352,7 +440,8 @@ export async function processDocumentSequentially(
     });
 
     const result = await processChunk(
-      resolvedMode, currentState, chunks[i], i, chunks.length, provider, taskType, instructions
+      resolvedMode, currentState, chunks[i], i, chunks.length, provider, taskType, instructions,
+      workChunks[i], workChunks[i].chapterChunkIndex > 0 ? previousTractatusOutput : undefined
     );
 
     const violations = checkViolations(currentState, result.evaluation.state_update);
@@ -365,6 +454,7 @@ export async function processDocumentSequentially(
     await writeChunkEvaluation(docId, resolvedMode, i, chunks[i], result.output, result.evaluation, newState);
 
     outputs.push(result.output);
+    previousTractatusOutput = result.output.split("\n").slice(-12).join("\n");
     currentState = newState;
 
     await new Promise(resolve => setTimeout(resolve, 200));
