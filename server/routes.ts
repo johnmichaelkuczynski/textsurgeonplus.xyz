@@ -22,6 +22,7 @@ import {
 } from "./services/genius101";
 import { transformWorkshop, validateWorkshopRequest } from "./services/humanizerWorkshop";
 import { splitTractatusChapters } from "./services/tractatusChapters";
+import { rewriteInSampleStyle, validateStyleRewriteInput } from "./services/styleRewrite";
 
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -1609,6 +1610,38 @@ Write ONLY the rewritten content for this section "${section.title}". Do not inc
     } catch (error: any) {
       console.error("Full rewrite error:", error);
       res.write(`data: ${JSON.stringify({ type: 'error', error: error.message })}\n\n`);
+      res.end();
+    }
+  });
+
+  app.post("/api/rewrite/style-transfer", async (req, res) => {
+    let input;
+    try {
+      input = validateStyleRewriteInput(req.body);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no");
+    res.flushHeaders();
+    const send = (event: Record<string, unknown>) => {
+      res.write(`data: ${JSON.stringify(event)}\n\n`);
+      try { (res as any).flush?.(); } catch {}
+    };
+
+    try {
+      const result = await rewriteInSampleStyle(input, (progress) => {
+        if (progress.content) send({ type: "content", content: progress.content });
+        send({ type: "progress", ...progress, content: undefined });
+      });
+      send({ type: "complete", result: result.rewrittenText, chunkCount: result.chunkCount });
+    } catch (error: any) {
+      console.error("Style rewrite error:", error);
+      send({ type: "error", error: error.message || "Style rewrite failed" });
+    } finally {
       res.end();
     }
   });

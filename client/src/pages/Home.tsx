@@ -572,6 +572,18 @@ export default function Home() {
   const [rewrittenDocument, setRewrittenDocument] = useState("");
   const [rewriteRefineInstructions, setRewriteRefineInstructions] = useState("");
   const [showRewriteDialog, setShowRewriteDialog] = useState(false);
+
+  // Style-only Rewrite state
+  const [showStyleRewriteDialog, setShowStyleRewriteDialog] = useState(false);
+  const [styleRewriteSample, setStyleRewriteSample] = useState("");
+  const [styleRewriteSampleName, setStyleRewriteSampleName] = useState("");
+  const [styleRewriteInstructions, setStyleRewriteInstructions] = useState("");
+  const [styleRewriteOutput, setStyleRewriteOutput] = useState("");
+  const [styleRewriteProgress, setStyleRewriteProgress] = useState<{current: number; total: number; message: string} | null>(null);
+  const [isStyleRewriting, setIsStyleRewriting] = useState(false);
+  const [isLoadingStyleRewriteSample, setIsLoadingStyleRewriteSample] = useState(false);
+  const [isDraggingStyleRewriteSample, setIsDraggingStyleRewriteSample] = useState(false);
+  const styleRewriteFileRef = useRef<HTMLInputElement>(null);
   
   // Write From Scratch state
   const [showWriteFromScratchDialog, setShowWriteFromScratchDialog] = useState(false);
@@ -3493,6 +3505,126 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     URL.revokeObjectURL(url);
   };
 
+  const loadStyleRewriteSample = async (file: File) => {
+    const extension = file.name.toLowerCase().split(".").pop() || "";
+    if (!["txt", "md", "pdf", "docx"].includes(extension)) {
+      toast({ title: "Unsupported style sample", description: "Upload a PDF, DOCX, text, or Markdown document.", variant: "destructive" });
+      return;
+    }
+    if (file.size > REWRITE_STYLE_FILE_MAX_BYTES) {
+      toast({ title: "Style sample is too large", description: "Style-sample files are limited to 2 MB.", variant: "destructive" });
+      return;
+    }
+
+    setIsLoadingStyleRewriteSample(true);
+    try {
+      let content = "";
+      if (["pdf", "docx"].includes(extension)) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await fetch("/api/parse-style-sample", { method: "POST", credentials: "include", body: formData });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) throw new Error(payload?.error || "Could not parse the style sample");
+        content = payload?.text || "";
+      } else {
+        content = await file.text();
+      }
+      if (!content.trim()) throw new Error("The style sample did not contain readable text");
+      const bounded = content.slice(0, REWRITE_STYLE_SAMPLE_MAX_CHARS);
+      setStyleRewriteSample(bounded);
+      setStyleRewriteSampleName(file.name);
+      toast({
+        title: "Style sample loaded",
+        description: `${file.name} — ${bounded.split(/\s+/).filter(Boolean).length.toLocaleString()} words${content.length > bounded.length ? " (sample truncated safely)" : ""}`,
+      });
+    } catch (error: any) {
+      toast({ title: "Style sample failed", description: error?.message || "Could not read the style sample", variant: "destructive" });
+    } finally {
+      setIsLoadingStyleRewriteSample(false);
+      if (styleRewriteFileRef.current) styleRewriteFileRef.current.value = "";
+    }
+  };
+
+  const handleStyleRewrite = async () => {
+    if (!text.trim()) {
+      toast({ title: "Text A required", description: "Load the text whose substance should be preserved.", variant: "destructive" });
+      return;
+    }
+    if (!styleRewriteSample.trim()) {
+      toast({ title: "Text B required", description: "Upload or paste a style sample.", variant: "destructive" });
+      return;
+    }
+
+    setIsStyleRewriting(true);
+    setStyleRewriteOutput("");
+    setStyleRewriteProgress({ current: 0, total: 1, message: "Analyzing Text B's writing style..." });
+    try {
+      const response = await fetch("/api/rewrite/style-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          text,
+          styleSample: styleRewriteSample,
+          instructions: styleRewriteInstructions,
+          provider: selectedLLM,
+          username,
+        }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error || "Style rewrite request failed");
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("The style rewrite stream could not be opened");
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let completeOutput = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        buffer += decoder.decode(value || new Uint8Array(), { stream: !done });
+        const events = buffer.split("\n\n");
+        buffer = events.pop() || "";
+        for (const event of events) {
+          const line = event.split("\n").find((entry) => entry.startsWith("data: "));
+          if (!line) continue;
+          const parsed = JSON.parse(line.slice(6));
+          if (parsed.type === "progress") {
+            setStyleRewriteProgress({ current: parsed.current || 0, total: parsed.total || 1, message: parsed.message || "Style rewriting..." });
+          } else if (parsed.type === "content") {
+            completeOutput += parsed.content || "";
+            setStyleRewriteOutput(completeOutput);
+          } else if (parsed.type === "complete") {
+            completeOutput = parsed.result || completeOutput;
+            setStyleRewriteOutput(completeOutput);
+          } else if (parsed.type === "error") {
+            throw new Error(parsed.error || "Style rewrite failed");
+          }
+        }
+        if (done) break;
+      }
+      toast({ title: "Style Rewrite Complete", description: "Text A's substance was retained and expressed in Text B's style." });
+    } catch (error: any) {
+      console.error("Style rewrite error:", error);
+      toast({ title: "Style Rewrite Failed", description: error?.message || "Unknown error", variant: "destructive" });
+    } finally {
+      setIsStyleRewriting(false);
+      setStyleRewriteProgress(null);
+      fetchCredits();
+    }
+  };
+
+  const downloadStyleRewrite = () => {
+    const blob = new Blob([styleRewriteOutput], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "style_rewrite.txt";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Write From Scratch handler
   const handleWriteFromScratch = async () => {
     if (!writeFromScratchPrompt.trim()) {
@@ -5262,6 +5394,24 @@ ${parsed.analyzer}`);
                       <>
                         <FileText className="w-5 h-5 mr-2" />
                         FULL REWRITE
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={() => setShowStyleRewriteDialog(true)}
+                    disabled={isStyleRewriting || !text}
+                    className="h-12 text-sm font-semibold px-5 bg-gradient-to-r from-fuchsia-600 to-purple-700 text-white hover:shadow-lg transition-all hover:scale-105"
+                    data-testid="button-style-rewrite"
+                  >
+                    {isStyleRewriting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        STYLE REWRITING...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        STYLE REWRITE
                       </>
                     )}
                   </Button>
@@ -9247,6 +9397,138 @@ Freedom is the ratio essendi of the moral law."
               >
                 Close
               </Button>
+            </div>
+          </div>
+        </ResizableDialogContent>
+      </ResizableDialog>
+
+      {/* Style-only Rewrite Dialog */}
+      <ResizableDialog open={showStyleRewriteDialog} onOpenChange={setShowStyleRewriteDialog}>
+        <ResizableDialogContent defaultWidth={900} defaultHeight={760} minWidth={520} minHeight={480}>
+          <ResizableDialogHeader>
+            <ResizableDialogTitle className="flex items-center gap-2 text-xl">
+              <Sparkles className="w-6 h-6 text-fuchsia-600" />
+              Style Rewrite
+            </ResizableDialogTitle>
+            <ResizableDialogDescription>
+              Retain the substance of Text A while rewriting it in the writing style of Text B.
+            </ResizableDialogDescription>
+          </ResizableDialogHeader>
+
+          <div className="flex-1 overflow-auto space-y-5 p-4">
+            <div className="rounded-lg border border-fuchsia-200 bg-fuchsia-50 p-4 text-sm text-fuchsia-900">
+              <p><strong>Text A:</strong> the currently loaded document ({text.split(/\s+/).filter(Boolean).length.toLocaleString()} words).</p>
+              <p className="mt-1"><strong>Text B:</strong> the required sample below. Its style is emulated; its subject matter is not transferred.</p>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <Label htmlFor="style-rewrite-sample" className="font-semibold">Text B — Style Sample <span className="text-red-600">(Required)</span></Label>
+                  <p className="mt-1 text-xs text-muted-foreground">Upload, drop, or paste PDF, DOCX, TXT, or Markdown. Maximum 2 MB; up to 12,000 characters are analyzed.</p>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    ref={styleRewriteFileRef}
+                    type="file"
+                    accept=".txt,.md,.pdf,.docx"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0];
+                      if (file) void loadStyleRewriteSample(file);
+                    }}
+                    data-testid="input-style-rewrite-file"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={() => styleRewriteFileRef.current?.click()} disabled={isLoadingStyleRewriteSample || isStyleRewriting} data-testid="button-upload-style-rewrite-sample">
+                    {isLoadingStyleRewriteSample ? <Loader2 className="mr-1 h-4 w-4 animate-spin" /> : <Upload className="mr-1 h-4 w-4" />}
+                    Upload Text B
+                  </Button>
+                  {styleRewriteSample && (
+                    <Button type="button" variant="outline" size="sm" disabled={isStyleRewriting} onClick={() => { setStyleRewriteSample(""); setStyleRewriteSampleName(""); }} data-testid="button-remove-style-rewrite-sample">
+                      <Trash2 className="mr-1 h-4 w-4" /> Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div
+                className={`rounded-lg border-2 border-dashed transition-colors ${isDraggingStyleRewriteSample ? "border-fuchsia-500 bg-fuchsia-50" : "border-gray-300 bg-white"}`}
+                onDragOver={(event) => { event.preventDefault(); setIsDraggingStyleRewriteSample(true); }}
+                onDragLeave={(event) => { event.preventDefault(); setIsDraggingStyleRewriteSample(false); }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  setIsDraggingStyleRewriteSample(false);
+                  const file = event.dataTransfer.files?.[0];
+                  if (file) void loadStyleRewriteSample(file);
+                }}
+                data-testid="dropzone-style-rewrite-sample"
+              >
+                <Textarea
+                  id="style-rewrite-sample"
+                  value={styleRewriteSample}
+                  onChange={(event) => { setStyleRewriteSample(event.target.value); if (styleRewriteSampleName) setStyleRewriteSampleName(""); }}
+                  maxLength={REWRITE_STYLE_SAMPLE_MAX_CHARS}
+                  disabled={isLoadingStyleRewriteSample || isStyleRewriting}
+                  className="min-h-[180px] resize-y border-0 font-serif focus-visible:ring-0"
+                  placeholder="Paste Text B here, or drag and drop a style-sample document..."
+                  data-testid="textarea-style-rewrite-sample"
+                />
+              </div>
+              {styleRewriteSample && (
+                <p className="text-xs text-fuchsia-700" data-testid="style-rewrite-sample-status">
+                  {styleRewriteSampleName ? `${styleRewriteSampleName} — ` : ""}{styleRewriteSample.split(/\s+/).filter(Boolean).length.toLocaleString()} words loaded
+                  {" · "}{styleRewriteSample.length.toLocaleString()}/{REWRITE_STYLE_SAMPLE_MAX_CHARS.toLocaleString()} characters
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="style-rewrite-instructions" className="font-semibold">How should the style be emulated? <span className="font-normal text-muted-foreground">(Optional)</span></Label>
+              <Textarea
+                id="style-rewrite-instructions"
+                value={styleRewriteInstructions}
+                onChange={(event) => setStyleRewriteInstructions(event.target.value)}
+                maxLength={4_000}
+                disabled={isStyleRewriting}
+                className="min-h-[100px]"
+                placeholder="Example: Emulate the author's brevity and use of cleft constructions, but avoid the overuse of metaphor. Leave blank to emulate the sample's overall style."
+                data-testid="textarea-style-rewrite-instructions"
+              />
+              <p className="text-xs text-muted-foreground">These directions control style only. They cannot add, remove, or alter Text A's substance.</p>
+            </div>
+
+            {styleRewriteProgress && (
+              <div className="rounded-lg border border-fuchsia-200 bg-fuchsia-50 p-4">
+                <div className="mb-2 flex items-center gap-2 text-sm font-medium text-fuchsia-900"><Loader2 className="h-4 w-4 animate-spin" />{styleRewriteProgress.message}</div>
+                <Progress value={(styleRewriteProgress.current / Math.max(styleRewriteProgress.total, 1)) * 100} className="h-2" />
+              </div>
+            )}
+
+            {styleRewriteOutput && (() => {
+              const outputWords = styleRewriteOutput.split(/\s+/).filter(Boolean).length;
+              const shouldPaywall = !hasCredits && outputWords > PAYWALL_WORD_LIMIT;
+              return (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="font-semibold">Style-Rewritten Text</Label>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => { navigator.clipboard.writeText(styleRewriteOutput); toast({ title: "Copied", description: "Style rewrite copied to clipboard" }); }} data-testid="button-copy-style-rewrite"><Copy className="mr-1 h-4 w-4" />Copy</Button>
+                      <Button variant="outline" size="sm" onClick={downloadStyleRewrite} data-testid="button-download-style-rewrite"><Download className="mr-1 h-4 w-4" />Download</Button>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-[320px] rounded-lg border bg-white p-4">
+                    {shouldPaywall ? <PaywallOverlay content={styleRewriteOutput} onBuyCredits={handleBuyCredits} /> : <div className="whitespace-pre-wrap font-serif">{styleRewriteOutput}</div>}
+                  </ScrollArea>
+                  <p className="text-xs text-muted-foreground">{outputWords.toLocaleString()} words</p>
+                </div>
+              );
+            })()}
+
+            <div className="flex gap-3 border-t pt-4">
+              <Button onClick={handleStyleRewrite} disabled={isStyleRewriting || !text.trim() || !styleRewriteSample.trim()} className="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-700" data-testid="button-start-style-rewrite">
+                {isStyleRewriting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Style Rewriting...</> : <><Sparkles className="mr-2 h-4 w-4" />Rewrite Text A in Text B's Style</>}
+              </Button>
+              <Button variant="outline" onClick={() => setShowStyleRewriteDialog(false)} disabled={isStyleRewriting}>Close</Button>
             </div>
           </div>
         </ResizableDialogContent>
