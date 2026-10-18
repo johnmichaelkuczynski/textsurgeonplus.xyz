@@ -84,13 +84,13 @@ export function ProsifyDialog({ open, onOpenChange, tree, onTreeChange }: {
   const selected = versions.find((version) => version.id === selectedId) || versions[0];
   return <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-y-auto" data-testid="prosify-dialog">
-      <DialogHeader><DialogTitle>PROSIFY</DialogTitle></DialogHeader>
-      <Label htmlFor="prosify-tree">Tree</Label>
+      <DialogHeader><DialogTitle>Turn Tractatus Tree into Prose</DialogTitle></DialogHeader>
+      <Label htmlFor="prosify-tree">Tractatus Tree</Label>
       <Textarea id="prosify-tree" value={tree} onChange={(event) => onTreeChange(event.target.value)} className="min-h-64 font-mono" data-testid="prosify-tree" />
       <Label htmlFor="prosify-instructions">Instructions (optional)</Label>
       <Textarea id="prosify-instructions" value={instructions} onChange={(event) => setInstructions(event.target.value)}
-        placeholder="Leave blank for standard minimal prosification, or type special requirements." className="min-h-24" data-testid="prosify-instructions" />
-      <Button onClick={() => void run()} disabled={running} data-testid="prosify-run">{running ? "PROSIFYING…" : "PROSIFY"}</Button>
+        placeholder="Leave blank to turn the tree into prose with minimal changes, or type special requirements." className="min-h-24" data-testid="prosify-instructions" />
+      <Button onClick={() => void run()} disabled={running} data-testid="prosify-run">{running ? "Converting tree to prose…" : "Turn Tractatus Tree into Prose"}</Button>
       {progress && <p role="status" className="text-sm">{progress}</p>}
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       <section>
@@ -107,7 +107,7 @@ export function ProsifyDialog({ open, onOpenChange, tree, onTreeChange }: {
         </div>}
       </section>
       {(liveProse || selected) && <section className="rounded border p-4">
-        <h3 className="font-semibold mb-2">{liveProse ? "Prosifying…" : `Version ${selected?.id}`}</h3>
+        <h3 className="font-semibold mb-2">{liveProse ? "Converting tree to prose…" : `Version ${selected?.id}`}</h3>
         {selected?.warnings?.map((warning) => !liveProse && <p key={warning} className="mb-2 text-sm text-amber-700" role="alert">Warning: {warning}</p>)}
         <div className="whitespace-pre-wrap">{liveProse || selected?.prose}</div>
       </section>}
