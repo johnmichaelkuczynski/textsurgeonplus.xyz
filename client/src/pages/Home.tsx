@@ -5325,7 +5325,7 @@ ${parsed.analyzer}`);
                     data-testid="button-prosify"
                   >
                     <Sparkles className="w-5 h-5 mr-2" />
-                    TURN TRACTATUS TREE INTO PROSE
+                    PROSIFY TREE
                   </Button>
                 </div>
 

@@ -84,13 +84,13 @@ export function ProsifyDialog({ open, onOpenChange, tree, onTreeChange }: {
   const selected = versions.find((version) => version.id === selectedId) || versions[0];
   return <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="sm:max-w-4xl max-h-[92vh] overflow-y-auto" data-testid="prosify-dialog">
-      <DialogHeader><DialogTitle>Turn Tractatus Tree into Prose</DialogTitle></DialogHeader>
+      <DialogHeader><DialogTitle>PROSIFY TREE</DialogTitle></DialogHeader>
       <Label htmlFor="prosify-tree">Tractatus Tree</Label>
       <Textarea id="prosify-tree" value={tree} onChange={(event) => onTreeChange(event.target.value)} className="min-h-64 font-mono" data-testid="prosify-tree" />
       <Label htmlFor="prosify-instructions">Instructions (optional)</Label>
       <Textarea id="prosify-instructions" value={instructions} onChange={(event) => setInstructions(event.target.value)}
         placeholder="Leave blank to turn the tree into prose with minimal changes, or type special requirements." className="min-h-24" data-testid="prosify-instructions" />
-      <Button onClick={() => void run()} disabled={running} data-testid="prosify-run">{running ? "Converting tree to prose…" : "Turn Tractatus Tree into Prose"}</Button>
+      <Button onClick={() => void run()} disabled={running} data-testid="prosify-run">{running ? "Converting tree to prose…" : "PROSIFY TREE"}</Button>
       {progress && <p role="status" className="text-sm">{progress}</p>}
       {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
       <section>
