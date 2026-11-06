@@ -1,0 +1,31 @@
+tasks:
+  install:
+    name: Install dependencies
+    description: Install the locked Node.js dependencies.
+    command: npm ci --registry=https://registry.npmjs.org/
+    triggeredBy:
+      - manual
+      - postDevcontainerStart
+      - prebuild
+
+  build:
+    name: Build application
+    description: Build the Vite client and production server bundle.
+    command: npm run build
+    dependsOn:
+      - install
+    triggeredBy:
+      - manual
+
+services:
+  app:
+    name: Development server
+    description: Run the Vite and Express development server.
+    commands:
+      start: |
+        ona environment port open 5000 --admission creator_only --name "Development server" --protocol http
+        npm run dev
+      ready: curl -fsS http://localhost:5000 > /dev/null
+    triggeredBy:
+      - manual
+      - postEnvironmentStart
