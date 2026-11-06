@@ -19,7 +19,7 @@ import {
   READ_ONLY_DIAGNOSTIC_CASES, UNCOVERED_HIGH_IMPACT_CATEGORIES, checkReadOnlyEndpoint,
 } from "@/lib/readOnlyDiagnostics";
 import {
-  checkStripePublic, checkTts, checkUpload,
+  checkTts, checkUpload,
   type CheckEvidence,
 } from "@/lib/workshopDiagnosticChecks";
 
@@ -61,8 +61,6 @@ const INITIAL_RESULTS: DiagnosticResult[] = [
   { id: "source-upload", label: "Box A PDF upload", description: "Uploads and reads a real diagnostic PDF.", status: "waiting" },
   { id: "style-upload", label: "Box D PDF style upload", description: "Uploads the same PDF through the separate style-sample parser.", status: "waiting" },
   { id: "tts", label: "ElevenLabs audio and API key", description: "Generates a short real audio clip; does not just check whether a key is present.", status: "waiting" },
-  { id: "stripe-public", label: "Stripe public configuration", description: "Checks that a publishable key is available; does not validate Stripe secret credentials.", status: "waiting" },
-  { id: "stripe-secret", label: "Stripe secret and webhook credentials", description: "A safe live credential probe does not exist on the running server; payment and webhook operations are not triggered by diagnostics.", status: "unverified" },
   { id: "genius-generic", label: "Generic GENIUS_API_KEY", description: "The supported authors use their own named keys. This generic key is not used by their corpus routes and cannot be marked verified by an author-specific search.", status: "unverified" },
   ...UNCOVERED_HIGH_IMPACT_CATEGORIES.map((item, index) => ({
     id: `uncovered:${index}`, label: item.category, description: item.reason, status: "unverified" as const,
@@ -279,7 +277,6 @@ export default function HumanizerDiagnostics() {
         ["source-upload", (signal) => checkUpload("/api/parse-file", signal)],
         ["style-upload", (signal) => checkUpload("/api/parse-style-sample", signal)],
         ["tts", checkTts],
-        ["stripe-public", checkStripePublic],
       ];
       for (const [id, check] of checks) {
         if (controller.signal.aborted) break;
@@ -467,8 +464,8 @@ export default function HumanizerDiagnostics() {
             </p>
           ) : null}
           <p className="mt-3 text-sm text-amber-900">
-            Stripe secret and webhook keys cannot be tested safely through the current running server. Clear All, browser reload recovery,
-            a complete two-million-character run, payments, and Text Surgeon tools not named above remain unverified.
+            Clear All, browser reload recovery, a complete two-million-character run,
+            and Text Surgeon tools not named above remain unverified.
             No untested function is counted as passed.
           </p>
         </section>

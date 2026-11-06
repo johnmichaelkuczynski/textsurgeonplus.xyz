@@ -924,7 +924,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Deduct credits
       cleanup();
       res.write(`data: ${JSON.stringify({ type: 'complete', result: { ...result, markdown } })}\n\n`);
       res.end();
@@ -1023,7 +1022,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Deduct credits
       cleanup();
       res.write(`data: ${JSON.stringify({ type: 'complete', result })}\n\n`);
       res.end();
@@ -3405,57 +3403,9 @@ Otherwise return JSON array:
     }
   });
 
-  // ============ STRIPE PAYMENT ROUTES ============
-  const { createCheckoutSession, handleWebhookEvent } = await import("./services/stripe");
-
-  app.get("/api/credits", async (req, res) => {
-    const user = await getOrCreateVisitorUser(req.query.username);
-    if (!user) return res.status(400).json({ error: "Visitor ID required" });
-    res.json({ credits: await storage.getUserCredits(user.id) });
-  });
-
-  app.post("/api/checkout", async (req, res) => {
-    try {
-      const user = await getOrCreateVisitorUser(req.body?.username);
-      if (!user) return res.status(400).json({ error: "Visitor ID required" });
-      const session = await createCheckoutSession(user.id, null);
-      res.json({ url: session.url });
-    } catch (error: any) {
-      console.error("Checkout error:", error);
-      res.status(500).json({ error: error.message || "Failed to create checkout" });
-    }
-  });
-
-  app.get("/api/stripe-publishable-key", (req, res) => {
-    res.json({ key: process.env.STRIPE_PUBLISHABLE_KEY || '' });
-  });
-
-  app.post("/api/webhook/stripe", async (req, res) => {
-    const signature = req.headers['stripe-signature'] as string;
-    
-    if (!signature) {
-      return res.status(400).json({ error: "Missing stripe-signature header" });
-    }
-
-    try {
-      const event = await handleWebhookEvent(req.rawBody as Buffer, signature);
-      
-      if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as any;
-        const userId = parseInt(session.metadata.userId, 10);
-        const credits = parseInt(session.metadata.credits, 10);
-        
-        if (userId && credits) {
-          await storage.addCredits(userId, credits);
-          console.log(`Added ${credits} credits to user ${userId}`);
-        }
-      }
-
-      res.json({ received: true });
-    } catch (error: any) {
-      console.error("Webhook error:", error);
-      res.status(400).json({ error: error.message });
-    }
+  // Open access: old payment URLs must never create a checkout or charge.
+  app.all(["/api/credits", "/api/checkout", "/api/stripe-publishable-key", "/api/webhook/stripe"], (_req, res) => {
+    res.status(410).json({ error: "This app is open access. Payments and credits are disabled.", openAccess: true });
   });
 
   // ============ LONG ANSWER + PURE MODE ENDPOINTS ============

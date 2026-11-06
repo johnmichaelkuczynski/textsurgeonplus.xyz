@@ -48,7 +48,7 @@ Preferred communication style: Simple, everyday language.
 - **Corpus Manager**: Admin UI for building an internal author corpus database (`corpus_authors`, `corpus_works`, `work_sections`) with full-text search.
 - **Stability**: Defensive null checks, `COPY NOW`/`DOWNLOAD NOW` during processing, history auto-loading, and safe report generation.
 - **Determinism**: All LLM providers use `temperature=0` for consistent output.
-- **Access model**: No login or authentication system. Every feature is available anonymously without credit gates. A persistent random browser visitor ID scopes history, saved stylometric profiles, coherence records, and Book Database entries while preserving the existing database. Visitor analytics records anonymous page visits.
+- **Access model**: This is an open-access app: no payment, no login, and no Google sign-in wall. All features, complete outputs, refinements, and downloads are available anonymously, without credit gates or paid word limits. Do not reintroduce authentication or monetization unless explicitly requested. A persistent random browser visitor ID scopes history, saved stylometric profiles, coherence records, and Book Database entries while preserving the existing database. Visitor analytics records anonymous page visits.
 - **Verbatim Quotes**: LLM prompts require word-for-word extraction.
 
 ## External Dependencies

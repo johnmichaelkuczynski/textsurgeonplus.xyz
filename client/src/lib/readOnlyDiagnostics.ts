@@ -27,10 +27,6 @@ export type UncoveredHighImpactCategory = {
 
 export const UNCOVERED_HIGH_IMPACT_CATEGORIES: readonly UncoveredHighImpactCategory[] = [
   {
-    category: "Credits and payment operations",
-    reason: "The credits GET route calls getOrCreateVisitorUser, so even a GET diagnostic can create or change account state; checkout and payment operations are also outside read-only checks.",
-  },
-  {
     category: "Book-database access and CRUD",
     reason: "The book-databases GET route also calls getOrCreateVisitorUser, while its related save and CRUD routes write user data.",
   },

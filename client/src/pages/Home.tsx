@@ -40,7 +40,6 @@ import {
   List,
   GitBranch,
   Lock,
-  CreditCard,
   Volume2,
   Plus,
   ShieldCheck,
@@ -363,8 +362,6 @@ export default function Home() {
   const [processedChunkIds, setProcessedChunkIds] = useState<Set<number>>(new Set());
   
   const [username] = useState<string>(() => getOrCreateVisitorId());
-  const [userCredits, setUserCredits] = useState<number>(0);
-  const [isBuyingCredits, setIsBuyingCredits] = useState(false);
   
   const [showTextToAudio, setShowTextToAudio] = useState(false);
   const [ttsText, setTtsText] = useState("");
@@ -640,10 +637,6 @@ export default function Home() {
   
   useEffect(() => {
     loadSavedAuthors(username);
-    fetch(`/api/credits?username=${encodeURIComponent(username)}`)
-      .then(res => res.json())
-      .then(data => setUserCredits(data.credits || 0))
-      .catch(() => {});
 
     const visitKey = "text-surgeon-visit-recorded";
     if (!window.sessionStorage.getItem(visitKey)) {
@@ -817,113 +810,6 @@ export default function Home() {
     }
   };
 
-  const fetchCredits = async () => {
-    try {
-      const response = await fetch(`/api/credits?username=${encodeURIComponent(username)}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUserCredits(data.credits || 0);
-      }
-    } catch (error) {
-      console.error("Failed to fetch credits:", error);
-    }
-  };
-
-  const handleBuyCredits = async () => {
-    setIsBuyingCredits(true);
-    try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username }),
-      });
-      if (response.ok) {
-        const data = await response.json();
-        if (data.url) {
-          window.location.href = data.url;
-        }
-      } else {
-        const error = await response.json();
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.error || "Failed to start checkout"
-        });
-      }
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to start checkout"
-      });
-    } finally {
-      setIsBuyingCredits(false);
-    }
-  };
-
-  // Helper to truncate text at word boundary
-  const truncateAtWordLimit = (text: string, wordLimit: number): { truncated: string, isTruncated: boolean, totalWords: number } => {
-    const words = text.split(/\s+/).filter(Boolean);
-    const totalWords = words.length;
-    if (totalWords <= wordLimit) {
-      return { truncated: text, isTruncated: false, totalWords };
-    }
-    const truncated = words.slice(0, wordLimit).join(' ');
-    return { truncated, isTruncated: true, totalWords };
-  };
-
-  const PAYWALL_WORD_LIMIT = 750;
-
-  // Paywall overlay component
-  const PaywallOverlay = ({ 
-    content, 
-    onBuyCredits 
-  }: { 
-    content: string, 
-    onBuyCredits: () => void 
-  }) => {
-    const { truncated, isTruncated, totalWords } = truncateAtWordLimit(content, PAYWALL_WORD_LIMIT);
-    
-    if (!isTruncated) {
-      return <pre className="text-sm whitespace-pre-wrap font-mono">{content}</pre>;
-    }
-    
-    return (
-      <div className="relative">
-        <pre className="text-sm whitespace-pre-wrap font-mono">{truncated}...</pre>
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-20 pb-4">
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 mx-4 shadow-lg">
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="bg-amber-100 p-3 rounded-full">
-                <Lock className="w-8 h-8 text-amber-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900">Full Output Paywalled</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  You're viewing {PAYWALL_WORD_LIMIT} of {totalWords.toLocaleString()} words. 
-                  Purchase credits to unlock the complete output.
-                </p>
-              </div>
-              <Button
-                onClick={onBuyCredits}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                data-testid="button-paywall-buy-credits"
-              >
-                <CreditCard className="w-5 h-5 mr-2" />
-                Buy Credits to Unlock
-              </Button>
-              <p className="text-xs text-gray-500">
-                Click to proceed to payment
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // No login system: the app is fully open, no paywall gating
-  const hasCredits = true;
   
   const loadHistory = async (typeFilter?: string) => {
     if (!username) return;
@@ -1368,7 +1254,6 @@ export default function Home() {
       setCurrentChunkIndex(0);
       setTotalChunksToProcess(0);
       setAllDayProgress(null);
-      fetchCredits();
     }
   };
 
@@ -1579,7 +1464,6 @@ export default function Home() {
       setStylometricsProgress({ stage: "error", message: error.message || "Analysis failed" });
     } finally {
       setIsAnalyzingStylometrics(false);
-      fetchCredits();
     }
   };
 
@@ -1694,7 +1578,6 @@ export default function Home() {
       setIntelligenceProgress({ stage: "error", message: error.message || "Analysis failed" });
     } finally {
       setIsAnalyzingIntelligence(false);
-      fetchCredits();
     }
   };
 
@@ -2012,7 +1895,6 @@ export default function Home() {
       setPositionExtractorProgress({ stage: "error", message: error.message || "Extraction failed" });
     } finally {
       setIsExtractingPositions(false);
-      fetchCredits();
     }
   };
 
@@ -2131,7 +2013,6 @@ export default function Home() {
       setTractatusProgress({ stage: "error", message: error.message || "Rewrite failed" });
     } finally {
       setIsRewritingTractatus(false);
-      fetchCredits();
     }
   };
 
@@ -2277,7 +2158,6 @@ export default function Home() {
       if (treeRequestRef.current === controller) {
         treeRequestRef.current = null;
         setIsGeneratingTree(false);
-        fetchCredits();
       }
     }
   };
@@ -2369,7 +2249,6 @@ export default function Home() {
       setSummaryProgress({ current: 0, total: 5, message: error.message || "Generation failed" });
     } finally {
       setIsGeneratingSummary(false);
-      fetchCredits();
     }
   };
 
@@ -2600,7 +2479,6 @@ export default function Home() {
       setArgumentsFinderProgress({ stage: "error", message: error.message || "Extraction failed" });
     } finally {
       setIsExtractingArguments(false);
-      fetchCredits();
     }
   };
 
@@ -2982,7 +2860,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
       setCustomAnalyzerProgress({ stage: "error", message: error.message || "Analysis failed" });
     } finally {
       setIsRunningCustomAnalysis(false);
-      fetchCredits();
     }
   };
 
@@ -3092,7 +2969,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
       setQuoteExtractorProgress({ stage: "error", message: error.message || "Extraction failed" });
     } finally {
       setIsExtractingQuotes(false);
-      fetchCredits();
     }
   };
 
@@ -3159,7 +3035,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
       });
     } finally {
       setIsGeneratingOutline(false);
-      fetchCredits();
     }
   };
 
@@ -3474,7 +3349,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     } finally {
       setIsRewriting(false);
       setRewriteProgress(null);
-      fetchCredits();
     }
   };
 
@@ -3571,7 +3445,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     } finally {
       setIsWritingFromScratch(false);
       setWriteFromScratchProgress(null);
-      fetchCredits();
     }
   };
 
@@ -3671,7 +3544,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     } finally {
       setIsGeneratingLongAnswer(false);
       setLongAnswerProgress(null);
-      fetchCredits();
     }
   };
 
@@ -3800,7 +3672,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
     } finally {
       setIsProcessing(false);
       setProgress(null);
-      fetchCredits();
     }
   };
 
@@ -3931,7 +3802,6 @@ ${holisticStylometricsCompareResult.comparison?.sameRoomScenario ? `If They Met:
       });
     } finally {
       setIsSearchingQuotes(false);
-      fetchCredits();
     }
   };
 
@@ -5513,48 +5383,6 @@ ${parsed.analyzer}`);
                                 {(() => {
                                   const quotes = (result.quotes || []).filter(q => q);
                                   const totalWords = quotes.join(' ').split(/\s+/).filter(Boolean).length;
-                                  const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
-                                  
-                                  if (shouldPaywall && quotes.length > 0) {
-                                    const previewQuotes = quotes.slice(0, 3);
-                                    return (
-                                      <div className="space-y-4">
-                                        <ul className="space-y-4 opacity-75">
-                                          {previewQuotes.map((quote, i) => (
-                                            <li key={i} className="flex gap-4 p-4 rounded-lg border-2 border-gray-200">
-                                              <span className="flex-none w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary text-white flex items-center justify-center text-base font-bold shadow-md">
-                                                {i + 1}
-                                              </span>
-                                              <p className="font-serif text-lg leading-relaxed text-foreground truncate">
-                                                "{quote.substring(0, 100)}..."
-                                              </p>
-                                            </li>
-                                          ))}
-                                        </ul>
-                                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                                          <div className="flex flex-col items-center text-center space-y-4">
-                                            <div className="bg-amber-100 p-3 rounded-full">
-                                              <Lock className="w-8 h-8 text-amber-600" />
-                                            </div>
-                                            <div>
-                                              <h3 className="text-lg font-bold text-gray-900">Full Quotes Paywalled</h3>
-                                              <p className="text-sm text-gray-600 mt-1">
-                                                {quotes.length} quotes with {totalWords.toLocaleString()} total words. Purchase credits to unlock.
-                                              </p>
-                                            </div>
-                                            <Button
-                                              onClick={handleBuyCredits}
-                                              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                                              data-testid="button-quotes-paywall-buy-credits"
-                                            >
-                                              <CreditCard className="w-5 h-5 mr-2" />
-                                              Buy Credits to Unlock
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    );
-                                  }
                                   
                                   return (
                                     <ul className="space-y-4">
@@ -5687,39 +5515,6 @@ ${parsed.analyzer}`);
                   const totalWords = (holisticStylometricsResult.abstractionDescription?.split(/\s+/).filter(Boolean).length || 0) +
                     (holisticStylometricsResult.narrativeSummary?.split(/\s+/).filter(Boolean).length || 0) +
                     (holisticStylometricsResult.signaturePhrases?.join(' ').split(/\s+/).filter(Boolean).length || 0);
-                  const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
-                  
-                  if (shouldPaywall) {
-                    return (
-                      <div className="space-y-4 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-lg border border-indigo-200">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-bold text-lg text-indigo-800">{holisticStylometricsResult.authorName}</h4>
-                          <div className="text-3xl font-bold text-indigo-600">{holisticStylometricsResult.aggregatedVerticalityScore?.toFixed(2)}</div>
-                        </div>
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                          <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="bg-amber-100 p-3 rounded-full">
-                              <Lock className="w-8 h-8 text-amber-600" />
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-bold text-gray-900">Full Stylometrics Report Paywalled</h3>
-                              <p className="text-sm text-gray-600 mt-1">
-                                Complete analysis with {totalWords.toLocaleString()} words. Purchase credits to unlock.
-                              </p>
-                            </div>
-                            <Button
-                              onClick={handleBuyCredits}
-                              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                              data-testid="button-stylometrics-paywall-buy-credits"
-                            >
-                              <CreditCard className="w-5 h-5 mr-2" />
-                              Buy Credits to Unlock
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
                   
                   return (
                   <div className="space-y-4 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-lg border border-indigo-200">
@@ -6212,42 +6007,6 @@ ${parsed.analyzer}`);
                 {holisticIntelResult && (() => {
                   const totalWords = holisticIntelResult.analysis.split(/\s+/).filter(Boolean).length + 
                     holisticIntelResult.quotes.reduce((sum, q) => sum + q.quote.split(/\s+/).filter(Boolean).length, 0);
-                  const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
-                  
-                  if (shouldPaywall) {
-                    return (
-                      <div className="space-y-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-bold text-lg text-amber-800">Intelligence Score</h4>
-                          <div className="text-5xl font-bold text-amber-600">{holisticIntelResult.score}</div>
-                        </div>
-                        <div className="text-sm text-amber-700 truncate bg-white/40 p-3 rounded-lg">
-                          {holisticIntelResult.analysis.substring(0, 200)}...
-                        </div>
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                          <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="bg-amber-100 p-3 rounded-full">
-                              <Lock className="w-8 h-8 text-amber-600" />
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-bold text-gray-900">Full Intelligence Report Paywalled</h3>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {holisticIntelResult.quotes.length} signal quotes with {totalWords.toLocaleString()} total words. Purchase credits to unlock.
-                              </p>
-                            </div>
-                            <Button
-                              onClick={handleBuyCredits}
-                              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                              data-testid="button-intel-paywall-buy-credits"
-                            >
-                              <CreditCard className="w-5 h-5 mr-2" />
-                              Buy Credits to Unlock
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
                   
                   return (
                   <div className="space-y-4 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg border border-amber-200">
@@ -7114,48 +6873,6 @@ Freedom is the ratio essendi of the moral law."
 
             {extractedPositions.length > 0 && (() => {
               const totalWords = extractedPositions.reduce((sum, p) => sum + p.quote.split(/\s+/).filter(Boolean).length, 0);
-              const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
-              
-              if (shouldPaywall) {
-                const previewPositions = extractedPositions.slice(0, 3);
-                return (
-                  <div className="space-y-4">
-                    <div className="border rounded-lg opacity-75">
-                      <div className="p-3 bg-gray-50 border-b">
-                        <h4 className="font-semibold text-violet-700">Extracted Positions (Preview)</h4>
-                      </div>
-                      <div className="p-3 space-y-3 max-h-[200px] overflow-hidden">
-                        {previewPositions.map((pos, idx) => (
-                          <div key={idx} className="p-3 bg-white border rounded-lg">
-                            <p className="font-medium text-gray-900 truncate">"{pos.quote.substring(0, 100)}..."</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                      <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="bg-amber-100 p-3 rounded-full">
-                          <Lock className="w-8 h-8 text-amber-600" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900">Full Positions Paywalled</h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {extractedPositions.length} positions with {totalWords.toLocaleString()} total words. Purchase credits to unlock.
-                          </p>
-                        </div>
-                        <Button
-                          onClick={handleBuyCredits}
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                          data-testid="button-positions-paywall-buy-credits"
-                        >
-                          <CreditCard className="w-5 h-5 mr-2" />
-                          Buy Credits to Unlock
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
               
               return (
                 <div className="border rounded-lg">
@@ -7427,48 +7144,6 @@ Freedom is the ratio essendi of the moral law."
             {extractedArguments.length > 0 && (() => {
               const totalWords = extractedArguments.reduce((sum, a) => 
                 sum + a.premises.join(' ').split(/\s+/).filter(Boolean).length + a.conclusion.split(/\s+/).filter(Boolean).length, 0);
-              const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
-              
-              if (shouldPaywall) {
-                const previewArgs = extractedArguments.slice(0, 2);
-                return (
-                  <div className="space-y-4">
-                    <div className="border rounded-lg opacity-75">
-                      <div className="p-3 bg-gray-50 border-b">
-                        <h4 className="font-semibold text-teal-700">Extracted Arguments (Preview)</h4>
-                      </div>
-                      <div className="p-3 space-y-3 max-h-[200px] overflow-hidden">
-                        {previewArgs.map((arg, idx) => (
-                          <div key={idx} className="p-3 bg-white border rounded-lg">
-                            <p className="font-medium text-gray-900 truncate">→ {arg.conclusion.substring(0, 80)}...</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                      <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="bg-amber-100 p-3 rounded-full">
-                          <Lock className="w-8 h-8 text-amber-600" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900">Full Arguments Paywalled</h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {extractedArguments.length} arguments with {totalWords.toLocaleString()} total words. Purchase credits to unlock.
-                          </p>
-                        </div>
-                        <Button
-                          onClick={handleBuyCredits}
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                          data-testid="button-arguments-paywall-buy-credits"
-                        >
-                          <CreditCard className="w-5 h-5 mr-2" />
-                          Buy Credits to Unlock
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
               
               return (
                 <div className="border rounded-lg">
@@ -7725,10 +7400,8 @@ Freedom is the ratio essendi of the moral law."
                   </div>
                 </div>
                 <ScrollArea className="h-[300px] p-4">
-                  {hasCredits ? (
+                  {(
                     <pre className="text-sm whitespace-pre-wrap font-mono">{tractatusOutput}</pre>
-                  ) : (
-                    <PaywallOverlay content={tractatusOutput} onBuyCredits={handleBuyCredits} />
                   )}
                 </ScrollArea>
 
@@ -7958,52 +7631,6 @@ Freedom is the ratio essendi of the moral law."
 
                 {(() => {
                   const totalWords = tractatusTreeColumns.flat().reduce((sum, stmt) => sum + stmt.text.split(/\s+/).filter(Boolean).length, 0);
-                  const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
-                  
-                  if (shouldPaywall) {
-                    // Column 0 = Level 1 (most abstract), show as preview
-                    const level1Column = tractatusTreeColumns[0] || [];
-                    const previewStmts = level1Column.slice(0, 5);
-                    
-                    return (
-                      <div className="space-y-4">
-                        <div className="border rounded-lg overflow-hidden opacity-75">
-                          <div className="bg-gradient-to-r from-yellow-100 to-amber-100 px-3 py-2 border-b">
-                            <span className="font-medium text-sm text-yellow-800">Level 1 (Preview)</span>
-                          </div>
-                          <div className="max-h-[200px] overflow-y-auto p-3 space-y-2 text-sm font-mono bg-white">
-                            {previewStmts.map((stmt, stmtIdx) => (
-                              <div key={stmtIdx} className="border-l-2 border-yellow-300 pl-2 py-1">
-                                <span className="text-yellow-700 font-semibold">{stmt.number}</span>
-                                <span className="ml-2 text-gray-700">{stmt.text}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                          <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="bg-amber-100 p-3 rounded-full">
-                              <Lock className="w-8 h-8 text-amber-600" />
-                            </div>
-                            <div>
-                              <h3 className="text-lg font-bold text-gray-900">Full Tractatus Tree Paywalled</h3>
-                              <p className="text-sm text-gray-600 mt-1">
-                                {tractatusTreeColumns.length} abstraction levels with {totalWords.toLocaleString()} total words. Purchase credits to unlock.
-                              </p>
-                            </div>
-                            <Button
-                              onClick={handleBuyCredits}
-                              className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                              data-testid="button-tractatus-tree-paywall-buy-credits"
-                            >
-                              <CreditCard className="w-5 h-5 mr-2" />
-                              Buy Credits to Unlock
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
                   
                   return (
                     <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${Math.min(tractatusTreeColumns.length, 4)}, 1fr)` }}>
@@ -8386,61 +8013,6 @@ Freedom is the ratio essendi of the moral law."
                   {(() => {
                     const allContent = summaryResult.sections.map(s => `${s.title}\n${s.summary}`).join('\n\n');
                     const totalWords = allContent.split(/\s+/).filter(Boolean).length;
-                    const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
-                    
-                    if (shouldPaywall) {
-                      let wordsSoFar = 0;
-                      let cutoffIdx = 0;
-                      for (let i = 0; i < summaryResult.sections.length; i++) {
-                        const sectionWords = summaryResult.sections[i].summary.split(/\s+/).filter(Boolean).length;
-                        if (wordsSoFar + sectionWords > PAYWALL_WORD_LIMIT) {
-                          cutoffIdx = i;
-                          break;
-                        }
-                        wordsSoFar += sectionWords;
-                        cutoffIdx = i + 1;
-                      }
-                      
-                      return (
-                        <>
-                          {summaryResult.sections.slice(0, Math.max(cutoffIdx, 1)).map((section, idx) => (
-                            <div key={idx} className="bg-white border rounded-lg p-4" data-testid={`card-summary-section-${idx}`}>
-                              <h4 className="font-semibold text-teal-800 mb-2 flex items-center gap-2">
-                                <span className="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-teal-600 rounded-full">
-                                  {idx + 1}
-                                </span>
-                                {section.title}
-                              </h4>
-                              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-                                {section.summary}
-                              </p>
-                            </div>
-                          ))}
-                          <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                            <div className="flex flex-col items-center text-center space-y-4">
-                              <div className="bg-amber-100 p-3 rounded-full">
-                                <Lock className="w-8 h-8 text-amber-600" />
-                              </div>
-                              <div>
-                                <h3 className="text-lg font-bold text-gray-900">Full Summary Paywalled</h3>
-                                <p className="text-sm text-gray-600 mt-1">
-                                  You're viewing {cutoffIdx} of {summaryResult.sections.length} sections ({totalWords.toLocaleString()} total words). 
-                                  Purchase credits to unlock the complete summary.
-                                </p>
-                              </div>
-                              <Button
-                                onClick={handleBuyCredits}
-                                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                                data-testid="button-summary-paywall-buy-credits"
-                              >
-                                <CreditCard className="w-5 h-5 mr-2" />
-                                Buy Credits to Unlock
-                              </Button>
-                            </div>
-                          </div>
-                        </>
-                      );
-                    }
                     
                     return summaryResult.sections.map((section, idx) => (
                       <div key={idx} className="bg-white border rounded-lg p-4" data-testid={`card-summary-section-${idx}`}>
@@ -8663,10 +8235,8 @@ Freedom is the ratio essendi of the moral law."
                 </div>
                 <ScrollArea className="h-[300px]">
                   <div className="p-4 prose prose-sm max-w-none">
-                    {hasCredits ? (
+                    {(
                       <pre className="whitespace-pre-wrap font-sans text-sm">{customAnalyzerOutput}</pre>
-                    ) : (
-                      <PaywallOverlay content={customAnalyzerOutput} onBuyCredits={handleBuyCredits} />
                     )}
                   </div>
                 </ScrollArea>
@@ -8841,48 +8411,6 @@ Freedom is the ratio essendi of the moral law."
 
             {extractedQuotes.length > 0 && (() => {
               const totalWords = extractedQuotes.reduce((sum, q) => sum + q.quote.split(/\s+/).filter(Boolean).length, 0);
-              const shouldPaywall = !hasCredits && totalWords > PAYWALL_WORD_LIMIT;
-              
-              if (shouldPaywall) {
-                const previewQuotes = extractedQuotes.slice(0, 3);
-                return (
-                  <div className="space-y-4">
-                    <div className="border rounded-lg opacity-75">
-                      <div className="p-3 bg-gray-50 border-b">
-                        <h4 className="font-semibold text-primary">Extracted Quotes (Preview)</h4>
-                      </div>
-                      <div className="p-3 space-y-3 max-h-[200px] overflow-hidden">
-                        {previewQuotes.map((q, idx) => (
-                          <div key={idx} className="p-3 bg-white border rounded-lg">
-                            <p className="font-medium text-gray-900 truncate">{q.quote.substring(0, 100)}...</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-300 rounded-xl p-6 shadow-lg">
-                      <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="bg-amber-100 p-3 rounded-full">
-                          <Lock className="w-8 h-8 text-amber-600" />
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900">Full Quotes Paywalled</h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {extractedQuotes.length} quotes with {totalWords.toLocaleString()} total words. Purchase credits to unlock.
-                          </p>
-                        </div>
-                        <Button
-                          onClick={handleBuyCredits}
-                          className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold px-8 py-3 text-lg shadow-md"
-                          data-testid="button-extracted-quotes-paywall-buy-credits"
-                        >
-                          <CreditCard className="w-5 h-5 mr-2" />
-                          Buy Credits to Unlock
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              }
               
               return (
                 <div className="border rounded-lg">
@@ -9145,7 +8673,6 @@ Freedom is the ratio essendi of the moral law."
 
             {rewrittenDocument && (() => {
               const wordCount = rewrittenDocument.split(/\s+/).filter(Boolean).length;
-              const shouldPaywall = !hasCredits && wordCount > PAYWALL_WORD_LIMIT;
               
               return (
               <div className="space-y-2">
@@ -9175,9 +8702,7 @@ Freedom is the ratio essendi of the moral law."
                   </div>
                 </div>
                 <ScrollArea className="h-[300px] border rounded-lg p-4 bg-white">
-                  {shouldPaywall ? (
-                    <PaywallOverlay content={rewrittenDocument} onBuyCredits={handleBuyCredits} />
-                  ) : (
+                  {(
                     <div className="prose prose-sm max-w-none whitespace-pre-wrap">
                       {rewrittenDocument}
                     </div>
@@ -9188,7 +8713,7 @@ Freedom is the ratio essendi of the moral law."
                 </p>
 
                 {/* Refinement Section */}
-                {!shouldPaywall && (
+                {(
                   <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <Label className="text-sm font-medium text-blue-800">Refine this output</Label>
                     <Textarea
@@ -9409,7 +8934,6 @@ Freedom is the ratio essendi of the moral law."
 
             {longAnswerOutput && (() => {
               const wc = longAnswerOutput.split(/\s+/).filter(Boolean).length;
-              const shouldPaywall = !hasCredits && wc > PAYWALL_WORD_LIMIT;
 
               return (
               <div className="space-y-2">
@@ -9425,9 +8949,7 @@ Freedom is the ratio essendi of the moral law."
                   </div>
                 </div>
                 <ScrollArea className="h-[300px] border rounded-lg p-4 bg-white">
-                  {shouldPaywall ? (
-                    <PaywallOverlay content={longAnswerOutput} onBuyCredits={handleBuyCredits} />
-                  ) : (
+                  {(
                     <div className="prose prose-sm max-w-none whitespace-pre-wrap">
                       {longAnswerOutput}
                     </div>
@@ -9437,7 +8959,7 @@ Freedom is the ratio essendi of the moral law."
                   {wc.toLocaleString()} words generated
                 </p>
 
-                {!shouldPaywall && (
+                {(
                   <div className="mt-4 p-3 bg-violet-50 rounded-lg border border-violet-200">
                     <Label className="text-sm font-medium text-violet-800">Refine this output</Label>
                     <Textarea
@@ -9572,7 +9094,6 @@ Freedom is the ratio essendi of the moral law."
 
             {generatedDocument && (() => {
               const wordCount = generatedDocument.split(/\s+/).filter(Boolean).length;
-              const shouldPaywall = !hasCredits && wordCount > PAYWALL_WORD_LIMIT;
               
               return (
               <div className="space-y-2">
@@ -9602,9 +9123,7 @@ Freedom is the ratio essendi of the moral law."
                   </div>
                 </div>
                 <ScrollArea className="h-[300px] border rounded-lg p-4 bg-white">
-                  {shouldPaywall ? (
-                    <PaywallOverlay content={generatedDocument} onBuyCredits={handleBuyCredits} />
-                  ) : (
+                  {(
                     <div className="prose prose-sm max-w-none whitespace-pre-wrap">
                       {generatedDocument}
                     </div>
@@ -9615,7 +9134,7 @@ Freedom is the ratio essendi of the moral law."
                 </p>
 
                 {/* Refinement Section */}
-                {!shouldPaywall && (
+                {(
                   <div className="mt-4 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                     <Label className="text-sm font-medium text-emerald-800">Refine this output</Label>
                     <Textarea

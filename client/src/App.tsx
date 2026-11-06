@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
-import PaymentSuccess from "@/pages/PaymentSuccess";
 import PositionsManager from "@/pages/PositionsManager";
 import Administrative from "@/pages/Administrative";
 import HumanizerWorkshop from "@/pages/HumanizerWorkshop";
@@ -19,7 +18,7 @@ function Router() {
       <Route path="/positions" component={PositionsManager} />
       <Route path="/humanizer-workshop" component={HumanizerWorkshop} />
       <Route path="/humanizer-workshop/diagnostics" component={HumanizerDiagnostics} />
-      <Route path="/payment/success" component={PaymentSuccess} />
+      <Route path="/payment/success" component={Home} />
       <Route path="/payment/cancel" component={Home} />
       <Route component={NotFound} />
     </Switch>

@@ -64,12 +64,3 @@ export async function checkTts(signal: AbortSignal): Promise<CheckEvidence> {
   }
   return { evidence: `ElevenLabs returned ${blob.size.toLocaleString()} bytes of audio.`, httpStatus: response.status };
 }
-
-export async function checkStripePublic(signal: AbortSignal): Promise<CheckEvidence> {
-  const response = await fetch("/api/stripe-publishable-key", { credentials: "include", signal });
-  const payload = await jsonResponse(response);
-  if (typeof payload.key !== "string" || !payload.key.startsWith("pk_")) {
-    throw new Error("Stripe publishable key is not configured. This does not check the secret or webhook keys.");
-  }
-  return { evidence: "Stripe publishable key is configured. Secret and webhook credentials are not verified by this endpoint.", httpStatus: response.status };
-}
