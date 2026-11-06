@@ -14,3 +14,9 @@ Do not infer another provider's remaining balance from a quota error on one prov
 **Why:** An OpenAI quota-exhausted error identifies OpenAI alone. Switching a research request to a general model can produce usable text without proving that a web search ran or that proposed URLs were checked.
 
 **How to apply:** Name the provider whose actual error was observed; describe other providers as unverified until they answer. Keep a separate provenance flag for successful search, and attach verified source markers only when that search actually succeeded.
+
+A newly saved provider key may not reach an already-running server until its workflow restarts.
+
+**Why:** After a GPTZero key update, the running server still received an expired-key response; restarting and repeating an uncached request succeeded.
+
+**How to apply:** Before declaring a replacement key invalid, refresh the server environment when no user process is active, then make a genuine uncached provider request. Do not display or retrieve the credential itself.
